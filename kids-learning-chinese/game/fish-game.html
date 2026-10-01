@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萌趣编程启蒙乐园 - 大鱼吃小鱼</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/fish-game.css">
+</head>
+<body>
+    <!-- Ocean Background -->
+    <div class="ocean-bg"></div>
+    <div class="particles" id="particles"></div>
+
+    <!-- Top Stats Bar -->
+    <div id="top-bar">
+        <div class="stat">
+            <span class="icon fish-icon"></span>
+            <span class="label">得分</span>
+            <span class="value" id="score">0</span>
+        </div>
+        <div class="stat">
+            <span class="icon wave-icon"></span>
+            <span class="label">关卡</span>
+            <span class="value" id="level">1</span>
+        </div>
+        <div class="stat">
+            <span class="hearts" id="hearts"><span class="heart"></span><span class="heart"></span><span class="heart"></span></span>
+        </div>
+    </div>
+
+    <!-- Game Area -->
+    <div class="game-container" id="game-container">
+        <!-- Back to Menu -->
+        <button class="back-btn" onclick="window.location.href='index.html'">← 返回菜单</button>
+
+        <!-- Start Screen -->
+        <div class="overlay-screen" id="start-screen">
+            <div class="screen-box">
+                <h1>大鱼吃小鱼</h1>
+                <p>控制小鱼吃掉更小的鱼<br>躲避大鲨鱼，开启海洋冒险！</p>
+                <button class="btn" onclick="FishGame.startGame()">开始冒险</button>
+            </div>
+        </div>
+
+        <!-- Level Complete -->
+        <div class="overlay-screen hidden" id="level-complete">
+            <div class="screen-box">
+                <h1>通关成功！</h1>
+                <p>你成功通过了第 <span id="complete-level">1</span> 关！</p>
+                <button class="btn" onclick="FishGame.nextLevel()">下一关</button>
+                <button class="btn btn-home btn-sm" onclick="window.location.href='index.html'" style="margin-top:12px">返回菜单</button>
+            </div>
+        </div>
+
+        <!-- Game Over -->
+        <div class="overlay-screen hidden" id="game-over">
+            <div class="screen-box">
+                <h1>游戏结束</h1>
+                <p>小鱼受伤了... 让我们重新出发吧！</p>
+                <button class="btn btn-sec" onclick="FishGame.restartGame()">重新开始</button>
+                <button class="btn btn-home btn-sm" onclick="window.location.href='index.html'" style="margin-top:12px">返回菜单</button>
+            </div>
+        </div>
+
+        <!-- Player Fish -->
+        <div id="player"></div>
+
+        <!-- Tip -->
+        <div id="tip-bar">移动鼠标控制小鱼游动</div>
+    </div>
+
+    <script src="js/audio.js"></script>
+    <script src="js/fish-game.js"></script>
+    <script>
+        window.onload = function() { FishGame.init(); };
+    </script>
+</body>
+</html>

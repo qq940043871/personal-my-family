@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>迷宫</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#1a1a2e,#16213e);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:500px;padding:10px 20px}
+.info{display:flex;gap:15px}.info-item{background:rgba(255,255,255,0.1);padding:5px 15px;border-radius:15px;font-size:0.9em}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{border:2px solid rgba(255,255,255,0.3);border-radius:10px;margin-top:10px}
+.diff{display:flex;gap:10px;margin:10px 0}
+.diff-btn{padding:8px 20px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;cursor:pointer}
+.diff-btn.active{background:#4D96FF;border-color:#4D96FF}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#667eea,#764ba2);padding:40px;border-radius:20px;text-align:center;max-width:400px}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">时间: <span id="time">0</span>s</div></div>
+</div>
+<div class="diff">
+<button class="diff-btn" onclick="setDiff(10,this)">简单</button>
+<button class="diff-btn active" onclick="setDiff(15,this)">中等</button>
+<button class="diff-btn" onclick="setDiff(20,this)">困难</button>
+</div>
+<canvas id="game" width="450" height="450"></canvas>
+
+<div class="overlay" id="start"><div class="box"><h1>🏰 迷宫</h1><p>方向键控制移动<br>找到出口！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>🎉 出口找到了！</h1><p>用时: <span id="final">0</span> 秒</p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#fff;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+let grid,cols,rows,cellSize,player,exitPos,mazeTimer,running,elapsed;
+function setDiff(n,el){
+document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('active'));
+el.classList.add('active');cols=n;rows=n;
+}
+cols=15;rows=15;
+function generateMaze(){
+grid=Array.from({length:rows},()=>Array.from({length:cols},()=>({t:1,r:1,b:1,l:1,visited:false})));
+const stack=[{r:0,c:0}];grid[0][0].visited=true;
+while(stack.length>0){
+const cur=stack[stack.length-1];
+const neighbors=[];
+const{r,c}=cur;
+if(r>0&&!grid[r-1][c].visited)neighbors.push({r:r-1,c,d:'t'});
+if(r<rows-1&&!grid[r+1][c].visited)neighbors.push({r:r+1,c,d:'b'});
+if(c>0&&!grid[r][c-1].visited)neighbors.push({r,c:c-1,d:'l'});
+if(c<cols-1&&!grid[r][c+1].visited)neighbors.push({r,c:c+1,d:'r'});
+if(neighbors.length>0){
+const next=neighbors[Math.floor(Math.random()*neighbors.length)];
+if(next.d==='t'){grid[r][c].t=0;grid[next.r][next.c].b=0}
+if(next.d==='b'){grid[r][c].b=0;grid[next.r][next.c].t=0}
+if(next.d==='l'){grid[r][c].l=0;grid[next.r][next.c].r=0}
+if(next.d==='r'){grid[r][c].r=0;grid[next.r][next.c].l=0}
+grid[next.r][next.c].visited=true;
+stack.push(next);
+}else stack.pop();
+}
+}
+function draw(){
+cellSize=Math.floor(450/cols);
+X.fillStyle='#0a0a2a';X.fillRect(0,0,C.width,C.height);
+X.strokeStyle='#4D96FF';X.lineWidth=2;
+for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+const x=c*cellSize,y=r*cellSize;
+const cell=grid[r][c];
+if(cell.t){X.beginPath();X.moveTo(x,y);X.lineTo(x+cellSize,y);X.stroke()}
+if(cell.r){X.beginPath();X.moveTo(x+cellSize,y);X.lineTo(x+cellSize,y+cellSize);X.stroke()}
+if(cell.b){X.beginPath();X.moveTo(x,y+cellSize);X.lineTo(x+cellSize,y+cellSize);X.stroke()}
+if(cell.l){X.beginPath();X.moveTo(x,y);X.lineTo(x,y+cellSize);X.stroke()}
+}
+// exit
+X.fillStyle='#6BCB77';X.fillRect(exitPos.c*cellSize+2,exitPos.r*cellSize+2,cellSize-4,cellSize-4);
+X.font=(cellSize*0.6)+'px serif';X.textAlign='center';X.textBaseline='middle';
+X.fillText('🏁',exitPos.c*cellSize+cellSize/2,exitPos.r*cellSize+cellSize/2);
+// player
+X.fillStyle='#FFD93D';X.shadowColor='#FFD93D';X.shadowBlur=8;
+X.beginPath();X.arc(player.c*cellSize+cellSize/2,player.r*cellSize+cellSize/2,cellSize/3,0,Math.PI*2);X.fill();
+X.shadowBlur=0;
+}
+function movePlayer(dr,dc){
+const r=player.r,c=player.c;
+const nr=r+dr,nc=c+dc;
+if(nr<0||nr>=rows||nc<0||nc>=cols)return;
+if(dr===-1&&grid[r][c].t)return;
+if(dr===1&&grid[r][c].b)return;
+if(dc===-1&&grid[r][c].l)return;
+if(dc===1&&grid[r][c].r)return;
+player.r=nr;player.c=nc;
+if(nr===exitPos.r&&nc===exitPos.c){win()}
+draw();
+}
+function win(){
+running=false;clearInterval(mazeTimer);
+document.getElementById('final').textContent=elapsed;
+document.getElementById('over').classList.remove('hidden');
+playSound(700,0.3);
+}
+function startGame(){
+document.getElementById('start').classList.add('hidden');
+document.getElementById('over').classList.add('hidden');
+generateMaze();player={r:0,c:0};exitPos={r:rows-1,c:cols-1};elapsed=0;running=true;
+document.getElementById('time').textContent=0;
+clearInterval(mazeTimer);
+mazeTimer.setInterval(()=>{if(running){elapsed++;document.getElementById('time').textContent=elapsed}},1000);
+draw();
+}
+document.addEventListener('keydown',e=>{
+if(!running)return;
+if(e.key==='ArrowUp')movePlayer(-1,0);
+if(e.key==='ArrowDown')movePlayer(1,0);
+if(e.key==='ArrowLeft')movePlayer(0,-1);
+if(e.key==='ArrowRight')movePlayer(0,1);
+e.preventDefault();
+});
+// touch swipe
+let touchStart=null;
+C.addEventListener('touchstart',e=>{touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY}});
+C.addEventListener('touchend',e=>{
+if(!touchStart)return;
+const dx=e.changedTouches[0].clientX-touchStart.x,dy=e.changedTouches[0].clientY-touchStart.y;
+if(Math.abs(dx)>Math.abs(dy)){if(dx>0)movePlayer(0,1);else movePlayer(0,-1)}
+else{if(dy>0)movePlayer(1,0);else movePlayer(-1,0)}
+});
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

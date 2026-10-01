@@ -1,0 +1,153 @@
+.modal-overlay {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-card {
+  background: #FFFFFF;
+  border-radius: 48rpx;
+  padding: 56rpx 64rpx;
+  text-align: center;
+  width: 600rpx;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 32rpx 80rpx rgba(0, 0, 0, 0.18);
+  animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes popIn {
+  from { transform: scale(0.75); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-icon { font-size: 96rpx; }
+.modal-title {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #1E293B;
+  display: block;
+  margin-top: 16rpx;
+}
+.modal-msg {
+  font-size: 32rpx;
+  color: #64748B;
+  display: block;
+  margin-top: 12rpx;
+  margin-bottom: 24rpx;
+}
+
+/* 幼儿掉落星星 */
+.stars-animation {
+  position: relative;
+  height: 96rpx;
+  margin: 8rpx 0;
+  overflow: hidden;
+}
+.star-fall {
+  position: absolute;
+  left: 50%;
+  font-size: 44rpx;
+  animation: starDown 1.5s ease forwards;
+}
+@keyframes starDown {
+  0% { top: -60rpx; opacity: 1; transform: translateX(-50%) rotate(0deg); }
+  100% { top: 80rpx; opacity: 0; transform: translateX(-50%) rotate(360deg); }
+}
+
+.toddler-evolve { margin: 16rpx 0; }
+.toddler-big { font-size: 84rpx; display: block; }
+.toddler-cheer {
+  font-size: 32rpx;
+  color: #F59E0B;
+  display: block;
+  margin-top: 8rpx;
+}
+
+.photo-preview-wrap { margin: 20rpx auto; width: 320rpx; }
+.photo-preview {
+  width: 320rpx;
+  height: 320rpx;
+  border-radius: 24rpx;
+  background: #F1F5F9;
+}
+.photo-label {
+  display: block;
+  font-size: 26rpx;
+  color: #14B8A6;
+  margin-top: 8rpx;
+}
+
+.grow-bar {
+  height: 20rpx;
+  background: #E2E8F0;
+  border-radius: 10rpx;
+  overflow: hidden;
+  margin: 16rpx 0;
+}
+.grow-fill {
+  height: 100%;
+  background: #10B981;
+  border-radius: 10rpx;
+  transition: width 0.8s ease;
+}
+.grow-text {
+  font-size: 28rpx;
+  color: #94A3B8;
+  display: block;
+  margin-bottom: 20rpx;
+}
+
+.verse-card {
+  margin: 24rpx 0;
+  padding: 32rpx 40rpx;
+  background: #FFFBEB;
+  border-radius: 24rpx;
+  border-left: 8rpx solid #F59E0B;
+}
+.verse-text {
+  font-size: 30rpx;
+  color: #78350F;
+  line-height: 1.6;
+  display: block;
+}
+.verse-ref {
+  font-size: 26rpx;
+  color: #B45309;
+  display: block;
+  margin-top: 8rpx;
+  font-weight: 600;
+}
+
+.dragon-scale-info {
+  margin: 16rpx 0;
+  font-size: 28rpx;
+  color: #F59E0B;
+  font-weight: 600;
+}
+
+.couple-banner {
+  margin: 16rpx 0;
+  padding: 16rpx 28rpx;
+  background: #FCE7F3;
+  border-radius: 20rpx;
+  font-size: 28rpx;
+  color: #9D174D;
+}
+
+.btn-ok {
+  background: #4F46E5;
+  color: #FFFFFF;
+  padding: 28rpx 0;
+  border-radius: 24rpx;
+  font-size: 36rpx;
+  font-weight: 600;
+  margin-top: 12rpx;
+}
+.btn-ok:active {
+  opacity: 0.9;
+}

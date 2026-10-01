@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>水晶花园</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#1a1a2e,#2d1b4e);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:500px;padding:10px 20px}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+.garden{display:flex;gap:20px;padding:30px;flex-wrap:wrap;justify-content:center}
+.crystal-pot{text-align:center;cursor:pointer}
+.crystal{width:60px;display:flex;flex-direction:column;align-items:center;transition:all 0.5s}
+.controls{display:flex;gap:10px;margin:10px 0}
+.ctrl{padding:8px 20px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;cursor:pointer}
+.info{color:rgba(255,255,255,0.5);font-size:0.85em;margin:10px 0;text-align:center;max-width:400px}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<h2>💎 水晶花园</h2>
+<div></div>
+</div>
+<div class="garden" id="garden"></div>
+<div class="controls">
+<button class="ctrl" onclick="addChemical('blue')">💙 蓝色溶液</button>
+<button class="ctrl" onclick="addChemical('pink')">💗 粉色溶液</button>
+<button class="ctrl" onclick="addChemical('green')">💚 绿色溶液</button>
+<button class="ctrl" onclick="reset()">🔄 重置</button>
+</div>
+<div class="info">点击花盆添加化学溶液，观察水晶生长！</div>
+
+<script>
+let pots;
+function init(){
+pots=Array.from({length:5},(_,i)=>({id:i,growth:0,color:null,type:null}));
+render();
+}
+function render(){
+const garden=document.getElementById('garden');garden.innerHTML='';
+pots.forEach(p=>{
+const pot=document.createElement('div');pot.className='crystal-pot';
+const crystal=document.createElement('div');crystal.className='crystal';
+if(p.growth>0){
+const h=Math.min(80,p.growth*10);
+const color=p.color||'#4D96FF';
+crystal.innerHTML=`
+<div style="width:${10+p.growth}px;height:${h}px;background:linear-gradient(${color},${color}88);clip-path:polygon(50% 0%,100% 100%,0% 100%);margin:0 auto;transition:all 0.5s"></div>
+<div style="font-size:0.7em;margin-top:5px">${Math.floor(p.growth*10)}%</div>
+`;
+}else{crystal.innerHTML='<div style="font-size:2em">🪨</div>'}
+pot.appendChild(crystal);
+pot.innerHTML+=`<div style="font-size:0.8em;color:rgba(255,255,255,0.5)">花盆${p.id+1}</div>`;
+pot.addEventListener('click',()=>addChemicalToPot(p.id));
+garden.appendChild(pot);
+});
+}
+function addChemical(color){
+const empty=pots.filter(p=>p.growth===0);
+if(empty.length>0){const p=empty[Math.floor(Math.random()*empty.length)];p.color=color==='blue'?'#4D96FF':color==='pink'?'#F06292':'#6BCB77';p.growth=1}
+render();
+}
+function addChemicalToPot(id){
+const p=pots[id];
+if(p.growth===0){p.color='#4D96FF';p.growth=1}
+else{p.growth=Math.min(8,p.growth+0.5)}
+render();
+}
+function reset(){init()}
+// auto grow
+setInterval(()=>{
+pots.forEach(p=>{if(p.growth>0&&p.growth<8)p.growth+=0.1});
+render();
+},1000);
+init();
+</script>
+</body>
+</html>

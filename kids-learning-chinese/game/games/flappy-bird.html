@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>像素鸟</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(180deg,#87CEEB,#E0F7FA);display:flex;flex-direction:column;align-items:center;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#333;overflow:hidden}
+canvas{border:2px solid rgba(0,0,0,0.1);border-radius:10px;margin-top:10px}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#FFD93D,#FF6B6B);padding:40px;border-radius:20px;text-align:center;max-width:350px;color:#fff}
+.box h1{font-size:2em;margin-bottom:10px}
+.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+.score-display{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:5em;font-weight:bold;color:rgba(255,255,255,0.8);text-shadow:3px 3px 6px rgba(0,0,0,0.3);pointer-events:none;z-index:5}
+</style>
+</head>
+<body>
+<div class="score-display" id="bigScore" style="display:none">0</div>
+<canvas id="game" width="400" height="600"></canvas>
+
+<div class="overlay" id="start"><div class="box"><h1>🐦 像素鸟</h1><p>点击或按空格让小鸟飞起来<br>穿过管道得分！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>游戏结束</h1><p>得分: <span id="final">0</span><br>最高分: <span id="best">0</span></p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#fff;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+const W=400,H=600;
+let bird,pipes,score,best=0,running,g,frame,clouds;
+function init(){
+bird={x:80,y:H/2,vy:0,r:18};
+pipes=[];score=0;running=true;g=0.4;frame=0;
+clouds=Array.from({length:5},()=>({x:Math.random()*W,y:Math.random()*200+50,w:60+Math.random()*40,speed:0.2+Math.random()*0.3}));
+document.getElementById('bigScore').textContent='0';
+}
+function drawBg(){
+// sky gradient
+const grad=X.createLinearGradient(0,0,0,H);
+grad.addColorStop(0,'#87CEEB');grad.addColorStop(1,'#E8F5E9');
+X.fillStyle=grad;X.fillRect(0,0,W,H);
+// clouds
+X.fillStyle='rgba(255,255,255,0.7)';
+clouds.forEach(c=>{X.beginPath();X.arc(c.x,c.y,c.w/3,0,Math.PI*2);X.arc(c.x+c.w/3,c.y-5,c.w/4,0,Math.PI*2);X.arc(c.x-c.w/3,c.y+3,c.w/5,0,Math.PI*2);X.fill();
+c.x-=c.speed;if(c.x<-c.w)c.x=W+c.w;
+});
+// ground
+X.fillStyle='#8BC34A';X.fillRect(0,H-40,W,40);
+X.fillStyle='#689F38';X.fillRect(0,H-40,W,5);
+}
+function drawBird(){
+X.save();
+X.translate(bird.x,bird.y);
+X.rotate(Math.min(Math.max(bird.vy*3,-30),60)*Math.PI/180);
+// body
+X.fillStyle='#FFD93D';X.shadowColor='#FFD93D';X.shadowBlur=8;
+X.beginPath();X.arc(0,0,bird.r,0,Math.PI*2);X.fill();
+X.shadowBlur=0;
+// wing
+X.fillStyle='#FFC107';
+X.beginPath();X.ellipse(-5,2,12,7,Math.sin(frame*0.3)*0.5,0,Math.PI*2);X.fill();
+// eye
+X.fillStyle='#fff';X.beginPath();X.arc(8,-5,7,0,Math.PI*2);X.fill();
+X.fillStyle='#333';X.beginPath();X.arc(10,-5,3.5,0,Math.PI*2);X.fill();
+// beak
+X.fillStyle='#FF6B6B';
+X.beginPath();X.moveTo(15,-2);X.lineTo(25,0);X.lineTo(15,4);X.closePath();X.fill();
+X.restore();
+}
+function drawPipes(){
+X.fillStyle='#6BCB77';
+pipes.forEach(p=>{
+// top pipe
+X.fillRect(p.x,0,60,p.top);
+X.fillStyle='#4CAF50';X.fillRect(p.x-3,p.top-20,66,20);
+X.fillStyle='#6BCB77';
+// bottom pipe
+X.fillRect(p.x,p.top+p.gap,60,H-p.top-p.gap);
+X.fillStyle='#4CAF50';X.fillRect(p.x-3,p.top+p.gap,66,20);
+X.fillStyle='#6BCB77';
+});
+}
+function update(){
+if(!running)return;
+frame++;
+bird.vy+=g;bird.y+=bird.vy;
+if(bird.y+bird.r>H-40||bird.y-bird.r<0){gameOver();return}
+// pipes
+if(frame%100===0){
+const top=80+Math.random()*(H-280);
+pipes.push({x:W,top,gap:150,scored:false});
+}
+pipes.forEach(p=>{
+p.x-=2.5;
+if(!p.scored&&p.x+60<bird.x){p.scored=true;score++;document.getElementById('bigScore').textContent=score;playSound(500,0.1)}
+// collision
+if(bird.x+bird.r>p.x&&bird.x-bird.r<p.x+60){
+if(bird.y-bird.r<p.top||bird.y+bird.r>p.top+p.gap)gameOver();
+}
+});
+pipes=pipes.filter(p=>p.x>-60);
+}
+function gameOver(){
+running=false;best=Math.max(best,score);
+document.getElementById('final').textContent=score;
+document.getElementById('best').textContent=best;
+document.getElementById('over').classList.remove('hidden');
+document.getElementById('bigScore').style.display='none';
+playSound(200,0.3);
+}
+function flap(){if(running){bird.vy=-7;playSound(400,0.05)}}
+function draw(){drawBg();drawPipes();drawBird()}
+function loop(){update();draw();requestAnimationFrame(loop)}
+function startGame(){
+document.getElementById('start').classList.add('hidden');
+document.getElementById('over').classList.add('hidden');
+document.getElementById('bigScore').style.display='block';
+init();loop();
+}
+document.addEventListener('keydown',e=>{if(e.key===' '||e.key==='ArrowUp'){flap();e.preventDefault()}});
+document.addEventListener('mousedown',flap);
+document.addEventListener('touchstart',e=>{e.preventDefault();flap()},{passive:false});
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

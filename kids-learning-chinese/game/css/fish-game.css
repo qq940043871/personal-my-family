@@ -1,0 +1,415 @@
+/* ============================================================
+   大鱼吃小鱼 - 游戏样式 V2
+   全屏沉浸式海底主题
+   ============================================================ */
+
+/* ===== BODY LAYOUT ===== */
+body {
+  background: #050e1a;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===== OCEAN BACKGROUND (AI-generated image) ===== */
+.ocean-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: url('../images/ocean-bg.png') center/cover no-repeat;
+}
+
+/* Overlay a subtle dark tint for game readability */
+.ocean-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 14, 26, 0.25);
+  z-index: 1;
+}
+
+/* Particles / bubbles */
+.particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  animation: particleRise linear infinite;
+}
+
+@keyframes particleRise {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: 0.5; }
+  90% { opacity: 0.5; }
+  100% { transform: translateY(-110vh) translateX(40px); opacity: 0; }
+}
+
+/* ===== TOP BAR (overlay on game) ===== */
+#top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: rgba(5, 14, 26, 0.5);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 10px 32px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+#top-bar .stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ===== TOP BAR ICONS ===== */
+#top-bar .icon.fish-icon {
+  display: inline-block;
+  width: 24px;
+  height: 18px;
+  position: relative;
+}
+#top-bar .icon.fish-icon::before {
+  content: '';
+  position: absolute;
+  width: 20px; height: 13px;
+  background: radial-gradient(ellipse, #FF7043, #E64A19);
+  border-radius: 50%;
+  top: 2px; left: 0;
+}
+#top-bar .icon.fish-icon::after {
+  content: '';
+  position: absolute;
+  width: 0; height: 0;
+  border-left: 7px solid #FF7043;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  top: 4px; right: 2px;
+}
+
+#top-bar .icon.wave-icon {
+  display: inline-block;
+  width: 24px; height: 18px;
+}
+#top-bar .icon.wave-icon::before {
+  content: '';
+  display: block;
+  width: 22px; height: 14px;
+  background: radial-gradient(ellipse, rgba(79, 195, 247, 0.6), transparent);
+  border-radius: 50% 50% 0 0;
+  border-bottom: 2px solid rgba(79, 195, 247, 0.4);
+}
+
+/* ===== HEARTS (CSS shape) ===== */
+.hearts { display: flex; gap: 4px; }
+.heart {
+  display: inline-block;
+  width: 20px;
+  height: 18px;
+  position: relative;
+  animation: heartBeat 1s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(255, 80, 80, 0.5));
+}
+.heart::before,
+.heart::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 14px;
+  background: #EF5350;
+  border-radius: 10px 10px 0 0;
+  top: 0;
+}
+.heart::before { left: 5px; transform: rotate(-45deg); transform-origin: 0 100%; }
+.heart::after { left: 5px; transform: rotate(45deg); transform-origin: 100% 100%; }
+.heart:nth-child(2) { animation-delay: 0.2s; }
+.heart:nth-child(3) { animation-delay: 0.4s; }
+@keyframes heartBeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+
+#top-bar .value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffd54f;
+  text-shadow: 0 0 12px rgba(255, 213, 79, 0.4);
+  min-width: 28px;
+  text-align: center;
+}
+
+#top-bar .label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+}
+
+.hearts { display: flex; gap: 4px; }
+.heart { 
+  font-size: 22px; 
+  animation: heartBeat 1s ease-in-out infinite; 
+  filter: drop-shadow(0 0 6px rgba(255, 80, 80, 0.5));
+}
+.heart:nth-child(2) { animation-delay: 0.2s; }
+.heart:nth-child(3) { animation-delay: 0.4s; }
+@keyframes heartBeat { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+
+/* ===== GAME CONTAINER (full viewport) ===== */
+#game-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  z-index: 2;
+  cursor: none;
+}
+
+/* Water surface gradient overlay */
+#game-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, 
+    rgba(79, 195, 247, 0.06) 0%, 
+    rgba(41, 182, 246, 0.04) 40%,
+    rgba(2, 119, 189, 0.08) 80%,
+    rgba(1, 87, 155, 0.1) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Light rays */
+#game-container::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: 10%;
+  width: 300%;
+  height: 150%;
+  background: repeating-linear-gradient(
+    95deg,
+    transparent,
+    transparent 40px,
+    rgba(255, 255, 255, 0.015) 40px,
+    rgba(255, 255, 255, 0.015) 42px
+  );
+  animation: lightRayDrift 25s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes lightRayDrift {
+  0% { transform: translateX(-5%) rotate(8deg); }
+  100% { transform: translateX(5%) rotate(8deg); }
+}
+
+/* ===== OVERLAY SCREENS ===== */
+#start-screen, #level-complete, #game-over {
+  background: rgba(5, 14, 26, 0.8);
+}
+
+#start-screen h1 {
+  background: linear-gradient(135deg, #ffd54f, #ff9800);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#level-complete h1 {
+  background: linear-gradient(135deg, #43e97b, #38f9d7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+#game-over h1 {
+  background: linear-gradient(135deg, #f5576c, #f093fb);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== PLAYER FISH ===== */
+#player {
+  position: absolute;
+  z-index: 10;
+  filter: drop-shadow(0 0 20px rgba(255, 138, 101, 0.5));
+  transition: none;
+}
+
+#player svg { width: 100%; height: 100%; }
+
+/* ===== FISH ENTITIES ===== */
+.fish {
+  position: absolute;
+  z-index: 5;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+}
+
+.fish.eaten {
+  animation: fishEaten 0.5s ease-out forwards;
+}
+
+@keyframes fishEaten {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.7; }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+.fish .glint {
+  position: absolute;
+  top: 25%;
+  left: 25%;
+  width: 50%;
+  height: 50%;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.7), transparent 70%);
+  border-radius: 50%;
+  animation: glintShine 2.5s ease-in-out infinite;
+}
+
+@keyframes glintShine {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+/* ===== SHARK ===== */
+#shark {
+  position: absolute;
+  z-index: 8;
+  filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+}
+
+#shark svg { width: 100%; height: 100%; }
+
+/* ===== DECORATIONS (CSS shapes) ===== */
+.deco {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 1;
+}
+
+/* Coral - branching shape */
+.coral {
+  width: 40px; height: 60px;
+  animation: coralSway 4s ease-in-out infinite;
+  position: relative;
+}
+.coral-stem {
+  position: absolute;
+  bottom: 0;
+  left: 40%;
+  width: 8px;
+  height: 100%;
+  border-radius: 4px;
+}
+.coral-branch {
+  position: absolute;
+  bottom: 20%;
+  width: 6px;
+  height: 70%;
+  border-radius: 3px;
+  transform-origin: bottom center;
+}
+
+/* Seaweed - wavy shape */
+.seaweed {
+  width: 8px; height: 70px;
+  animation: seaweedSway 3s ease-in-out infinite alternate;
+}
+.seaweed-stem {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, #4CAF50, #2E7D32);
+  border-radius: 4px 4px 1px 1px;
+}
+
+/* Shell */
+.shell {
+  width: 24px; height: 20px;
+  position: relative;
+}
+.shell-body {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at 30% 30%, #FFF8E1, #FFE082, #FFCA28);
+  border-radius: 50% 50% 40% 40%;
+}
+.shell-detail {
+  position: absolute;
+  bottom: 3px; left: 4px;
+  width: 16px; height: 8px;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 0 0 50% 50%;
+}
+
+@keyframes coralSway { 0%,100% { transform: rotate(-3deg) scale(1); } 50% { transform: rotate(3deg) scale(1.04); } }
+@keyframes seaweedSway { from { transform: skewX(-8deg); } to { transform: skewX(8deg); } }
+
+/* ===== STAR BURST EFFECT (CSS shapes) ===== */
+.star-particle {
+  position: absolute;
+  animation: starPop 1.2s ease-out forwards;
+  pointer-events: none;
+  z-index: 30;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+@keyframes starPop {
+  0% { transform: scale(0) rotate(0deg); opacity: 1; }
+  60% { transform: scale(1.6) rotate(180deg); opacity: 0.8; }
+  100% { transform: scale(0) rotate(360deg); opacity: 0; }
+}
+
+/* ===== HURT FLASH ===== */
+@keyframes hurtFlash {
+  0%, 100% { box-shadow: inset 0 0 0 transparent; }
+  50% { box-shadow: inset 0 0 150px rgba(239, 83, 80, 0.5); }
+}
+.flash-hurt { animation: hurtFlash 0.6s ease-out; }
+
+/* ===== TIP BAR (overlay at bottom) ===== */
+#tip-bar {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 24px;
+  background: rgba(5, 14, 26, 0.5);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 100px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 15;
+  white-space: nowrap;
+}
+
+/* ===== BACK BUTTON ===== */
+.back-btn {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.6);
+  border-radius: 100px;
+  cursor: pointer;
+  font-size: 13px;
+  z-index: 25;
+  transition: all 0.3s;
+  font-family: inherit;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: white;
+}

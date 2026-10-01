@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小行星躲避</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a1a;display:flex;flex-direction:column;align-items:center;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:500px;padding:10px 20px}
+.info{display:flex;gap:15px}.info-item{background:rgba(255,255,255,0.1);padding:5px 15px;border-radius:15px;font-size:0.9em}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{border:2px solid rgba(255,255,255,0.2);border-radius:10px;margin-top:10px}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#667eea,#764ba2);padding:40px;border-radius:20px;text-align:center;max-width:400px}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">时间: <span id="time">0</span>秒</div><div class="info-item">生命: <span id="lives">3</span></div></div>
+</div>
+<canvas id="game" width="500" height="500"></canvas>
+
+<div class="overlay" id="start"><div class="box"><h1>☄️ 小行星躲避</h1><p>方向键移动飞船<br>躲避漂浮的小行星！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>游戏结束</h1><p>存活: <span id="final">0</span> 秒</p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#fff;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+const W=500,H=500;
+let ship,asteroids,survivalTime,lives,running,timer,stars;
+const keys={};
+function init(){
+ship={x:W/2,y:H/2,w:30,h:30};
+asteroids=[];survivalTime=0;lives=3;running=true;
+stars=Array.from({length:100},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*2,s:Math.random()*0.5+0.1}));
+for(let i=0;i<8;i++)spawnAsteroid();
+document.getElementById('time').textContent=0;
+document.getElementById('lives').textContent=3;
+clearInterval(timer);timer=setInterval(()=>{if(running){survivalTime++;document.getElementById('time').textContent=survivalTime}},1000);
+}
+function spawnAsteroid(){
+const side=Math.floor(Math.random()*4);
+let x,y;
+if(side===0){x=Math.random()*W;y=-50}
+else if(side===1){x=W+50;y=Math.random()*H}
+else if(side===2){x=Math.random()*W;y=H+50}
+else{x=-50;y=Math.random()*H}
+const r=15+Math.random()*30;
+asteroids.push({x,y,r,vx:(Math.random()-0.5)*3,vy:(Math.random()-0.5)*3,angle:0,va:(Math.random()-0.5)*0.05});
+}
+function drawShip(){
+X.save();X.translate(ship.x,ship.y);
+X.fillStyle='#4D96FF';X.shadowColor='#4D96FF';X.shadowBlur=10;
+X.beginPath();X.moveTo(0,-15);X.lineTo(-12,12);X.lineTo(12,12);X.closePath();X.fill();
+X.fillStyle='#FF6B6B';X.fillRect(-3,12,6,5);
+X.shadowBlur=0;X.restore();
+}
+function drawAsteroids(){
+asteroids.forEach(a=>{
+X.save();X.translate(a.x,a.y);X.rotate(a.angle);
+X.fillStyle='#8D6E63';X.strokeStyle='#A1887F';X.lineWidth=2;
+X.beginPath();
+for(let i=0;i<8;i++){
+const ang=i*Math.PI/4;
+const rr=a.r+Math.sin(i*3)*a.r*0.2;
+if(i===0)X.moveTo(Math.cos(ang)*rr,Math.sin(ang)*rr);
+else X.lineTo(Math.cos(ang)*rr,Math.sin(ang)*rr);
+}
+X.closePath();X.fill();X.stroke();
+X.restore();
+});
+}
+function update(){
+if(!running)return;
+if(keys.ArrowLeft)ship.x=Math.max(15,ship.x-5);
+if(keys.ArrowRight)ship.x=Math.min(W-15,ship.x+5);
+if(keys.ArrowUp)ship.y=Math.max(15,ship.y-5);
+if(keys.ArrowDown)ship.y=Math.min(H-15,ship.y+5);
+asteroids.forEach(a=>{
+a.x+=a.vx;a.y+=a.vy;a.angle+=a.va;
+if(a.x<-a.r*2)a.x=W+a.r;if(a.x>W+a.r*2)a.x=-a.r;
+if(a.y<-a.r*2)a.y=H+a.r;if(a.y>H+a.r*2)a.y=-a.r;
+const dx=ship.x-a.x,dy=ship.y-a.y;
+if(Math.sqrt(dx*dx+dy*dy)<a.r+10){
+lives--;document.getElementById('lives').textContent=lives;
+playSound(200,0.3);a.x=-100;
+if(lives<=0){running=false;clearInterval(timer);document.getElementById('final').textContent=survivalTime;document.getElementById('over').classList.remove('hidden')}
+}
+});
+if(asteroids.length<8+Math.floor(survivalTime/10)&&Math.random()<0.02)spawnAsteroid();
+}
+function draw(){
+X.fillStyle='#0a0a1a';X.fillRect(0,0,W,H);
+stars.forEach(s=>{X.fillStyle=`rgba(255,255,255,${0.3+Math.sin(Date.now()*0.001+s.x)*0.3})`;X.fillRect(s.x,s.y,s.r,s.r)});
+drawAsteroids();drawShip();
+}
+function loop(){update();draw();requestAnimationFrame(loop)}
+function startGame(){document.getElementById('start').classList.add('hidden');document.getElementById('over').classList.add('hidden');init();loop()}
+document.addEventListener('keydown',e=>{keys[e.key]=true;e.preventDefault()});
+document.addEventListener('keyup',e=>keys[e.key]=false);
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

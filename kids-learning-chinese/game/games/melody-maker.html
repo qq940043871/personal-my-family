@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>旋律创作</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#1a1a2e,#2d1b4e);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 20px}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+.grid{display:grid;gap:2px;padding:20px}
+.cell{width:35px;height:35px;background:rgba(255,255,255,0.1);border-radius:4px;cursor:pointer;transition:all 0.15s}
+.cell:hover{background:rgba(255,255,255,0.2)}
+.cell.active{box-shadow:0 0 8px currentColor}
+.controls{display:flex;gap:10px;margin:15px 0;flex-wrap:wrap;justify-content:center}
+.ctrl{padding:8px 20px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;cursor:pointer}
+.labels{display:flex;flex-direction:column;gap:2px;padding-top:20px}
+.label{height:35px;display:flex;align-items:center;font-size:0.75em;color:rgba(255,255,255,0.5)}
+.playhead{position:absolute;width:35px;height:100%;background:rgba(255,255,255,0.1);pointer-events:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<h2>🎵 旋律创作</h2>
+<div></div>
+</div>
+<div style="display:flex">
+<div class="labels" id="labels"></div>
+<div class="grid" id="grid"></div>
+</div>
+<div class="controls">
+<button class="ctrl" onclick="playMelody()">▶ 播放</button>
+<button class="ctrl" onclick="clearGrid()">🗑️ 清除</button>
+<div style="display:flex;align-items:center;gap:5px">
+<span>速度:</span><input type="range" min="100" max="400" value="200" id="tempo" style="width:80px">
+</div>
+</div>
+
+<script>
+const NOTES=['C5','B4','A4','G4','F4','E4','D4','C4'];
+const FREQS={C4:262,D4:294,E4:330,F4:349,G4:392,A4:440,B4:494,C5:523};
+const COLS=16,ROWS=8;
+let grid=Array.from({length:ROWS},()=>Array(COLS).fill(false)),playing=false,playCol=0;
+function init(){
+const gridDiv=document.getElementById('grid');gridDiv.innerHTML='';
+gridDiv.style.gridTemplateColumns=`repeat(${COLS},35px)`;
+const labelsDiv=document.getElementById('labels');labelsDiv.innerHTML='';
+NOTES.forEach(n=>{const l=document.createElement('div');l.className='label';l.textContent=n;labelsDiv.appendChild(l)});
+for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+const cell=document.createElement('div');cell.className='cell';cell.dataset.r=r;cell.dataset.c=c;
+cell.style.color=['#FF6B6B','#FF9800','#FFD93D','#6BCB77','#4D96FF','#C084FC','#F06292','#00BCD4'][r];
+if(grid[r][c]){cell.classList.add('active');cell.style.background=cell.style.color}
+cell.addEventListener('click',()=>{
+grid[r][c]=!grid[r][c];
+cell.classList.toggle('active');
+cell.style.background=grid[r][c]?cell.style.color:'rgba(255,255,255,0.1)';
+if(grid[r][c])playNote(NOTES[r],100);
+});
+gridDiv.appendChild(cell);
+}
+}
+function playNote(note,dur){
+try{
+const ctx=new(AudioContext||webkitAudioContext)();
+const osc=ctx.createOscillator();const gain=ctx.createGain();
+osc.type='sine';osc.frequency.value=FREQS[note];gain.gain.value=0.2;
+osc.connect(gain);gain.connect(ctx.destination);
+osc.start();gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur/1000);
+osc.stop(ctx.currentTime+dur/1000);
+}catch(e){}
+}
+function playMelody(){
+if(playing)return;playing=true;playCol=0;
+const tempo=500-parseInt(document.getElementById('tempo').value);
+function step(){
+if(playCol>=COLS){playing=false;return}
+document.querySelectorAll('.cell').forEach(c=>c.style.outline='none');
+for(let r=0;r<ROWS;r++){
+if(grid[r][r]){playNote(NOTES[r],tempo)}
+const cell=document.querySelector(`[data-r="${r}"][data-c="${playCol}"]`);
+if(cell)cell.style.outline=grid[r][playCol]?'2px solid #fff':'none';
+}
+playCol++;setTimeout(step,tempo);
+}
+step();
+}
+function clearGrid(){grid=Array.from({length:ROWS},()=>Array(COLS).fill(false));init()}
+init();
+</script>
+</body>
+</html>

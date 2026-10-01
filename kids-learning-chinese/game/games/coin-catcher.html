@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>接金币</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(180deg,#1a237e,#283593);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:500px;padding:10px 20px}
+.info{display:flex;gap:15px}.info-item{background:rgba(255,255,255,0.1);padding:5px 15px;border-radius:15px;font-size:0.9em}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{border:2px solid rgba(255,255,255,0.2);border-radius:10px;margin-top:10px}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#FFD93D,#FF9800);padding:40px;border-radius:20px;text-align:center;max-width:400px}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">得分: <span id="score">0</span></div><div class="info-item">生命: <span id="lives">3</span></div></div>
+</div>
+<canvas id="game" width="500" height="600"></canvas>
+
+<div class="overlay" id="start"><div class="box"><h1>🪙 接金币</h1><p>移动角色接住金币<br>躲避炸弹！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>游戏结束</h1><p>得分: <span id="final">0</span></p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+const W=500,H=600;
+let player,items,score,lives,running,frame;
+function init(){
+player={x:W/2-25,y:H-70,w:50,h:50};items=[];score=0;lives=3;running=true;frame=0;
+document.getElementById('score').textContent=0;document.getElementById('lives').textContent=3;
+}
+function drawBg(){
+X.fillStyle='#1a237e';X.fillRect(0,0,W,H);
+X.fillStyle='#283593';X.fillRect(0,H-50,W,50);
+}
+function drawPlayer(){
+X.fillStyle='#FFD93D';X.shadowColor='#FFD93D';X.shadowBlur=8;
+X.beginPath();X.arc(player.x+player.w/2,player.y+10,15,0,Math.PI*2);X.fill();
+X.fillStyle='#4D96FF';X.fillRect(player.x+5,player.y+25,player.w-10,25);
+X.fillStyle='#333';X.fillRect(player.x+10,player.y+6,4,4);X.fillRect(player.x+player.w-14,player.y+6,4,4);
+X.shadowBlur=0;
+// basket
+X.fillStyle='#8D6E63';X.fillRect(player.x-5,player.y+player.h-5,player.w+10,10);
+}
+function drawItems(){
+items.forEach(item=>{
+X.font='30px serif';X.textAlign='center';X.textBaseline='middle';
+X.fillText(item.emoji,item.x,item.y);
+});
+}
+function spawnItem(){
+const bomb=Math.random()<0.2;
+items.push({
+x:30+Math.random()*(W-60),y:-30,
+vy:2+Math.random()*2+score/200,
+emoji:bomb?'💣':'🪙',bomb,
+r:15
+});
+}
+function update(){
+if(!running)return;
+frame++;
+if(frame%30===0)spawnItem();
+items.forEach((item,i)=>{
+item.y+=item.vy;
+if(item.y+item.r>player.y&&item.x>player.x&&item.x<player.x+player.w&&item.y<player.y+player.h){
+if(item.bomb){lives--;document.getElementById('lives').textContent=lives;playSound(150,0.3);
+if(lives<=0){running=false;document.getElementById('final').textContent=score;document.getElementById('over').classList.remove('hidden')}
+}else{score+=10;document.getElementById('score').textContent=score;playSound(600,0.1)}
+items.splice(i,1);
+}else if(item.y>H+30){items.splice(i,1)}
+});
+}
+function loop(){update();drawBg();drawItems();drawPlayer();requestAnimationFrame(loop)}
+function startGame(){document.getElementById('start').classList.add('hidden');document.getElementById('over').classList.add('hidden');init();loop()}
+document.addEventListener('keydown',e=>{
+if(e.key==='ArrowLeft')player.x=Math.max(0,player.x-8);
+if(e.key==='ArrowRight')player.x=Math.min(W-player.w,player.x+8);
+e.preventDefault();
+});
+C.addEventListener('touchmove',e=>{e.preventDefault();const r=C.getBoundingClientRect();player.x=Math.max(0,Math.min(W-player.w,(e.touches[0].clientX-r.left)*(W/r.width)-player.w/2))},{passive:false});
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

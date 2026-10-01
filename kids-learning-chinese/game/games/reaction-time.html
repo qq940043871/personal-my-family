@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>反应测试</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1a2e;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:500px;padding:10px 20px}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+.game-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;cursor:pointer}
+.big-circle{width:200px;height:200px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2em;cursor:pointer;transition:background 0.3s;user-select:none}
+.big-circle.waiting{background:#F44336}
+.big-circle.ready{background:#4CAF50}
+.big-circle.result{background:#4D96FF}
+.big-circle.idle{background:rgba(255,255,255,0.1);border:3px dashed rgba(255,255,255,0.3)}
+.history{display:flex;gap:10px;margin:20px 0;flex-wrap:wrap;justify-content:center}
+.hist-item{background:rgba(255,255,255,0.1);padding:8px 15px;border-radius:10px;font-size:0.9em}
+.best{color:#FFD93D;font-size:1.3em;margin:10px 0}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#FF6B6B,#FFD93D);padding:40px;border-radius:20px;text-align:center;max-width:400px}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div style="font-size:1.2em">⚡ 反应测试</div>
+<div></div>
+</div>
+<div class="game-area">
+<div class="best" id="bestDisplay">最快: --</div>
+<div class="big-circle idle" id="circle" onclick="handleClick()">
+点击开始
+</div>
+<div class="history" id="history"></div>
+</div>
+
+<div class="overlay" id="start"><div class="box"><h1>⚡ 反应测试</h1><p>当圆圈变绿时立即点击！<br>测试你的反应速度</p><button class="btn" onclick="startGame()">开始测试</button></div></div>
+
+<script>
+let state='idle',startTime,timeout,best=Infinity,history=[];
+function startGame(){document.getElementById('start').classList.add('hidden');startRound()}
+function startRound(){
+state='waiting';
+const circle=document.getElementById('circle');
+circle.className='big-circle waiting';
+circle.textContent='等待变绿...';
+timeout=setTimeout(()=>{
+state='ready';
+circle.className='big-circle ready';
+circle.textContent='点击！';
+startTime=Date.now();
+},1000+Math.random()*4000);
+}
+function handleClick(){
+const circle=document.getElementById('circle');
+if(state==='waiting'){
+clearTimeout(timeout);
+circle.className='big-circle result';
+circle.textContent='太早了！点击重试';
+state='idle';
+setTimeout(startRound,1500);
+playSound(200,0.2);
+}else if(state==='ready'){
+const time=Date.now()-startTime;
+state='result';
+circle.className='big-circle result';
+circle.textContent=time+'ms';
+best=Math.min(best,time);
+document.getElementById('bestDisplay').textContent='最快: '+best+'ms';
+history.unshift(time);
+if(history.length>5)history.pop();
+updateHistory();
+setTimeout(startRound,2000);
+playSound(600,0.1);
+}
+}
+function updateHistory(){
+const div=document.getElementById('history');
+div.innerHTML=history.map(t=>`<div class="hist-item">${t}ms</div>`).join('');
+}
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

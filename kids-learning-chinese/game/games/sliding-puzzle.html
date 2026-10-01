@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>滑动拼图</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:400px;padding:10px 20px}
+.info{display:flex;gap:15px}.info-item{background:rgba(255,255,255,0.15);padding:5px 15px;border-radius:15px;font-size:0.9em}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.2);border-radius:15px;font-size:0.9em}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:20px;max-width:360px;width:100%;margin-top:20px}
+.tile{aspect-ratio:1;background:linear-gradient(135deg,#4D96FF,#667eea);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:2em;font-weight:bold;cursor:pointer;transition:transform 0.15s;user-select:none}
+.tile:hover{transform:scale(1.05)}
+.tile.empty{background:rgba(255,255,255,0.05);cursor:default}
+.tile.empty:hover{transform:none}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#FF6B6B,#FFD93D);padding:40px;border-radius:20px;text-align:center;max-width:400px}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">步数: <span id="moves">0</span></div></div>
+</div>
+<div class="grid" id="grid"></div>
+
+<div class="overlay" id="start"><div class="box"><h1>🔢 滑动拼图</h1><p>点击数字块滑动<br>恢复1-15的顺序！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>🎉 恭喜！</h1><p>用了 <span id="final">0</span> 步完成！</p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+let tiles,moves;
+function startGame(){
+document.getElementById('start').classList.add('hidden');
+document.getElementById('over').classList.add('hidden');
+moves=0;document.getElementById('moves').textContent=0;
+tiles=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0];
+// shuffle with solvable check
+do{for(let i=15;i>0;i--){const j=Math.floor(Math.random()*(i+1));[tiles[i],tiles[j]]=[tiles[j],tiles[i]]}}
+while(!isSolvable());
+render();
+}
+function isSolvable(){
+let inv=0;const arr=tiles.filter(t=>t>0);
+for(let i=0;i<arr.length;i++)for(let j=i+1;j<arr.length;j++)if(arr[i]>arr[j])inv++;
+const emptyRow=Math.floor(tiles.indexOf(0)/4);
+return(inv+emptyRow)%2===0;
+}
+function render(){
+const grid=document.getElementById('grid');grid.innerHTML='';
+tiles.forEach((t,i)=>{
+const tile=document.createElement('div');
+tile.className='tile'+(t===0?' empty':'');
+tile.textContent=t||'';
+tile.addEventListener('click',()=>moveTile(i));
+grid.appendChild(tile);
+});
+}
+function moveTile(i){
+const empty=tiles.indexOf(0);
+const row=Math.floor(i/4),col=i%4;
+const eRow=Math.floor(empty/4),eCol=empty%4;
+if((Math.abs(row-eRow)===1&&col===eCol)||(Math.abs(col-eCol)===1&&row===eRow)){
+[tiles[i],tiles[empty]]=[tiles[empty],tiles[i]];
+moves++;document.getElementById('moves').textContent=moves;
+playSound(400,0.05);render();
+if(tiles.every((t,i)=>t===(i+1)%16)){
+setTimeout(()=>{document.getElementById('final').textContent=moves;document.getElementById('over').classList.remove('hidden');playSound(700,0.3)},200);
+}
+}
+}
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

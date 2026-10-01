@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>汉字冒险岛 - 语文学习游戏</title>
+<link rel="stylesheet" href="css/chinese-adventure.css">
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="top-bar">
+  <div class="stat"><span class="icon star-icon"></span><span class="label">星星</span><span class="value" id="score">0</span></div>
+  <div class="stat"><span class="icon book-icon"></span><span class="label">位置</span><span class="value" id="zone-name">首页</span></div>
+  <div class="stat"><span class="icon pen-icon"></span><span class="label">进度</span><span class="value" id="progress">-</span></div>
+</div>
+
+<!-- GAME CONTAINER -->
+<div id="game-container">
+  <!-- BOOK SELECT SCREEN -->
+  <div id="book-select" class="screen"></div>
+  <!-- LEVEL SELECT SCREEN -->
+  <div id="level-select" class="screen hidden"></div>
+  <!-- PLAYING SCREEN -->
+  <div id="scene"></div>
+  <!-- LEVEL COMPLETE OVERLAY -->
+  <div id="level-complete"></div>
+</div>
+
+<!-- TIP BAR -->
+<div id="tip-bar">欢迎来到汉字冒险岛！选择课本开始学习吧！</div>
+
+<!-- ===== MODULE SCRIPTS ===== -->
+<script src="js/audio.js"></script>
+<script src="js/chinese-data.js"></script>
+<script src="js/chinese-audio.js"></script>
+<script src="js/chinese-questions.js"></script>
+<script src="js/chinese-core.js"></script>
+<script src="js/chinese-ui.js"></script>
+
+<script>
+window.onload = () => {
+  CHINESE_UI.init();
+  CHINESE_UI.showBookSelect();
+};
+</script>
+
+</body>
+</html>

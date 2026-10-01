@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D过山车</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 20px;position:fixed;top:0;z-index:10;background:rgba(0,0,0,0.5)}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%}
+.controls{position:fixed;bottom:20px;display:flex;gap:10px;z-index:10}
+.ctrl{padding:10px 20px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div>🎢 3D过山车</div>
+<div></div>
+</div>
+<canvas id="game"></canvas>
+<div class="controls">
+<button class="ctrl" onclick="speed=0.5">🐢 慢</button>
+<button class="ctrl" onclick="speed=1">🚶 中</button>
+<button class="ctrl" onclick="speed=2">🚀 快</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x87CEEB);scene.fog=new THREE.Fog(0x87CEEB,50,200);
+const camera=new THREE.PerspectiveCamera(70,window.innerWidth/window.innerHeight,0.1,300);
+const renderer=new THREE.WebGLRenderer({canvas:document.getElementById('game'),antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+scene.add(new THREE.AmbientLight(0xffffff,0.5));
+const sunLight=new THREE.DirectionalLight(0xffffff,0.8);sunLight.position.set(50,80,30);scene.add(sunLight);
+// ground
+const groundGeo=new THREE.PlaneGeometry(500,500);
+const groundMat=new THREE.MeshStandardMaterial({color:0x4CAF50});
+const ground=new THREE.Mesh(groundGeo,groundMat);ground.rotation.x=-Math.PI/2;scene.add(ground);
+// track points
+const trackPoints=[];
+for(let i=0;i<200;i++){
+const t=i*0.1;
+const x=Math.sin(t*0.3)*40+t*0.5;
+const y=10+Math.sin(t*0.5)*8+Math.cos(t*0.3)*5;
+const z=Math.cos(t*0.2)*40+t*0.3;
+trackPoints.push(new THREE.Vector3(x,y,z));
+}
+const trackCurve=new THREE.CatmullRomCurve3(trackPoints);
+// track tube
+const tubeGeo=new THREE.TubeGeometry(trackCurve,500,0.3,8,false);
+const tubeMat=new THREE.MeshStandardMaterial({color:0xF44336});
+const track=new THREE.Mesh(tubeGeo,tubeMat);scene.add(track);
+// supports
+for(let i=0;i<50;i++){
+const point=trackCurve.getPoint(i/50);
+const supportGeo=new THREE.CylinderGeometry(0.15,0.15,point.y,8);
+const supportMat=new THREE.MeshStandardMaterial({color:0x795548});
+const support=new THREE.Mesh(supportGeo,supportMat);
+support.position.set(point.x,point.y/2,point.z);scene.add(support);
+}
+// cart
+const cartGeo=new THREE.BoxGeometry(1.5,0.8,1);
+const cartMat=new THREE.MeshStandardMaterial({color:0x4D96FF});
+const cart=new THREE.Mesh(cartGeo,cartMat);scene.add(cart);
+// trees
+for(let i=0;i<30;i++){
+const tree=new THREE.Group();
+const trunkGeo=new THREE.CylinderGeometry(0.3,0.4,3,8);
+const trunkMat=new THREE.MeshStandardMaterial({color:0x795548});
+const trunk=new THREE.Mesh(trunkGeo,trunkMat);trunk.position.y=1.5;tree.add(trunk);
+const leavesGeo=new THREE.SphereGeometry(2,8,8);
+const leavesMat=new THREE.MeshStandardMaterial({color:0x388E3C});
+const leaves=new THREE.Mesh(leavesGeo,leavesMat);leaves.position.y=4;tree.add(leaves);
+tree.position.set(Math.random()*200-100,0,Math.random()*200-100);
+scene.add(tree);
+}
+let t=0,speed=1;
+function animate(){
+requestAnimationFrame(animate);
+t+=0.001*speed;
+if(t>1)t=0;
+const pos=trackCurve.getPoint(t);
+const lookAt=trackCurve.getPoint(Math.min(1,t+0.01));
+camera.position.copy(pos);
+camera.position.y+=1;
+camera.lookAt(lookAt);
+cart.position.copy(pos);
+cart.lookAt(lookAt);
+renderer.render(scene,camera);
+}
+window.addEventListener('resize',()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight)});
+animate();
+</script>
+</body>
+</html>

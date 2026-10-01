@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>汉字冒险岛 - Vue3</title>
+  <style>
+/* =========================================
+   Claymorphism Design System
+   儿童友好的软3D风格 — 来自 ui-ux-pro-max
+   ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap');
+
+:root {
+  --clay-bg: #E8EEF6;
+  --clay-card: #F0F4FA;
+  --clay-primary: #5B7FFF;
+  --clay-primary-light: #92A9FF;
+  --clay-secondary: #FF8A65;
+  --clay-green: #66BB6A;
+  --clay-yellow: #FFD54F;
+  --clay-orange: #FFB74D;
+  --clay-text: #37474F;
+  --clay-text-light: #78909C;
+
+  --shadow-inner: inset 2px 2px 6px rgba(0,0,0,0.08), inset -3px -3px 8px rgba(255,255,255,0.9);
+  --shadow-outer: 4px 4px 12px rgba(0,0,0,0.08), -3px -3px 8px rgba(255,255,255,0.9);
+  --shadow-btn: 3px 3px 8px rgba(0,0,0,0.1), -2px -2px 6px rgba(255,255,255,0.9);
+  --shadow-press: inset 3px 3px 8px rgba(0,0,0,0.1), inset -2px -2px 6px rgba(255,255,255,0.7);
+
+  --radius: 22px;
+  --radius-sm: 14px;
+  --radius-xs: 10px;
+  --border-width: 3px;
+  --font-main: "Baloo 2", "PingFang SC", "Microsoft YaHei", cursive, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font-main);
+  background: var(--clay-bg);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-overflow-scrolling: touch;
+}
+#app { min-height: 100vh; }
+
+.home-page {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===== CLAY HEADER ===== */
+.header-bg {
+  background: linear-gradient(180deg, #6C63FF 0%, #8B85FF 40%, #B8B5FF 80%, var(--clay-bg) 100%);
+  padding: 24px 16px 36px;
+  position: relative;
+  flex-shrink: 0;
+}
+.header-content { position: relative; z-index: 2; }
+.user-row { display: flex; align-items: center; margin-bottom: 14px; }
+.avatar {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  border: var(--border-width) solid rgba(255,255,255,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  box-shadow: var(--shadow-btn);
+  margin-right: 12px;
+}
+.welcome-text { color: #fff; font-size: 20px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1); display: block; }
+.welcome-sub { color: rgba(255,255,255,0.85); font-size: 12px; display: block; margin-top: 2px; }
+.header-stats { display: flex; gap: 24px; }
+.hstat { display: flex; flex-direction: column; align-items: center; }
+.hstat-val { font-size: 26px; font-weight: 800; color: #FFD54F; text-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+.hstat-label { color: rgba(255,255,255,0.8); font-size: 12px; }
+
+.content-area { flex: 1; padding: 12px 14px 20px; overflow-y: auto; }
+.section { margin-bottom: 20px; }
+.section-title { font-size: 17px; font-weight: 700; color: var(--clay-text); margin-bottom: 10px; padding-left: 4px; }
+
+/* ===== CLAY BOOK CARDS ===== */
+.book-row { display: flex; gap: 10px; }
+.book-card {
+  flex: 1;
+  min-width: 0;
+  background: var(--clay-card);
+  border-radius: var(--radius-sm);
+  padding: 14px 8px;
+  text-align: center;
+  border: var(--border-width) solid rgba(255,255,255,0.8);
+  box-shadow: var(--shadow-outer);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.book-card:active { transform: scale(0.95); box-shadow: var(--shadow-press); }
+.book-card.active { border-color: var(--clay-primary); box-shadow: var(--shadow-inner), 0 0 0 3px rgba(91,127,255,0.15); }
+.book-emoji { font-size: 30px; display: block; margin-bottom: 4px; }
+.book-name { font-size: 15px; font-weight: 700; color: var(--clay-text); display: block; line-height: 1.2; }
+.book-count { font-size: 12px; color: var(--clay-text-light); margin: 3px 0 5px; display: block; }
+.bp-bar { height: 6px; background: rgba(0,0,0,0.06); border-radius: 3px; overflow: hidden; box-shadow: var(--shadow-inner); margin-bottom: 3px; }
+.bp-fill { height: 100%; background: linear-gradient(90deg, var(--clay-primary), var(--clay-primary-light)); border-radius: 3px; transition: width 0.5s ease; }
+.bp-pct { font-size: 11px; color: var(--clay-primary); font-weight: 700; }
+
+/* ===== CLAY QUICK CARDS ===== */
+.quick-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.quick-card {
+  background: var(--clay-card);
+  border-radius: var(--radius-sm);
+  padding: 18px 8px;
+  text-align: center;
+  border: var(--border-width) solid rgba(255,255,255,0.8);
+  box-shadow: var(--shadow-outer);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.quick-card:active { transform: scale(0.94); box-shadow: var(--shadow-press); }
+.qc-bar { position: absolute; top: 0; left: 0; right: 0; height: 4px; border-radius: 0 0 6px 6px; }
+.qc-bar.purple { background: linear-gradient(90deg, var(--clay-primary), var(--clay-primary-light)); }
+.qc-bar.green { background: linear-gradient(90deg, #66BB6A, #81C784); }
+.qc-bar.orange { background: linear-gradient(90deg, var(--clay-orange), #FFCC80); }
+.qc-icon { font-size: 28px; display: block; margin: 4px 0 2px; }
+.qc-label { font-size: 14px; font-weight: 700; color: var(--clay-text); display: block; line-height: 1.2; }
+.qc-desc { font-size: 11px; color: var(--clay-text-light); margin-top: 2px; display: block; }
+
+/* ===== CLAY LESSON LIST ===== */
+.lesson-list {
+  background: var(--clay-card);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: var(--border-width) solid rgba(255,255,255,0.8);
+  box-shadow: var(--shadow-outer);
+}
+.lesson-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s ease;
+  min-height: 48px;
+}
+.lesson-item:last-child { border-bottom: none; }
+.lesson-item:active { background: rgba(91,127,255,0.06); }
+.li-left { display: flex; align-items: center; flex: 1; min-width: 0; }
+.li-emoji { font-size: 22px; margin-right: 8px; flex-shrink: 0; }
+.li-info { flex: 1; min-width: 0; }
+.li-name { font-size: 15px; font-weight: 700; color: var(--clay-text); display: block; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.li-detail { font-size: 12px; color: var(--clay-text-light); }
+.li-stars { font-size: 13px; flex-shrink: 0; white-space: nowrap; }
+
+/* ===== EXERCISE PAGE ===== */
+.ex-page { min-height: 100vh; display: flex; flex-direction: column; background: var(--clay-bg); }
+.ex-header { background: linear-gradient(135deg, #6C63FF, #8B85FF); padding: 16px 20px; color: #fff; display: flex; align-items: center; }
+.back-btn { font-size: 26px; cursor: pointer; margin-right: 14px; padding: 6px 10px; border-radius: 14px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; transition: all 0.2s; }
+.back-btn:active { background: rgba(255,255,255,0.2); }
+.ex-title { flex: 1; font-size: 19px; font-weight: 700; }
+.ex-score { font-size: 18px; font-weight: 700; color: var(--clay-yellow); }
+.ex-body { flex: 1; padding: 24px 16px; display: flex; flex-direction: column; justify-content: center; }
+.progress-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: var(--clay-text-light); font-weight: 600; }
+.progress-bar { height: 10px; background: rgba(0,0,0,0.06); border-radius: 5px; box-shadow: var(--shadow-inner); overflow: hidden; margin-bottom: 28px; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--clay-primary), var(--clay-primary-light)); border-radius: 5px; transition: width 0.3s; }
+
+/* ===== CLAY QUESTION CARD ===== */
+.q-card {
+  background: var(--clay-card);
+  border-radius: var(--radius);
+  padding: 36px 22px 28px;
+  text-align: center;
+  border: var(--border-width) solid rgba(255,255,255,0.8);
+  box-shadow: var(--shadow-outer);
+  animation: cardIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes cardIn { 0% { opacity: 0; transform: scale(0.85) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+.q-prompt { font-size: 16px; color: var(--clay-text-light); margin-bottom: 8px; font-weight: 600; }
+.q-char { font-size: 90px; font-weight: 800; color: var(--clay-text); margin: 10px 0; line-height: 1.1; text-shadow: 2px 2px 0 rgba(0,0,0,0.05); }
+.q-pinyin { font-size: 48px; font-weight: 700; color: var(--clay-primary); margin: 12px 0; letter-spacing: 3px; }
+.q-blank { font-size: 38px; font-weight: 700; color: #FF5252; margin: 12px 0; letter-spacing: 5px; }
+.q-hint { font-size: 14px; color: #bbb; margin-bottom: 24px; }
+
+/* ===== CLAY OPTIONS ===== */
+.opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.opt-item {
+  padding: 20px 14px;
+  background: var(--clay-card);
+  border: var(--border-width) solid rgba(255,255,255,0.8);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-btn);
+  font-size: 24px; font-weight: 700; color: var(--clay-text);
+  text-align: center; cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.opt-item:active { transform: scale(0.93); box-shadow: var(--shadow-press); }
+.opt-item.opt-correct { background: #E8F5E9 !important; border-color: var(--clay-green) !important; color: #2E7D32 !important; box-shadow: var(--shadow-inner) !important; animation: bouncePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.opt-item.opt-wrong { background: #FFEBEE !important; border-color: #EF5350 !important; color: #C62828 !important; box-shadow: var(--shadow-inner) !important; animation: shake 0.5s ease; }
+.opt-item.opt-disabled { opacity: 0.35; pointer-events: none; }
+
+@keyframes bouncePop { 0% { transform: scale(0.9); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+@keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(6px); } }
+
+.feedback-msg { margin-top: 18px; font-size: 22px; font-weight: 700; min-height: 30px; }
+.msg-correct { color: var(--clay-green); }
+.msg-wrong { color: #EF5350; }
+
+.next-btn {
+  margin-top: 16px; padding: 14px 44px;
+  border: var(--border-width) solid rgba(255,255,255,0.6);
+  border-radius: 40px;
+  background: linear-gradient(135deg, var(--clay-green), #81C784);
+  box-shadow: var(--shadow-btn);
+  color: #fff; font-size: 18px; font-weight: 700; cursor: pointer;
+  font-family: var(--font-main);
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.next-btn:active { transform: scale(0.94); box-shadow: var(--shadow-press); }
+
+/* ===== COMPLETE PAGE ===== */
+.complete-area { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; padding: 20px; }
+.complete-card {
+  background: var(--clay-card);
+  border-radius: var(--radius); padding: 44px 30px; text-align: center;
+  border: var(--border-width) solid rgba(255,255,255,0.8);
+  box-shadow: var(--shadow-outer);
+  width: 92%; max-width: 420px;
+  animation: cardIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.cp-emoji { font-size: 70px; display: block; margin-bottom: 10px; }
+.cp-title { font-size: 28px; font-weight: 800; color: var(--clay-text); margin-bottom: 6px; display: block; }
+.cp-sub { font-size: 17px; color: var(--clay-text-light); margin-bottom: 4px; display: block; }
+.cp-stars { font-size: 38px; margin: 16px 0 22px; }
+.cp-score { color: var(--clay-orange); font-size: 20px; font-weight: 700; margin-bottom: 24px; display: block; }
+.cp-btn {
+  display: block; width: 100%; padding: 16px; border-radius: 40px;
+  border: var(--border-width) solid rgba(255,255,255,0.6);
+  font-size: 18px; font-weight: 700; cursor: pointer;
+  font-family: var(--font-main);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.cp-btn:active { transform: scale(0.95); box-shadow: var(--shadow-press); }
+.cp-btn.primary { background: linear-gradient(135deg, var(--clay-primary), var(--clay-primary-light)); color: #fff; box-shadow: var(--shadow-btn); margin-bottom: 12px; }
+.cp-btn.secondary { background: var(--clay-card); color: var(--clay-text-light); box-shadow: var(--shadow-outer); }
+
+/* ===== REPORT PAGE ===== */
+.report-page { padding: 20px 16px 0; }
+.report-page h2 { font-size: 24px; font-weight: 800; color: var(--clay-text); margin-bottom: 18px; }
+.rp-card {
+  background: var(--clay-card);
+  border-radius: var(--radius); padding: 22px; margin-bottom: 18px;
+  border: var(--border-width) solid rgba(255,255,255,0.8);
+  box-shadow: var(--shadow-outer);
+}
+.rp-stat-row { display: flex; justify-content: space-around; margin-bottom: 18px; }
+.rp-stat { text-align: center; }
+.rp-stat-val { font-size: 36px; font-weight: 800; color: var(--clay-primary); }
+.rp-stat-label { font-size: 14px; color: var(--clay-text-light); }
+.rp-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 2px dashed rgba(0,0,0,0.06); }
+.rp-item:last-child { border: none; }
+.rp-item-name { font-size: 16px; font-weight: 700; color: var(--clay-text); }
+.rp-item-stars { font-size: 15px; }
+
+/* ===== BROWSE PAGE ===== */
+.browse-page { min-height: 100vh; display: flex; flex-direction: column; background: var(--clay-bg); }
+.br-tabs { display: flex; background: var(--clay-bg); padding: 10px 14px; gap: 8px; }
+.br-tab {
+  flex: 1; text-align: center; padding: 12px 8px; border-radius: var(--radius-sm);
+  font-size: 15px; font-weight: 700; color: var(--clay-text-light);
+  background: var(--clay-card); border: var(--border-width) solid rgba(255,255,255,0.6);
+  box-shadow: var(--shadow-outer); cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.br-tab:active { transform: scale(0.95); }
+.br-tab.active { background: linear-gradient(135deg, var(--clay-primary), var(--clay-primary-light)); color: #fff; border-color: transparent; box-shadow: var(--shadow-btn); }
+.br-count { font-size: 12px; font-weight: 500; opacity: 0.8; }
+.br-book-switch { display: flex; padding: 8px 14px 12px; gap: 10px; background: var(--clay-bg); }
+.br-book-opt {
+  flex: 1; text-align: center; padding: 10px; border-radius: var(--radius-xs);
+  font-size: 15px; font-weight: 700; color: var(--clay-text-light); cursor: pointer;
+  background: var(--clay-card); border: 2px solid rgba(255,255,255,0.6);
+  box-shadow: var(--shadow-outer);
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.br-book-opt:active { transform: scale(0.95); }
+.br-book-opt.active { background: linear-gradient(135deg, var(--clay-primary), var(--clay-primary-light)); color: #fff; border-color: transparent; box-shadow: var(--shadow-btn); }
+.br-content { flex: 1; overflow-y: auto; padding: 6px 14px 20px; }
+.br-group {
+  background: var(--clay-card); border-radius: var(--radius); padding: 16px; margin-bottom: 14px;
+  border: var(--border-width) solid rgba(255,255,255,0.8); box-shadow: var(--shadow-outer);
+}
+.br-group-header { display: flex; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2px dashed rgba(0,0,0,0.08); }
+.br-gtype { font-size: 20px; margin-right: 8px; }
+.br-gname { font-size: 17px; font-weight: 700; color: var(--clay-text); flex: 1; }
+.br-gcount { font-size: 13px; color: var(--clay-primary); font-weight: 700; }
+.br-char-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.br-char-item {
+  background: var(--clay-bg); border-radius: var(--radius-xs); padding: 10px 4px; text-align: center;
+  border: 2px solid rgba(255,255,255,0.6); box-shadow: var(--shadow-outer);
+}
+.br-char { font-size: 24px; font-weight: 800; color: var(--clay-text); display: block; line-height: 1.3; }
+.br-pinyin { font-size: 11px; color: var(--clay-text-light); display: block; margin-top: 2px; }
+.br-word-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.br-word-item {
+  background: var(--clay-card); border-radius: var(--radius-sm); padding: 10px 16px;
+  border: 2px solid rgba(255,255,255,0.6); box-shadow: var(--shadow-outer);
+  font-size: 17px; font-weight: 700; color: var(--clay-text);
+}
+
+/* ===== BOTTOM TAB BAR ===== */
+.tab-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: rgba(240,244,250,0.95); backdrop-filter: blur(10px);
+  display: flex; justify-content: space-around;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  border-top: 3px solid rgba(255,255,255,0.8);
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+  z-index: 100;
+}
+.tab-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 4px 14px; border-radius: 16px; color: var(--clay-text-light); font-size: 12px; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.tab-item.active { color: var(--clay-primary); font-weight: 700; }
+.tab-icon { font-size: 22px; margin-bottom: 2px; }
+.page-content { padding-bottom: 70px; }
+.loading-area { display: flex; justify-content: center; align-items: center; min-height: 60vh; }
+.loading-text { font-size: 16px; color: var(--clay-text-light); }
+[v-cloak] { display: none; }
+
+/* Mobile responsive fixes */
+@media (max-width: 380px) {
+  .book-row {
+    gap: 6px;
+  }
+  .book-card {
+    padding: 12px 6px;
+  }
+  .book-name {
+    font-size: 13px;
+  }
+  .book-emoji {
+    font-size: 26px;
+  }
+  .book-count {
+    font-size: 10px;
+  }
+  .quick-grid {
+    gap: 8px;
+  }
+  .quick-card {
+    padding: 14px 6px;
+  }
+  .qc-label {
+    font-size: 12px;
+  }
+  .qc-icon {
+    font-size: 24px;
+  }
+  .lesson-item {
+    padding: 10px 12px;
+  }
+  .li-name {
+    font-size: 13px;
+  }
+  .header-bg {
+    padding: 18px 12px 28px;
+  }
+  .content-area {
+    padding: 8px 10px 16px;
+  }
+  .section-title {
+    font-size: 15px;
+  }
+  .q-char {
+    font-size: 64px;
+  }
+  .q-pinyin {
+    font-size: 34px;
+  }
+  .opt-item {
+    padding: 16px 10px;
+    font-size: 20px;
+  }
+}
+  </style>
+</head>
+<body>
+<div id="app" v-cloak>
+  <!-- PAGE: HOME -->
+  <div v-if="page === 'home'" class="home-page" style="padding-bottom: 70px;">
+    <div class="header-bg">
+      <div class="header-content">
+        <div class="user-row">
+          <div class="avatar">🐼</div>
+          <div>
+            <span class="welcome-text">你好，小冒险家！</span>
+            <span class="welcome-sub">今天也要认真学汉字哦~</span>
+          </div>
+        </div>
+        <div class="header-stats">
+          <div class="hstat">
+            <span class="hstat-val">{{ totalStars }}</span>
+            <span class="hstat-label">⭐ 星星</span>
+          </div>
+          <div class="hstat">
+            <span class="hstat-val">{{ completedLessons }}</span>
+            <span class="hstat-label">✅ 完成</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="content-area">
+      <div class="section">
+        <div class="section-title">📚 选择课本</div>
+        <div class="book-row">
+          <div class="book-card" v-for="book in books" :key="book.id"
+               :class="{ active: currentBook === book.id }"
+               @click="selectBook(book.id)">
+            <span class="book-emoji">{{ book.id === '2上' ? '📖' : '📗' }}</span>
+            <span class="book-name">{{ book.name }}</span>
+            <span class="book-count">{{ book.charCount }} 生字</span>
+            <div class="bp-bar">
+              <div class="bp-fill" :style="{ width: getBookProgress(book.id) + '%' }"></div>
+            </div>
+            <span class="bp-pct">{{ getBookProgress(book.id) }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">🎯 快速开始</div>
+        <div class="quick-grid">
+          <div class="quick-card" v-for="(qc, i) in quickCards" :key="i" @click="startTablePractice(qc.table)">
+            <div class="qc-bar" :class="qc.color"></div>
+            <span class="qc-icon">{{ qc.icon }}</span>
+            <span class="qc-label">{{ qc.label }}</span>
+            <span class="qc-desc">{{ qc.desc }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section" v-if="recentLessons.length">
+        <div class="section-title">🕒 课程列表</div>
+        <div class="lesson-list">
+          <div class="lesson-item" v-for="l in recentLessons" :key="l.key" @click="startLesson(l)">
+            <div class="li-left">
+              <span class="li-emoji">{{ l.type === '阅读' ? '📖' : l.type === '识字' ? '✏️' : '🌱' }}</span>
+              <div class="li-info">
+                <span class="li-name">{{ l.type === '阅读' ? '课文' : l.type === '识字' ? '识字' : '语文园地' }} · 第{{ l.lesson }}课</span>
+                <span class="li-detail">{{ l.charCount }} 生字{{ l.wordCount ? ' · ' + l.wordCount + ' 词语' : '' }}</span>
+              </div>
+            </div>
+            <span class="li-stars">{{ '⭐'.repeat(getStars(l)) }}{{ '☆'.repeat(5 - getStars(l)) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: EXERCISE -->
+  <div v-if="page === 'exercise'" class="ex-page">
+    <div class="ex-header">
+      <span class="back-btn" @click="goHome">&larr;</span>
+      <span class="ex-title">{{ exTableType ? tableLabel(exTableType) : '第' + exLesson + '课 闯关练习' }}</span>
+      <span class="ex-score">⭐{{ exScore }}</span>
+    </div>
+    <div class="ex-body" v-if="!exFinished">
+      <div class="progress-row">
+        <span>第 {{ exIndex + 1 }} / {{ exList.length }} 题</span>
+        <span>答对 {{ exCorrect }} 题</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" :style="{ width: (exIndex / exList.length * 100) + '%' }"></div>
+      </div>
+
+      <div class="q-card" v-if="exQ" :key="exIndex">
+        <!-- Type: 认读生字 -->
+        <template v-if="exQ.type === 'readPinyin'">
+          <div class="q-prompt">{{ exQ.prompt }}</div>
+          <div class="q-char">{{ exQ.char }}</div>
+          <div class="q-hint">{{ exQ.meta }}</div>
+        </template>
+
+        <!-- Type: 看拼音选字 -->
+        <template v-if="exQ.type === 'pickChar'">
+          <div class="q-prompt">{{ exQ.prompt }}</div>
+          <div class="q-pinyin">{{ exQ.pinyin }}</div>
+          <div class="q-hint">{{ exQ.meta }}</div>
+        </template>
+
+        <!-- Type: 偏旁部首 -->
+        <template v-if="exQ.type === 'radical'">
+          <div class="q-prompt">{{ exQ.prompt }}</div>
+          <div class="q-char">{{ exQ.char }}</div>
+        </template>
+
+        <!-- Type: 词语填空 -->
+        <template v-if="exQ.type === 'wordFill'">
+          <div class="q-prompt">{{ exQ.prompt }}</div>
+          <div class="q-blank">{{ exQ.blanked }}</div>
+        </template>
+
+        <!-- Type: 组词 -->
+        <template v-if="exQ.type === 'makeWord'">
+          <div class="q-prompt">{{ exQ.prompt }}</div>
+          <div class="q-char">{{ exQ.char }}</div>
+        </template>
+
+        <!-- Options -->
+        <div class="opt-grid">
+          <div class="opt-item" v-for="opt in exOptions" :key="opt"
+               :class="getOptClass(opt)"
+               @click="selectAnswer(opt)">
+            {{ opt }}
+          </div>
+        </div>
+        <div class="feedback-msg" :class="exFeedback === 'correct' ? 'msg-correct' : exFeedback === 'wrong' ? 'msg-wrong' : ''">
+          {{ exFeedback === 'correct' ? '✅ 答对啦！' : exFeedback === 'wrong' ? '❌ 正确答案：' + exQ.correct : '' }}
+        </div>
+        <div v-if="exFeedback">
+          <button class="next-btn" @click="nextEx">{{ nextBtnLabel }}</button>
+        </div>
+      </div>
+
+      <div v-if="!exQ" style="text-align:center;color:#999;padding:40px">正在准备题目...</div>
+    </div>
+
+    <!-- Complete -->
+    <div class="complete-area" v-if="exFinished">
+      <div class="complete-card">
+        <span class="cp-emoji">{{ completeEmoji }}</span>
+        <div class="cp-title">{{ completeTitle }}</div>
+        <div class="cp-sub">答对 {{ finalCorrect }} / {{ exList.length }} 题</div>
+        <div class="cp-stars">{{ '⭐'.repeat(finalStars) }}{{ '☆'.repeat(5 - finalStars) }}</div>
+        <div class="cp-score">获得 {{ finalStars }} 颗星星</div>
+        <button class="cp-btn primary" @click="replayLesson">🔄 再练一次</button>
+        <button class="cp-btn secondary" @click="goHome">📝 返回首页</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE: REPORT -->
+  <div v-if="page === 'report'" class="report-page" style="padding-bottom: 70px;">
+    <h2>📊 学习报告</h2>
+    <div class="rp-card">
+      <div class="rp-stat-row">
+        <div class="rp-stat">
+          <div class="rp-stat-val">{{ totalStars }}</div>
+          <div class="rp-stat-label">总星星</div>
+        </div>
+        <div class="rp-stat">
+          <div class="rp-stat-val">{{ completedLessons }}</div>
+          <div class="rp-stat-label">完成课时</div>
+        </div>
+        <div class="rp-stat">
+          <div class="rp-stat-val">{{ totalExercises }}</div>
+          <div class="rp-stat-label">练习次数</div>
+        </div>
+      </div>
+      <div v-for="book in books" :key="book.id" style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-weight:600;font-size:14px;">{{ book.id === '2上' ? '📖' : '📗' }} {{ book.name }}</span>
+          <span style="color:#5B6AEF;font-weight:700;font-size:14px;">{{ getBookProgress(book.id) }}%</span>
+        </div>
+        <div class="bp-bar" style="margin-bottom:2px;">
+          <div class="bp-fill" :style="{ width: getBookProgress(book.id) + '%' }"></div>
+        </div>
+      </div>
+    </div>
+    <div class="rp-card" v-if="completedList.length">
+      <h3 style="font-size:16px;margin-bottom:10px;">✅ 已完成课程</h3>
+      <div class="rp-item" v-for="item in completedList" :key="item.key">
+        <span class="rp-item-name">{{ item.icon }} {{ item.name }} · 第{{ item.lesson }}课</span>
+        <span class="rp-item-stars">{{ '⭐'.repeat(item.stars) }}</span>
+      </div>
+    </div>
+    <div class="rp-card" v-if="completedList.length === 0" style="text-align:center;color:#999;padding:30px;">
+      🎯 还没有完成任何课程，快去首页开始练习吧！
+    </div>
+  </div>
+
+  <!-- PAGE: BROWSE -->
+  <div v-if="page === 'browse'" class="browse-page" style="padding-bottom: 70px;">
+    <!-- 顶部切换 -->
+    <div class="br-tabs">
+      <div class="br-tab" :class="{ active: browseTab === 'recognition' }" @click="browseTab = 'recognition'">
+        📖 识字表 <span class="br-count">{{ getBrowseCount('recognition') }}</span>
+      </div>
+      <div class="br-tab" :class="{ active: browseTab === 'writing' }" @click="browseTab = 'writing'">
+        ✏️ 写字表 <span class="br-count">{{ getBrowseCount('writing') }}</span>
+      </div>
+      <div class="br-tab" :class="{ active: browseTab === 'words' }" @click="browseTab = 'words'">
+        🔤 词语表 <span class="br-count">{{ getBrowseCount('words') }}</span>
+      </div>
+    </div>
+
+    <!-- 课本切换 -->
+    <div class="br-book-switch">
+      <span class="br-book-opt" :class="{ active: browseBook === book.id }"
+            v-for="book in books" :key="book.id"
+            @click="browseBook = book.id">
+        {{ book.id === '2上' ? '📖' : '📗' }} {{ book.name }}
+      </span>
+    </div>
+
+    <!-- 内容区域 -->
+    <div v-if="browseTab !== 'words'" class="br-content">
+      <div class="br-group" v-for="group in browseLessonGroups" :key="group.key">
+        <div class="br-group-header">
+          <span class="br-gtype">{{ group.type === '阅读' ? '📖' : group.type === '识字' ? '✏️' : '🌱' }}</span>
+          <span class="br-gname">{{ group.type === '阅读' ? '课文' : group.type === '识字' ? '识字' : '语文园地' }} · 第{{ group.lesson }}课</span>
+          <span class="br-gcount">{{ group.chars.length }}字</span>
+        </div>
+        <div class="br-char-grid">
+          <div class="br-char-item" v-for="ch in group.chars" :key="ch.char">
+            <span class="br-char">{{ ch.char }}</span>
+            <span class="br-pinyin">{{ ch.pinyin }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 词语浏览（按课程） -->
+    <div v-if="browseTab === 'words'" class="br-content">
+      <div class="br-group" v-for="group in browseWordGroups" :key="group.key">
+        <div class="br-group-header">
+          <span class="br-gtype">{{ group.type === '阅读' ? '📖' : group.type === '识字' ? '✏️' : '🌱' }}</span>
+          <span class="br-gname">{{ group.type === '阅读' ? '课文' : group.type === '识字' ? '识字' : '语文园地' }} · 第{{ group.lesson }}课</span>
+          <span class="br-gcount">{{ group.words.length }}词</span>
+        </div>
+        <div class="br-word-grid">
+          <span class="br-word-item" v-for="(w, i) in group.words" :key="i">{{ w }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM TAB BAR -->
+  <div class="tab-bar">
+    <div class="tab-item" :class="{ active: page === 'home' }" @click="switchPage('home')">
+      <span class="tab-icon">🏠</span>
+      <span>首页</span>
+    </div>
+    <div class="tab-item" :class="{ active: page === 'browse' }" @click="switchPage('browse')">
+      <span class="tab-icon">📖</span>
+      <span>浏览</span>
+    </div>
+    <div class="tab-item" :class="{ active: page === 'exercise' }" @click="switchPage('exercise')">
+      <span class="tab-icon">✏️</span>
+      <span>练习</span>
+    </div>
+    <div class="tab-item" :class="{ active: page === 'report' }" @click="switchPage('report')">
+      <span class="tab-icon">📊</span>
+      <span>报告</span>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+// ===== IMPORTS =====
+import { createApp, ref, computed } from 'https://unpkg.com/vue@3.4.21/dist/vue.esm-browser.prod.js';
+import { allCharacters, allWords, BOOKS, shuffle, recognitionChars, writingChars, TABLE_STATS, getLessonWords, getWordsByLesson } from './data/chinese-data.js';
+
+// ===== QUESTION GENERATOR =====
+const radicalMap = {
+  '\u6c35':'三点水','\u624c':'提手旁','\u4ebb':'单人旁','\u53e3':'口字旁',
+  '\u6728':'木字旁','\u706b':'火字旁','\u65e5':'日字旁','\u6708':'月字旁',
+  '\u8279':'草字头','\u5973':'女字旁','\u738b':'王字旁','\u77f3':'石字旁',
+  '\u571f':'提土旁','\u866b':'虫字旁','\u9e1f':'鸟字旁','\u9a6c':'马字旁',
+  '\u8ba0':'言字旁','\u5e7f':'广字头','\u8fb6':'走之底',
+};
+
+function pickWrongAnswers(chars, correctChar, count) {
+  const others = chars.filter(c => c.char !== correctChar).map(c => c.char);
+  return shuffle([...new Set(others)]).slice(0, count);
+}
+
+function generateQuestions(chars, count) {
+  const results = [];
+  const selected = shuffle(chars).slice(0, Math.min(count, chars.length));
+
+  selected.forEach(c => {
+    // Read pinyin
+    const wp = pickWrongAnswers(chars, c.char, 3).map(wc => {
+      const f = chars.find(ch => ch.char === wc);
+      return f ? f.pinyin : '';
+    }).filter(p => p && p !== c.pinyin);
+    if (wp.length >= 2) {
+      results.push({ type:'readPinyin', prompt:'这个字读什么？', char:c.char, correct:c.pinyin, wrong:wp.slice(0,3), meta:`第${c.lesson}课` });
+    }
+  });
+
+  selected.forEach(c => {
+    const wc = pickWrongAnswers(chars, c.char, 3);
+    if (wc.length >= 2) {
+      results.push({ type:'pickChar', prompt:'这个拼音对应的字是？', pinyin:c.pinyin, correct:c.char, wrong:wc.slice(0,3), meta:`第${c.lesson}课` });
+    }
+  });
+
+  const radChars = chars.filter(c => Object.keys(radicalMap).some(r => c.char.includes(r)));
+  shuffle(radChars).slice(0, 3).forEach(c => {
+    const rad = Object.keys(radicalMap).find(r => c.char.includes(r));
+    if (!rad) return;
+    const wr = shuffle(Object.keys(radicalMap).filter(r => r !== rad)).slice(0, 3);
+    if (wr.length >= 2) {
+      results.push({ type:'radical', prompt:`"${c.char}"的偏旁部首是？`, char:c.char, correct:rad, wrong:wr, radicalName:radicalMap[rad] });
+    }
+  });
+
+  const allW = allWords;
+  shuffle(allW).slice(0, 3).forEach(w => {
+    const pos = Math.floor(Math.random() * w.length);
+    const bc = w[pos];
+    const wc2 = pickWrongAnswers(chars, bc, 3);
+    if (wc2.length >= 2) {
+      results.push({ type:'wordFill', prompt:'填入正确的字', blanked:w.slice(0,pos)+'_'+w.slice(pos+1), correct:bc, wrong:wc2.slice(0,3), fullWord:w });
+    }
+  });
+
+  return shuffle(results).slice(0, count);
+}
+
+function getLessonList(book) {
+  const chars = allCharacters.filter(c => c.book === book);
+  const lessons = {};
+  chars.forEach(c => {
+    const key = c.type + '_' + c.lesson;
+    if (!lessons[key]) {
+      lessons[key] = { type: c.type, lesson: c.lesson, charCount: 0, wordCount: 0, key: key };
+    }
+    lessons[key].charCount++;
+  });
+
+  // Add word sections
+  const wordSections = getWordsByLesson(book);
+  wordSections.forEach(function(ws) {
+    var wkey = ws.type + '_' + ws.lesson;
+    if (lessons[wkey]) {
+      lessons[wkey].wordCount = ws.words.length;
+    } else {
+      lessons[wkey] = { type: ws.type, lesson: ws.lesson, charCount: 0, wordCount: ws.words.length, key: wkey };
+    }
+  });
+
+  return Object.values(lessons).sort(function(a, b) {
+    if (a.type !== b.type) {
+      var o = { '阅读': 0, '识字': 1, '语文园地': 2 };
+      return (o[a.type] || 3) - (o[b.type] || 3);
+    }
+    return a.lesson - b.lesson;
+  });
+}
+
+// ===== VUE APP =====
+// Debounce utility — prevents double-fire from mobile touch events (300ms delay ghost clicks)
+function useDebounce(fn, delay) {
+  delay = delay || 300;
+  var timer = null;
+  return function() {
+    var ctx = this, args = arguments;
+    if (timer) return;  // block rapid re-fires
+    timer = setTimeout(function() { timer = null; }, delay);
+    return fn.apply(ctx, args);
+  };
+}
+
+const app = createApp({
+  setup() {
+    // State
+    const page = ref('home');
+    const currentBook = ref('2上');
+    const books = BOOKS;
+    const totalStars = ref(0);
+    const completedLessons = ref(0);
+    const totalExercises = ref(0);
+    const recentLessons = ref([]);
+    const completedList = ref([]);
+
+    // Add table stats derived data
+    const tableStats = TABLE_STATS;
+
+    const quickCards = [
+      { icon:'📖', label:'识字认读', desc:'随机一课', table:'recognition', color:'purple' },
+      { icon:'✏️', label:'写字练习', desc:'随机一课', table:'writing', color:'green' },
+      { icon:'🔤', label:'词语训练', desc:'随机一课', table:'words', color:'orange' },
+    ];
+
+    // Exercise state
+    const exList = ref([]);
+    const exIndex = ref(0);
+    const exCorrect = ref(0);
+    const exScore = ref(0);
+    const exFinished = ref(false);
+    const exFeedback = ref('');
+    const exSelected = ref('');
+    const exLesson = ref(0);
+    const finalStars = ref(0);
+    const finalCorrect = ref(0);
+    const exBook = ref('2上');
+    const exType = ref('阅读');
+    const exTableType = ref('');  // 'recognition' | 'writing' | 'words'
+
+    // Browse state
+    const browseTab = ref('recognition');
+    const browseBook = ref('2上');
+    const browseWords = computed(() => allWords);
+    const browseLessonGroups = computed(() => {
+      if (browseTab.value === 'words') return [];
+      const source = browseTab.value === 'recognition' ? recognitionChars : writingChars;
+      const filtered = source.filter(c => c.book === browseBook.value);
+      const groups = {};
+      filtered.forEach(c => {
+        const key = c.type + '_' + c.lesson;
+        if (!groups[key]) groups[key] = { key: key, type: c.type, lesson: c.lesson, chars: [] };
+        groups[key].chars.push(c);
+      });
+      return Object.values(groups).sort(function(a, b) {
+        if (a.type !== b.type) {
+          var order = { '阅读': 0, '识字': 1, '语文园地': 2 };
+          return (order[a.type] || 3) - (order[b.type] || 3);
+        }
+        return a.lesson - b.lesson;
+      });
+    });
+
+    const browseWordGroups = computed(() => {
+      if (browseTab.value !== 'words') return [];
+      const sections = getWordsByLesson(browseBook.value);
+      return sections.map(function(s) { return { key: s.type + '_' + s.lesson, type: s.type, lesson: s.lesson, words: s.words }; });
+    });
+    function getBrowseCount(tab) {
+      if (tab === 'recognition') return recognitionChars.filter(c => c.book === browseBook.value).length;
+      if (tab === 'writing') return writingChars.filter(c => c.book === browseBook.value).length;
+      return allWords.length;
+    }
+
+    const exQ = computed(() => exIndex.value < exList.value.length ? exList.value[exIndex.value] : null);
+    const exOptions = computed(() => {
+      if (!exQ.value) return [];
+      return shuffle([exQ.value.correct, ...(exQ.value.wrong || [])]);
+    });
+
+    const nextBtnLabel = computed(() => {
+      return exIndex.value < exList.value.length - 1 ? '继续' : '查看结果';
+    });
+
+    const completeEmoji = computed(() => {
+      if (finalStars.value >= 4) return '🏆';
+      if (finalStars.value >= 2) return '🎉';
+      return '💪';
+    });
+
+    const completeTitle = computed(() => {
+      if (finalStars.value >= 4) return '太厉害了！';
+      if (finalStars.value >= 2) return '做得好！';
+      return '继续加油！';
+    });
+
+    // Methods
+    function loadProgress() {
+      try {
+        const d = JSON.parse(localStorage.getItem('chinese_progress_v3') || '{}');
+        totalStars.value = d.totalStars || 0;
+        completedLessons.value = d.completedLessons || 0;
+        totalExercises.value = d.totalExercises || 0;
+        if (d.lessonStars) {
+          completedList.value = Object.entries(d.lessonStars)
+            .filter(([k, v]) => v > 0)
+            .map(([k, v]) => {
+              const parts = k.split('_');
+              const type = parts[1] || '';
+              const lesson = parts[2] || '';
+              const typeNames = { '阅读':'课文', '识字':'识字', '语文园地':'语文园地' };
+              const typeIcons = { '阅读':'📖', '识字':'✏️', '语文园地':'🌱' };
+              return {
+                key: k, stars: v, lesson: parseInt(lesson),
+                name: typeNames[type] || type, icon: typeIcons[type] || '📝'
+              };
+            })
+            .sort((a,b) => b.lesson - a.lesson || a.name.localeCompare(b.name))
+            .slice(0, 20);
+        }
+      } catch(e) {}
+    }
+
+    function getBookProgress(bookId) {
+      try {
+        const d = JSON.parse(localStorage.getItem('chinese_progress_v3') || '{}');
+        const stars = d.lessonStars || {};
+        const bookKeys = Object.keys(stars).filter(k => k.startsWith(bookId));
+        const totalPossible = { '2上':30, '2下':30 }[bookId] || 30;
+        return Math.round(bookKeys.length / totalPossible * 100);
+      } catch(e) { return 0; }
+    }
+
+    function getStars(lesson) {
+      try {
+        const d = JSON.parse(localStorage.getItem('chinese_progress_v3') || '{}');
+        const key = `${currentBook.value}_${lesson.type}_${lesson.lesson}`;
+        return (d.lessonStars || {})[key] || 0;
+      } catch(e) { return 0; }
+    }
+
+    var _lastNav = 0;
+    function guardNav() {
+      var now = Date.now();
+      if (now - _lastNav < 300) return false;
+      _lastNav = now;
+      return true;
+    }
+
+    function selectBook(bid) {
+      if (!guardNav()) return;
+      currentBook.value = bid;
+      recentLessons.value = getLessonList(bid).slice(0, 10);
+    }
+
+    function getTableLabel(type) {
+      const map = { recognition: '📖 识字认读', writing: '✏️ 写字练习', words: '🔤 词语训练' };
+      return map[type] || type;
+    }
+
+    function startTablePractice(tableType) {
+      if (!guardNav()) return;
+      // Quick start: pick a random lesson from current book
+      const lessons = getLessonList(currentBook.value);
+      if (!lessons.length) return;
+
+      let chars, lesson;
+      if (tableType === 'recognition') {
+        // Pick a random lesson that has recognition chars
+        const withChars = lessons.filter(l => {
+          const rc = recognitionChars.filter(c => c.book === currentBook.value && c.lesson === l.lesson);
+          return rc.length > 0;
+        });
+        if (!withChars.length) return;
+        lesson = withChars[Math.floor(Math.random() * withChars.length)];
+        chars = recognitionChars.filter(c => c.book === currentBook.value && c.lesson === lesson.lesson);
+      } else if (tableType === 'writing') {
+        const withChars = lessons.filter(l => {
+          const wc = writingChars.filter(c => c.book === currentBook.value && c.lesson === l.lesson);
+          return wc.length > 0;
+        });
+        if (!withChars.length) return;
+        lesson = withChars[Math.floor(Math.random() * withChars.length)];
+        chars = writingChars.filter(c => c.book === currentBook.value && c.lesson === lesson.lesson);
+      } else {
+        // words: pick a lesson and use words containing its chars
+        lesson = lessons[Math.floor(Math.random() * lessons.length)];
+        chars = allCharacters.filter(c => c.book === currentBook.value && c.lesson === lesson.lesson);
+      }
+      if (!chars.length) return;
+
+      exTableType.value = tableType;
+      exLesson.value = lesson.lesson;
+      exBook.value = currentBook.value;
+      exType.value = lesson.type;
+
+      if (tableType === 'words') {
+        exList.value = generateLessonWords(chars, chars.length);
+      } else {
+        exList.value = generateQuestions(chars, chars.length);
+      }
+      exIndex.value = 0;
+      exCorrect.value = 0;
+      exScore.value = 0;
+      exFinished.value = false;
+      exFeedback.value = '';
+      exSelected.value = '';
+      page.value = 'exercise';
+      window.scrollTo(0, 0);
+    }
+
+    function generateLessonWords(chars, count) {
+      // Use the actual words from the textbook's 词语表 for this lesson
+      const book = exBook.value;
+      const lesson = exLesson.value;
+      const lessonWords = getLessonWords(book, lesson);
+      const wordPool = lessonWords.length > 0 ? lessonWords : allWords;
+
+      const results = [];
+      const selectedWords = shuffle(wordPool).slice(0, Math.min(count, wordPool.length));
+
+      selectedWords.forEach(w => {
+        const pos = Math.floor(Math.random() * w.length);
+        const bc = w[pos];
+        const wc2 = pickWrongAnswers(chars, bc, 3);
+        if (wc2.length >= 2) {
+          results.push({ type:'wordFill', prompt:'填入正确的字', blanked:w.slice(0,pos)+'_'+w.slice(pos+1), correct:bc, wrong:wc2.slice(0,3), fullWord:w });
+        }
+      });
+      return shuffle(results).slice(0, count);
+    }
+
+    function generateWordQuestions(chars, count) {
+      return generateLessonWords(chars, count);
+    }
+
+    function tableLabel(type) {
+      return getTableLabel(type);
+    }
+
+    function quickStart(mode) {
+      // Legacy: now triggers table practice
+      startTablePractice(mode);
+    }
+
+    function startLesson(l, mode) {
+      if (!guardNav()) return;
+      const chars = allCharacters.filter(c => c.book === currentBook.value && c.lesson === l.lesson);
+      if (!chars.length) return;
+      let questions = generateQuestions(chars, chars.length);
+
+      // Add word questions from this lesson
+      const lessonWords = getLessonWords(currentBook.value, l.lesson);
+      if (lessonWords.length > 0) {
+        const wordQs = [];
+        shuffle(lessonWords).forEach(w => {
+          const pos = Math.floor(Math.random() * w.length);
+          const bc = w[pos];
+          const wc2 = pickWrongAnswers(chars, bc, 3);
+          if (wc2.length >= 2) {
+            wordQs.push({ type:'wordFill', prompt:'填入正确的字', blanked:w.slice(0,pos)+'_'+w.slice(pos+1), correct:bc, wrong:wc2.slice(0,3), fullWord:w });
+          }
+        });
+        questions = shuffle([...questions, ...wordQs]);
+      }
+
+      exList.value = questions;
+      exIndex.value = 0;
+      exCorrect.value = 0;
+      exScore.value = 0;
+      exFinished.value = false;
+      exFeedback.value = '';
+      exSelected.value = '';
+      exLesson.value = l.lesson;
+      exBook.value = currentBook.value;
+      exType.value = l.type;
+      page.value = 'exercise';
+      // Scroll to top
+      window.scrollTo(0, 0);
+    }
+
+    function getOptClass(opt) {
+      if (!exFeedback.value) return '';
+      if (opt === exQ.value.correct) return 'opt-correct';
+      if (opt === exSelected.value && exFeedback.value === 'wrong') return 'opt-wrong';
+      if (exFeedback.value) return 'opt-disabled';
+      return '';
+    }
+
+    function selectAnswer(opt) {
+      if (exFeedback.value) return;
+      exSelected.value = opt;
+      const correct = opt === exQ.value.correct;
+      if (correct) {
+        exCorrect.value++;
+        exScore.value++;
+        exFeedback.value = 'correct';
+        if (navigator.vibrate) navigator.vibrate(20);
+      } else {
+        exFeedback.value = 'wrong';
+      }
+    }
+
+    function nextEx() {
+      exFeedback.value = '';
+      if (exIndex.value >= exList.value.length - 1) {
+        finishExercise();
+        return;
+      }
+      exIndex.value++;
+    }
+
+    function finishExercise() {
+      exFinished.value = true;
+      finalCorrect.value = exCorrect.value;
+      finalStars.value = Math.ceil((exCorrect.value / exList.value.length) * 5);
+
+      // Save progress
+      try {
+        const key = `${exBook.value}_${exType.value}_${exLesson.value}`;
+        let d = JSON.parse(localStorage.getItem('chinese_progress_v3') || '{}');
+        d.lessonStars = d.lessonStars || {};
+        const prev = d.lessonStars[key] || 0;
+        if (finalStars.value > prev) {
+          d.totalStars = (d.totalStars || 0) + finalStars.value - prev;
+          d.lessonStars[key] = finalStars.value;
+        }
+        if (!d.completedKeys) d.completedKeys = {};
+        if (!d.completedKeys[key]) {
+          d.completedKeys[key] = true;
+          d.completedLessons = (d.completedLessons || 0) + 1;
+        }
+        d.totalExercises = (d.totalExercises || 0) + 1;
+        localStorage.setItem('chinese_progress_v3', JSON.stringify(d));
+        loadProgress();
+      } catch(e) {}
+    }
+
+    function replayLesson() {
+      const chars = allCharacters.filter(c => c.book === exBook.value && c.lesson === exLesson.value);
+      exList.value = generateQuestions(chars, chars.length);
+      exIndex.value = 0;
+      exCorrect.value = 0;
+      exScore.value = 0;
+      exFinished.value = false;
+      exFeedback.value = '';
+    }
+
+    function goHome() {
+      if (!guardNav()) return;
+      page.value = 'home';
+      window.scrollTo(0, 0);
+    }
+
+    function switchPage(target) {
+      if (!guardNav()) return;
+      page.value = target;
+      window.scrollTo(0, 0);
+    }
+
+    // Init
+    loadProgress();
+    selectBook('2上');
+
+    return {
+      page, currentBook, books, totalStars, completedLessons, totalExercises,
+      recentLessons, completedList, quickCards,
+      exList, exIndex, exCorrect, exScore, exFinished, exFeedback, exSelected,
+      exLesson, finalStars, finalCorrect, exQ, exOptions, exTableType,
+      browseTab, browseBook, browseWords, browseLessonGroups, browseWordGroups, getBrowseCount,
+      loadProgress, getBookProgress, getStars, selectBook, quickStart, startTablePractice, tableLabel,
+      startLesson, getOptClass, selectAnswer, nextEx, replayLesson, goHome, switchPage,
+      nextBtnLabel, completeEmoji, completeTitle
+    };
+  }
+});
+
+app.mount('#app');
+</script>
+</body>
+</html>

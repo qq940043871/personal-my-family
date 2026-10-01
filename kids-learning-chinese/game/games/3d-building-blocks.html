@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D积木</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f0f0f0;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#333;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 20px;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+.back{color:#333;text-decoration:none;padding:5px 15px;background:#eee;border-radius:15px;font-size:0.9em}
+canvas{margin-top:10px;cursor:pointer}
+.colors{display:flex;gap:8px;margin:10px 0;flex-wrap:wrap;justify-content:center}
+.color-btn{width:35px;height:35px;border-radius:8px;border:3px solid transparent;cursor:pointer}
+.color-btn:hover,.color-btn.active{border-color:#333;transform:scale(1.1)}
+.controls{display:flex;gap:10px;margin:10px 0}
+.ctrl{padding:8px 15px;background:#eee;border:1px solid #ddd;border-radius:8px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<h2>🧱 3D积木</h2>
+<div></div>
+</div>
+<div class="colors">
+<div class="color-btn active" style="background:#FF6B6B" onclick="setColor(0xFF6B6B,this)"></div>
+<div class="color-btn" style="background:#FFD93D" onclick="setColor(0xFFD93D,this)"></div>
+<div class="color-btn" style="background:#6BCB77" onclick="setColor(0x6BCB77,this)"></div>
+<div class="color-btn" style="background:#4D96FF" onclick="setColor(0x4D96FF,this)"></div>
+<div class="color-btn" style="background:#C084FC" onclick="setColor(0xC084FC,this)"></div>
+<div class="color-btn" style="background:#FF9800" onclick="setColor(0xFF9800,this)"></div>
+<div class="color-btn" style="background:#fff;border:1px solid #ddd" onclick="setColor(0xffffff,this)"></div>
+</div>
+<canvas id="game" width="600" height="400"></canvas>
+<div class="controls">
+<button class="ctrl" onclick="clearAll()">🗑️ 清除</button>
+<button class="ctrl" onclick="undoBlock()">↩️ 撤销</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xf0f0f0);
+const camera=new THREE.PerspectiveCamera(50,600/400,0.1,1000);
+camera.position.set(15,12,15);camera.lookAt(0,0,0);
+const renderer=new THREE.WebGLRenderer({canvas:document.getElementById('game'),antialias:true});
+renderer.setSize(600,400);
+scene.add(new THREE.AmbientLight(0xffffff,0.6));
+const dirLight=new THREE.DirectionalLight(0xffffff,0.8);dirLight.position.set(10,20,10);scene.add(dirLight);
+// grid
+const gridHelper=new THREE.GridHelper(20,20,0xcccccc,0xcccccc);scene.add(gridHelper);
+// blocks
+let blocks=[];let currentColor=0xFF6B6B;
+function addBlock(x,y,z){
+const geo=new THREE.BoxGeometry(1,1,1);
+const mat=new THREE.MeshStandardMaterial({color:currentColor});
+const mesh=new THREE.Mesh(geo,mat);
+mesh.position.set(x+0.5,y+0.5,z+0.5);
+scene.add(mesh);blocks.push(mesh);
+}
+// initial blocks
+for(let i=-2;i<=2;i++)for(let j=-2;j<=2;j++)addBlock(i,0,j);
+// orbit controls (simple)
+let isDragging=false,lastMouse={x:0,y:0};
+let theta=Math.PI/4,phi=Math.PI/4,radius=20;
+canvas.addEventListener('mousedown',e=>{isDragging=true;lastMouse={x:e.clientX,y:e.clientY}});
+canvas.addEventListener('mousemove',e=>{
+if(!isDragging)return;
+const dx=e.clientX-lastMouse.x,dy=e.clientY-lastMouse.y;
+theta+=dx*0.01;phi=Math.max(0.1,Math.min(Math.PI/2-0.1,phi+dy*0.01));
+lastMouse={x:e.clientX,y:e.clientY};
+updateCamera();
+});
+canvas.addEventListener('mouseup',()=>isDragging=false);
+canvas.addEventListener('wheel',e=>{radius=Math.max(10,Math.min(40,radius+e.deltaY*0.05));updateCamera()});
+function updateCamera(){
+camera.position.x=radius*Math.sin(phi)*Math.cos(theta);
+camera.position.y=radius*Math.cos(phi);
+camera.position.z=radius*Math.sin(phi)*Math.sin(theta);
+camera.lookAt(0,0,0);
+}
+// raycasting to place blocks
+const raycaster=new THREE.Raycaster();
+const mouse=new THREE.Vector2();
+canvas.addEventListener('dblclick',e=>{
+const rect=canvas.getBoundingClientRect();
+mouse.x=((e.clientX-rect.left)/rect.width)*2-1;
+mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;
+raycaster.setFromCamera(mouse,camera);
+const intersects=raycaster.intersectObjects(blocks);
+if(intersects.length>0){
+const hit=intersects[0];
+const normal=hit.face.normal;
+const pos=hit.object.position.clone().add(normal);
+addBlock(Math.floor(pos.x),Math.floor(pos.y),Math.floor(pos.z));
+}
+});
+function setColor(c,el){
+document.querySelectorAll('.color-btn').forEach(b=>b.classList.remove('active'));
+el.classList.add('active');currentColor=c;
+}
+function clearAll(){blocks.forEach(b=>scene.remove(b));blocks=[];
+for(let i=-2;i<=2;i++)for(let j=-2;j<=2;j++)addBlock(i,0,j)}
+function undoBlock(){if(blocks.length>0){const b=blocks.pop();scene.remove(b)}}
+function animate(){requestAnimationFrame(animate);renderer.render(scene,camera)}
+updateCamera();animate();
+</script>
+</body>
+</html>

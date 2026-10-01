@@ -1,0 +1,197 @@
+<view class="page">
+
+  <!-- ===== 家庭头部 ===== -->
+  <view class="fam-header">
+    <view class="fam-title-row">
+      <text class="fam-name">🏠 {{familyName}}</text>
+      <text class="fam-count">{{memberCount}} 位成员</text>
+    </view>
+    <text class="fam-bond">{{coupleBond ? '今日羁绊：全勤加成中 · 宠物成长 ×1.5' : '一家人一起成长吧'}}</text>
+  </view>
+
+  <!-- ===== 今日全家概况 ===== -->
+  <view class="overview-card">
+    <view class="ov-rate-wrap">
+      <text class="ov-rate">{{todayRate}}%</text>
+      <text class="ov-rate-label">今日全家完成率</text>
+    </view>
+    <view class="ov-stats">
+      <view class="ov-stat">
+        <text class="ov-stat-val">{{stats.totalStreak}}<text class="ov-unit">天</text></text>
+        <text class="ov-stat-label">总连签</text>
+      </view>
+      <view class="ov-stat">
+        <text class="ov-stat-val">{{stats.totalCheckins}}<text class="ov-unit">次</text></text>
+        <text class="ov-stat-label">总签到</text>
+      </view>
+      <view class="ov-stat">
+        <text class="ov-stat-val accent">{{totalScore}}</text>
+        <text class="ov-stat-label">总积分</text>
+      </view>
+    </view>
+    <view class="ov-actions">
+      <view class="ov-btn" bindtap="goCheckin"><text>去签到</text></view>
+      <view class="ov-btn ov-btn-ghost" bindtap="goBattle"><text>比武场</text></view>
+    </view>
+  </view>
+
+  <!-- ===== 全家成员（一人一行） ===== -->
+  <view class="section-head">
+    <text class="section-title">全家成员</text>
+    <text class="section-sub">点开看个人详情</text>
+  </view>
+  <view class="member-list">
+    <view
+      wx:for="{{memberCards}}"
+      wx:key="id"
+      class="fm-card"
+      style="border-color: {{item.themeColor}}33"
+      data-id="{{item.id}}"
+      bindtap="openDetail"
+    >
+      <view class="fm-avatar" style="border-color: {{item.themeColor}}">
+        <image wx:if="{{item.avatarUrl}}" class="fm-avatar-img" src="{{item.avatarUrl}}" mode="aspectFill" binderror="onAvatarError" data-id="{{item.id}}" />
+        <text wx:else class="fm-avatar-emoji">{{item.emoji}}</text>
+      </view>
+
+      <view class="fm-info">
+        <view class="fm-name-row">
+          <text class="fm-name">{{item.name}}</text>
+          <text class="fm-me" wx:if="{{item.isMe}}">我</text>
+          <text class="fm-age">{{item.role}} · {{item.age}}岁</text>
+        </view>
+        <view class="fm-progress-row">
+          <view class="fm-progress-track">
+            <view class="fm-progress-fill" style="width: {{item.rate}}%; background: {{item.themeColor}}"></view>
+          </view>
+          <text class="fm-rate">{{item.doneCount}}/{{item.totalCount}}</text>
+        </view>
+      </view>
+
+      <view class="fm-right">
+        <view class="fm-pet">
+          <text class="fm-pet-icon">{{item.petIcon}}</text>
+          <text class="fm-pet-name">{{item.petName}}</text>
+        </view>
+        <view class="fm-nums">
+          <text class="fm-streak">🔥{{item.streak}}天</text>
+          <text class="fm-score">{{item.scoreValue}} {{item.scoreLabel}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 今日签到照片墙 ===== -->
+  <view class="section" wx:if="{{photoTotal}}">
+    <view class="section-head">
+      <text class="section-title">今日签到照片</text>
+      <text class="section-sub">共 {{photoTotal}} 张 · 点击看大图</text>
+    </view>
+    <view class="wall-card">
+      <view wx:for="{{photoWall}}" wx:key="memberId" class="wall-row">
+        <view class="wall-head">
+          <view class="wall-avatar" style="border-color: {{item.themeColor}}">
+            <image wx:if="{{item.avatarUrl}}" class="wall-avatar-img" src="{{item.avatarUrl}}" mode="aspectFill" />
+            <text wx:else class="wall-avatar-emoji">{{item.emoji}}</text>
+          </view>
+          <text class="wall-name">{{item.name}}</text>
+          <text class="wall-count">{{item.count}} 张</text>
+        </view>
+        <view class="wall-photos">
+          <image
+            wx:for="{{item.photos}}"
+            wx:for-item="ph"
+            wx:key="taskId"
+            class="wall-photo"
+            src="{{ph.photo}}"
+            mode="aspectFill"
+            data-src="{{ph.photo}}"
+            bindtap="previewFamilyPhoto"
+          />
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 家庭挑战 ===== -->
+  <view class="challenge-card">
+    <view class="challenge-info">
+      <text class="challenge-title">🏆 {{challenge.title}}</text>
+      <text class="challenge-sub">{{challenge.goal}}</text>
+    </view>
+    <view class="challenge-progress">
+      <view class="challenge-track">
+        <view class="challenge-fill" style="width: {{challengePercent}}%"></view>
+      </view>
+      <text class="challenge-num">{{challenge.current}}/{{challenge.target}}{{challenge.unit}}</text>
+    </view>
+    <text class="challenge-check" wx:if="{{challengeDone}}">✓</text>
+  </view>
+
+  <!-- ===== 结算（并入） ===== -->
+  <view class="section-head">
+    <text class="section-title">家庭结算</text>
+    <text class="section-sub">周期排行与奖励</text>
+  </view>
+
+  <view class="period-tabs">
+    <view
+      wx:for="{{periods}}"
+      wx:key="key"
+      class="period-tab {{currentPeriod === item.key ? 'active' : ''}}"
+      data-key="{{item.key}}"
+      bindtap="switchPeriod"
+    >
+      <text>{{item.label}}</text>
+    </view>
+  </view>
+
+  <view class="settlement-card">
+    <view class="settlement-header">
+      <text class="settlement-title">{{periodLabel}}</text>
+      <text class="settlement-date">{{dateLabel}}</text>
+    </view>
+    <view
+      wx:for="{{rankList}}"
+      wx:key="memberId"
+      class="rank-item {{item.highlight ? 'highlight' : ''}}"
+    >
+      <text class="rank-num {{item.rankClass}}">{{item.medal}}</text>
+      <text class="rank-emoji">{{item.emoji}}</text>
+      <text class="rank-name">{{item.name}}</text>
+      <text wx:if="{{item.bonusText}}" class="rank-bonus">{{item.bonusText}}</text>
+      <text class="rank-rate">{{item.rate}}%</text>
+      <text class="rank-extra" wx:if="{{item.extra}}">{{item.extra}}</text>
+    </view>
+    <view class="rank-note">👨‍👩‍👧‍👦 全家统一榜：幼儿带「🍼 萌宠加成」一起排，不再被排除在外</view>
+  </view>
+
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">奖励发放</text>
+    </view>
+    <view class="reward-list">
+      <text wx:for="{{rewards}}" wx:key="*this" class="reward-item">{{item}}</text>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">家庭勋章墙</text>
+    </view>
+    <view class="achievement-grid">
+      <view
+        wx:for="{{achievements}}"
+        wx:key="id"
+        class="achievement-badge {{item.earned ? 'earned' : ''}}"
+      >
+        <text class="achievement-icon">{{item.icon}}</text>
+        <text class="achievement-name">{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="notice">
+    <text class="notice-text">💡 奶奶与小宝不参与排名，只在各自视角展示进度，避免竞争压力。</text>
+  </view>
+</view>

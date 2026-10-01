@@ -1,0 +1,127 @@
+<view class="page">
+
+  <!-- 我的视角头部 -->
+  <view class="me-header">
+    <view class="me-left">
+      <view class="me-avatar">
+        <image wx:if="{{me.avatarUrl}}" class="me-avatar-img" src="{{me.avatarUrl}}" mode="aspectFill" />
+        <text wx:else class="me-avatar-emoji">{{me.emoji}}</text>
+      </view>
+      <view class="me-col">
+        <text class="me-name">{{me.name}}</text>
+        <text class="me-meta">{{me.role}} · 今日 {{doneCount}}/{{totalCount}}</text>
+      </view>
+    </view>
+    <view class="me-switch" bindtap="switchRole">
+      <text class="me-switch-icon">🔄</text>
+      <text class="me-switch-text">切换</text>
+    </view>
+  </view>
+
+  <!-- 进度条 -->
+  <view class="progress-card">
+    <view class="progress-track">
+      <view class="progress-fill" style="width: {{percent}}%"></view>
+    </view>
+    <text class="progress-text">{{percent}}% 完成</text>
+  </view>
+
+  <!-- 拍照必填说明 -->
+  <view class="photo-tip">
+    <text class="photo-tip-icon">📷</text>
+    <view class="photo-tip-col">
+      <text class="photo-tip-text">今日签到需要先拍照，拍完自动完成</text>
+      <text class="photo-tip-sub">照片保存在本机，可在任务下点开大图 / 重拍 / 删除</text>
+    </view>
+    <text wx:if="{{photoCount}}" class="photo-tip-count">{{photoCount}} 张</text>
+  </view>
+
+  <!-- 任务列表 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">{{cardTitle}}</text>
+      <text class="card-subtitle">{{doneCount}}/{{totalCount}} 完成</text>
+    </view>
+
+    <view class="task-list">
+      <block wx:for="{{tasks}}" wx:key="id">
+        <view
+          class="task-item {{item.done ? 'done' : ''}}"
+          data-member-id="{{item.memberId}}"
+          data-task-id="{{item.id}}"
+          data-photo="{{item.photo}}"
+          data-done="{{item.done}}"
+          bindtap="onTaskTap"
+        >
+          <view class="task-icon">
+            <text>{{item.icon}}</text>
+          </view>
+          <view class="task-info">
+            <text class="task-name">{{item.name}}</text>
+            <text class="task-meta">{{item.category}}</text>
+          </view>
+          <text class="task-points">+{{item.points}}</text>
+          <view class="task-actions">
+            <view wx:if="{{!item.done}}" class="camera-btn">
+              <text>📷</text>
+            </view>
+            <view wx:else class="check-btn done">
+              <text>✓</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 已完成任务的照片条 -->
+        <view wx:if="{{item.done}}" class="photo-strip">
+          <image
+            wx:if="{{item.photo}}"
+            class="task-thumb"
+            src="{{item.photo}}"
+            mode="aspectFill"
+            data-src="{{item.photo}}"
+            catchtap="previewPhoto"
+          />
+          <view wx:else class="thumb-empty">
+            <text class="thumb-empty-text">未拍照</text>
+          </view>
+          <view class="strip-ops">
+            <view
+              class="strip-btn"
+              data-member-id="{{item.memberId}}"
+              data-task-id="{{item.id}}"
+              catchtap="retakePhoto"
+            >
+              <text class="strip-btn-text">📷 {{item.photo ? '重拍' : '补拍'}}</text>
+            </view>
+            <view
+              wx:if="{{item.photo}}"
+              class="strip-btn strip-btn-danger"
+              data-member-id="{{item.memberId}}"
+              data-task-id="{{item.id}}"
+              data-task-name="{{item.name}}"
+              catchtap="removePhoto"
+            >
+              <text class="strip-btn-text">🗑 删除</text>
+            </view>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <view wx:if="{{!tasks.length}}" class="empty">
+      <text class="empty-icon">🎉</text>
+      <text class="empty-text">暂无任务</text>
+    </view>
+  </view>
+
+  <checkin-modal
+    show="{{modalShow}}"
+    member="{{modalMember}}"
+    task="{{modalTask}}"
+    evolved="{{modalEvolved}}"
+    stage="{{modalStage}}"
+    photo="{{modalPhoto}}"
+    verse="{{modalVerse}}"
+    bind:close="closeModal"
+  />
+</view>

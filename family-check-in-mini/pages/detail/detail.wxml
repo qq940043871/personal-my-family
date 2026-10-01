@@ -1,0 +1,213 @@
+<view class="page" wx:if="{{member}}">
+
+  <!-- ===== 头部 ===== -->
+  <view class="detail-header">
+    <view class="dh-avatar" style="border-color: {{member.themeColor}}">
+      <image wx:if="{{member.avatarUrl}}" class="dh-avatar-img" src="{{member.avatarUrl}}" mode="aspectFill" binderror="onAvatarError" />
+      <text wx:else class="dh-avatar-emoji">{{member.emoji}}</text>
+    </view>
+    <view class="dh-info">
+      <view class="dh-name-row">
+        <text class="dh-name">{{member.name}}</text>
+        <text class="dh-age">{{member.age}}岁 · {{member.role}}</text>
+      </view>
+      <text class="dh-pet">{{activePet.icon}} {{activePet.name}} · {{activePet.species}}</text>
+    </view>
+    <view class="dh-stage-badge" style="background: {{member.themeColor}}">
+      <text class="dh-stage-text">{{stageName}}</text>
+    </view>
+  </view>
+
+  <!-- ===== 今日签到任务 ===== -->
+  <view class="section">
+    <view class="col-title-wrap">
+      <text class="col-title">今日签到任务</text>
+      <text class="col-title-sub">每日打卡</text>
+    </view>
+    <view class="trial-grid">
+      <view
+        wx:for="{{member.tasks}}"
+        wx:key="id"
+        class="trial-card {{item.done ? 'done' : ''}}"
+        style="border-color: {{item.done ? member.themeColor + '55' : '#F3EDE5'}}"
+        data-id="{{item.id}}"
+        data-photo="{{item.photo}}"
+        data-done="{{item.done}}"
+        bindtap="checkTask"
+      >
+        <view class="trial-icon" style="background: {{item.iconBg}}">
+          <text>{{item.icon}}</text>
+        </view>
+        <text class="trial-name">{{item.name}}</text>
+        <view class="trial-foot">
+          <text class="trial-points">+{{item.points}}</text>
+          <view class="trial-check {{item.done ? 'done' : ''}}">
+            <text wx:if="{{item.done}}">✓</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 今日签到照片 ===== -->
+  <view class="section" wx:if="{{photos.length}}">
+    <view class="col-title-wrap">
+      <text class="col-title">签到照片</text>
+      <text class="col-title-sub">共 {{photoCount}} 张 · 点击看大图</text>
+    </view>
+    <view class="photo-grid">
+      <view
+        wx:for="{{photos}}"
+        wx:key="taskId"
+        class="photo-cell"
+        data-src="{{item.photo}}"
+        bindtap="previewPhoto"
+      >
+        <image class="photo-cell-img" src="{{item.photo}}" mode="aspectFill" />
+        <text class="photo-cell-name">{{item.icon}} {{item.taskName}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 宠物属性 ===== -->
+  <view class="section">
+    <text class="col-title">宠物属性</text>
+    <view class="pet-card">
+      <view class="pet-emoji-circle" style="background: {{member.themeColor}}1A">
+        <text class="pet-emoji">{{activePet.icon}}</text>
+      </view>
+      <text class="pet-stage-label">当前阶段 · {{stageName}}</text>
+
+      <!-- 更换宠物 -->
+      <view class="pet-switcher" wx:if="{{pets.length}}">
+        <text class="switcher-label">更换宠物</text>
+        <view class="switcher-row">
+          <view
+            wx:for="{{pets}}"
+            wx:key="id"
+            class="switcher-pet {{item.active ? 'active' : ''}}"
+            style="{{item.active ? 'border-color:' + member.themeColor + ';background:' + member.themeColor + '12' : ''}}"
+            data-id="{{item.id}}"
+            bindtap="switchPet"
+          >
+            <text class="switcher-icon">{{item.icon}}</text>
+            <text class="switcher-name">{{item.name}}</text>
+          </view>
+        </view>
+        <view class="adopt-link" bindtap="goPets">
+          <text class="adopt-link-text">🐾 去领养中心看更多伙伴</text>
+          <text class="adopt-link-arrow">›</text>
+        </view>
+      </view>
+
+      <view class="pet-grow-row">
+        <text class="pet-grow-label">成长值</text>
+        <text class="pet-grow-num">{{member.grow}}/{{member.totalGrow}}</text>
+      </view>
+      <view class="pet-track">
+        <view class="pet-fill" style="width: {{growPercent}}%; background: {{member.themeColor}}"></view>
+      </view>
+
+      <view class="attrs">
+        <view wx:for="{{attrList}}" wx:key="key" class="attr-row">
+          <text class="attr-label">{{item.label}}</text>
+          <view class="attr-track">
+            <view class="attr-fill" style="width: {{item.value}}%; background: {{item.color}}"></view>
+          </view>
+          <text class="attr-val">{{item.value}}</text>
+        </view>
+      </view>
+
+      <!-- 龙鳞（仅 9 岁孩子） -->
+      <view class="scales" wx:if="{{member.hasDragonScales}}">
+        <text class="scales-label">🐉 龙鳞余量（{{member.dragonScales}} 片）</text>
+        <view class="scales-row">
+          <text wx:for="{{scaleList}}" wx:key="i" class="scale {{item.on ? 'on' : ''}}">◆</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 连签统计 ===== -->
+  <view class="section">
+    <text class="col-title">连签统计</text>
+    <view class="stat-pills">
+      <view class="pill">
+        <text class="pill-val">{{member.streak}}<text class="pill-unit">天</text></text>
+        <text class="pill-label">连签</text>
+      </view>
+      <view class="pill">
+        <text class="pill-val">{{member.totalCheckins}}<text class="pill-unit">次</text></text>
+        <text class="pill-label">总签到</text>
+      </view>
+      <view class="pill" wx:if="{{member.hasDragonScales}}">
+        <text class="pill-val">{{member.dragonScales}}<text class="pill-unit">片</text></text>
+        <text class="pill-label">龙鳞</text>
+      </view>
+      <view class="pill" wx:else>
+        <text class="pill-val">{{scoreValue}}</text>
+        <text class="pill-label">{{scoreLabel}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 龙技能树（仅小龙） ===== -->
+  <view class="section" wx:if="{{member.skills}}">
+    <text class="col-title">🐲 龙技能树</text>
+    <view class="skill-tree">
+      <view
+        wx:for="{{member.skills}}"
+        wx:key="id"
+        class="skill-node {{item.unlocked ? 'unlocked' : (item.cost ? 'lockable' : 'locked')}}"
+      >
+        <view class="skill-dot"></view>
+        <view class="skill-body">
+          <text class="skill-name">{{item.name}}</text>
+          <text class="skill-desc">{{item.desc}}</text>
+        </view>
+        <text class="skill-state">{{item.unlocked ? '已解锁' : (item.cost ? '需' + item.cost + '鳞' : '未解锁')}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 属灵果实（仅奶奶） ===== -->
+  <view class="section" wx:elif="{{fruitList.length}}">
+    <text class="col-title">🕊️ 属灵果实</text>
+    <view class="fruit-grid">
+      <view wx:for="{{fruitList}}" wx:key="id" class="fruit-item">
+        <text class="fruit-item-icon">{{item.icon}}</text>
+        <text class="fruit-item-name">{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 成长里程碑 ===== -->
+  <view class="section">
+    <text class="col-title">🌟 成长里程碑</text>
+    <view class="milestones">
+      <view
+        wx:for="{{milestoneList}}"
+        wx:key="label"
+        class="mile-node {{item.reached ? 'reached' : ''}}"
+      >
+        <view class="mile-dot"></view>
+        <view class="mile-body">
+          <text class="mile-label">{{item.label}}</text>
+          <text class="mile-sub" wx:if="{{item.sub}}">{{item.sub}}</text>
+          <text class="mile-reward" wx:if="{{item.reward}}">{{item.reward}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <checkin-modal
+    show="{{modalShow}}"
+    member="{{modalMember}}"
+    task="{{modalTask}}"
+    evolved="{{modalEvolved}}"
+    stage="{{modalStage}}"
+    photo="{{modalPhoto}}"
+    verse="{{modalVerse}}"
+    bind:close="closeModal"
+  />
+</view>

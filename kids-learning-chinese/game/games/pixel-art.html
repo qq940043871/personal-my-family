@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>像素画</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f0f0f0;font-family:'Microsoft YaHei',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 20px;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+.back{color:#333;text-decoration:none;padding:5px 15px;background:#eee;border-radius:15px;font-size:0.9em}
+.tools{display:flex;gap:8px;padding:10px;background:#fff;margin:10px 0;border-radius:15px;box-shadow:0 2px 5px rgba(0,0,0,0.1);flex-wrap:wrap;justify-content:center}
+.color-btn{width:30px;height:30px;border-radius:5px;border:2px solid transparent;cursor:pointer}
+.color-btn:hover,.color-btn.active{border-color:#333;transform:scale(1.15)}
+.action-btn{padding:5px 12px;background:#eee;border:1px solid #ddd;border-radius:8px;cursor:pointer;font-size:0.85em}
+.action-btn:hover{background:#ddd}
+canvas{background:#fff;border:2px solid #ddd;border-radius:5px;cursor:crosshair}
+.size-sel{display:flex;gap:5px;margin:5px 0}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<h2>🖼️ 像素画</h2>
+<div></div>
+</div>
+<div class="tools">
+<div class="color-btn active" style="background:#333" data-color="#333" onclick="setColor(this)"></div>
+<div class="color-btn" style="background:#FF6B6B" data-color="#FF6B6B" onclick="setColor(this)"></div>
+<div class="color-btn" style="background:#FF9800" data-color="#FF9800" onclick="setColor(this)"></div>
+<div class="color-btn" style="background:#FFD93D" data-color="#FFD93D" onclick="setColor(this)"></div>
+<div class="color-btn" style="background:#6BCB77" data-color="#6BCB77" onclick="setColor(this)"></div>
+<div class="color-btn" style="background:#4D96FF" data-color="#4D96FF" onclick="setColor(this)"></div>
+<div class="color-btn" style="background:#9C27B0" data-color="#9C27B0" onclick="setColor(this)"></div>
+<div class="color-btn" style="background:#fff;border:1px solid #ddd" data-color="#ffffff" onclick="setColor(this)"></div>
+<div style="border-left:1px solid #ddd;height:24px"></div>
+<button class="action-btn" onclick="clearGrid()">清除</button>
+<button class="action-btn" onclick="saveArt()">保存</button>
+</div>
+<canvas id="canvas" width="480" height="480"></canvas>
+
+<script>
+const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');
+const GRID=16,CELL=30;
+let grid,color='#333',drawing=false;
+function init(){
+grid=Array.from({length:GRID},()=>Array(GRID).fill('#ffffff'));
+drawGrid();
+}
+function drawGrid(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+ctx.fillStyle=grid[r][c];
+ctx.fillRect(c*CELL,r*CELL,CELL,CELL);
+ctx.strokeStyle='#ddd';ctx.lineWidth=0.5;
+ctx.strokeRect(c*CELL,r*CELL,CELL,CELL);
+}
+}
+function paint(x,y){
+const c=Math.floor(x/CELL),r=Math.floor(y/CELL);
+if(r>=0&&r<GRID&&c>=0&&c<GRID){grid[r][c]=color;drawGrid()}
+}
+function getPos(e){
+const rect=canvas.getBoundingClientRect();
+if(e.touches)return{x:(e.touches[0].clientX-rect.left)*(canvas.width/rect.width),y:(e.touches[0].clientY-rect.top)*(canvas.height/rect.height)};
+return{x:(e.clientX-rect.left)*(canvas.width/rect.width),y:(e.clientY-rect.top)*(canvas.height/rect.height)};
+}
+canvas.addEventListener('mousedown',e=>{drawing=true;const p=getPos(e);paint(p.x,p.y)});
+canvas.addEventListener('mousemove',e=>{if(drawing){const p=getPos(e);paint(p.x,p.y)}});
+canvas.addEventListener('mouseup',()=>drawing=false);
+canvas.addEventListener('mouseleave',()=>drawing=false);
+canvas.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;const p=getPos(e);paint(p.x,p.y)},{passive:false});
+canvas.addEventListener('touchmove',e=>{e.preventDefault();if(drawing){const p=getPos(e);paint(p.x,p.y)}},{passive:false});
+canvas.addEventListener('touchend',()=>drawing=false);
+function setColor(el){
+document.querySelectorAll('.color-btn').forEach(b=>b.classList.remove('active'));
+el.classList.add('active');color=el.dataset.color;
+}
+function clearGrid(){init()}
+function saveArt(){
+const link=document.createElement('a');link.download='像素画.png';link.href=canvas.toDataURL();link.click();
+}
+init();
+</script>
+</body>
+</html>

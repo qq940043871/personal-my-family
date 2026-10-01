@@ -1,0 +1,39 @@
+/* uni-app 全局 SCSS 变量 */
+$primary-color: #5B6AEF;
+$primary-light: #7C8BF8;
+$secondary-color: #FF6B6B;
+$success-color: #4CAF50;
+$warning-color: #FF9800;
+$text-primary: #333333;
+$text-secondary: #666666;
+$text-light: #999999;
+$bg-color: #F5F7FF;
+$white: #FFFFFF;
+$border-color: #E8ECF4;
+
+/* 主题色渐变 */
+$gradient-primary: linear-gradient(135deg, #5B6AEF 0%, #7C4DFF 100%);
+$gradient-success: linear-gradient(135deg, #4CAF50 0%, #8BC34A 100%);
+$gradient-warning: linear-gradient(135deg, #FF9800 0%, #FFB74D 100%);
+$gradient-danger: linear-gradient(135deg, #f44336 0%, #e57373 100%);
+
+/* 圆角 */
+$radius-sm: 8rpx;
+$radius-md: 16rpx;
+$radius-lg: 24rpx;
+$radius-xl: 32rpx;
+$radius-round: 50%;
+
+/* 阴影 */
+$shadow-sm: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
+
+/* 字体大小 */
+$font-xs: 20rpx;
+$font-sm: 24rpx;
+$font-md: 28rpx;
+$font-lg: 32rpx;
+$font-xl: 36rpx;
+$font-xxl: 44rpx;
+$font-title: 52rpx;

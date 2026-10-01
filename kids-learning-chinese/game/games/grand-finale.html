@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>终极庆典</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a2a;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 20px;z-index:5}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%}
+.msg{position:fixed;top:20%;text-align:center;z-index:5;pointer-events:none}
+.msg h1{font-size:3em;text-shadow:0 0 20px rgba(255,255,255,0.5)}
+.msg p{font-size:1.3em;margin-top:15px;opacity:0.8}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back" style="z-index:10">← 返回</a>
+<div></div>
+</div>
+<canvas id="game"></canvas>
+<div class="msg">
+<h1>🎆 终极庆典 🎆</h1>
+<p>恭喜你完成了所有游戏！<br>你是最棒的！🎉</p>
+</div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+let W,H,fireworks,particles;
+function resize(){W=C.width=window.innerWidth;H=C.height=window.innerHeight}
+window.addEventListener('resize',resize);resize();
+function init(){fireworks=[];particles=[]}
+function createFirework(){
+const x=Math.random()*W;
+const targetY=50+Math.random()*H*0.4;
+const colors=['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#C084FC','#FF9800','#00BCD4','#F06292'];
+const color=colors[Math.floor(Math.random()*colors.length)];
+fireworks.push({x,y:H,vy:-(8+Math.random()*4),targetY,color,trail:[]});
+}
+function explode(fw){
+const count=40+Math.floor(Math.random()*30);
+for(let i=0;i<count;i++){
+const angle=Math.random()*Math.PI*2;
+const speed=2+Math.random()*5;
+particles.push({
+x:fw.x,y:fw.targetY,
+vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,
+color:fw.color,life:1,decay:0.01+Math.random()*0.015,
+r:2+Math.random()*2
+});
+}
+// sparkle
+for(let i=0;i<10;i++){
+particles.push({
+x:fw.x+Math.random()*20-10,y:fw.targetY+Math.random()*20-10,
+vx:(Math.random()-0.5)*2,vy:(Math.random()-0.5)*2,
+color:'#fff',life:1,decay:0.03,r:1
+});
+}
+}
+function update(){
+if(Math.random()<0.04)createFirework();
+fireworks.forEach((fw,i)=>{
+fw.y+=fw.vy;
+fw.trail.push({x:fw.x,y:fw.y});
+if(fw.trail.length>10)fw.trail.shift();
+if(fw.y<=fw.targetY){explode(fw);fireworks.splice(i,1)}
+});
+particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.02;p.life-=p.decay;p.vx*=0.99});
+particles=particles.filter(p=>p.life>0);
+}
+function draw(){
+X.fillStyle='rgba(10,10,42,0.15)';X.fillRect(0,0,W,H);
+// firework trails
+fireworks.forEach(fw=>{
+fw.trail.forEach((t,i)=>{
+X.globalAlpha=i/fw.trail.length;
+X.fillStyle=fw.color;
+X.fillRect(t.x-1,t.y-1,2,2);
+});
+X.globalAlpha=1;
+X.fillStyle=fw.color;X.shadowColor=fw.color;X.shadowBlur=8;
+X.beginPath();X.arc(fw.x,fw.y,3,0,Math.PI*2);X.fill();X.shadowBlur=0;
+});
+// particles
+particles.forEach(p=>{
+X.globalAlpha=p.life;
+X.fillStyle=p.color;X.shadowColor=p.color;X.shadowBlur=3;
+X.beginPath();X.arc(p.x,p.y,p.r,0,Math.PI*2);X.fill();
+});
+X.globalAlpha=1;X.shadowBlur=0;
+}
+function loop(){update();draw();requestAnimationFrame(loop)}
+init();loop();
+</script>
+</body>
+</html>

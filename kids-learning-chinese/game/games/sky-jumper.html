@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>天空跳跃</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(180deg,#87CEEB,#E3F2FD);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#333;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:400px;padding:10px 20px}
+.info{display:flex;gap:15px}.info-item{background:rgba(255,255,255,0.3);padding:5px 15px;border-radius:15px;font-size:0.9em;font-weight:bold}
+.back{color:#333;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.4);border-radius:15px;font-size:0.9em}
+canvas{margin-top:10px}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#4D96FF,#667eea);padding:40px;border-radius:20px;text-align:center;max-width:400px;color:#fff}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">高度: <span id="score">0</span></div></div>
+</div>
+<canvas id="game" width="400" height="600"></canvas>
+
+<div class="overlay" id="start"><div class="box"><h1>☁️ 天空跳跃</h1><p>左右方向键移动<br>不断向上跳跃！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>游戏结束</h1><p>高度: <span id="final">0</span></p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+const W=400,H=600;
+let player,platforms,score,maxY,cameraY,running;
+const keys={};
+function init(){
+player={x:W/2-15,y:H-80,w:30,h:30,vy:0};
+platforms=[];score=0;maxY=player.y;cameraY=0;running=true;
+for(let i=0;i<10;i++){
+platforms.push({x:Math.random()*(W-70),y:H-50-i*60,w:70,h:12,type:i<2?'normal':Math.random()<0.3?'moving':'normal',dir:1});
+}
+document.getElementById('score').textContent=0;
+}
+function drawBg(){
+const grad=X.createLinearGradient(0,0,0,H);
+grad.addColorStop(0,'#87CEEB');grad.addColorStop(1,'#E3F2FD');
+X.fillStyle=grad;X.fillRect(0,0,W,H);
+// clouds
+X.fillStyle='rgba(255,255,255,0.5)';
+for(let i=0;i<5;i++){
+const cx=(i*120+Date.now()*0.01)%W;
+X.beginPath();X.arc(cx,50+i*30,20,0,Math.PI*2);X.arc(cx+15,45+i*30,15,0,Math.PI*2);X.fill();
+}
+}
+function drawPlayer(){
+const py=player.y-cameraY;
+X.fillStyle='#FF6B6B';X.shadowColor='#FF6B6B';X.shadowBlur=8;
+X.fillRect(player.x,py,player.w,player.h);
+X.fillStyle='#FFD93D';X.beginPath();X.arc(player.x+player.w/2,py-5,8,0,Math.PI*2);X.fill();
+X.fillStyle='#333';X.fillRect(player.x+8,py-7,3,3);X.fillRect(player.x+19,py-7,3,3);
+X.shadowBlur=0;
+}
+function drawPlatforms(){
+platforms.forEach(p=>{
+const py=p.y-cameraY;
+if(py<-20||py>H+20)return;
+const colors={normal:'#6BCB77',moving:'#4D96FF',fragile:'#FFD93D'};
+X.fillStyle=colors[p.type]||'#6BCB77';
+X.shadowColor=X.fillStyle;X.shadowBlur=5;
+X.fillRect(p.x,py,p.w,p.h);
+X.shadowBlur=0;
+});
+}
+function update(){
+if(!running)return;
+if(keys.ArrowLeft)player.x=Math.max(0,player.x-6);
+if(keys.ArrowRight)player.x=Math.min(W-player.w,player.x+6);
+player.vy+=0.4;player.y+=player.vy;
+// moving platforms
+platforms.forEach(p=>{
+if(p.type==='moving'){p.x+=2*p.dir;if(p.x>W-p.w||p.x<0)p.dir*=-1}
+});
+// platform collision
+if(player.vy>0){
+platforms.forEach(p=>{
+const py=player.y+player.h;
+if(py>=p.y&&py<=p.y+p.h+player.vy&&player.x+player.w>p.x&&player.x<p.x+p.w){
+player.y=p.y-player.h;player.vy=-12;
+if(p.type==='fragile'){setTimeout(()=>{const idx=platforms.indexOf(p);if(idx>-1)platforms.splice(idx,1)},200)}
+}
+});
+}
+// camera
+if(player.y<cameraY+H/3)cameraY=player.y-H/3;
+// score
+const height=Math.floor((-player.y+H)/10);
+if(height>score){score=height;document.getElementById('score').textContent=score}
+// generate platforms
+while(platforms.length<12){
+const lastY=Math.min(...platforms.map(p=>p.y));
+const newY=lastY-50-Math.random()*40;
+platforms.push({x:Math.random()*(W-70),y:newY,w:70,h:12,type:Math.random()<0.3?'moving':'normal',dir:Math.random()>0.5?1:-1});
+}
+// remove off screen
+platforms=platforms.filter(p=>p.y-cameraY<H+50);
+// fall death
+if(player.y-cameraY>H){running=false;document.getElementById('final').textContent=score;document.getElementById('over').classList.remove('hidden');playSound(200,0.3)}
+}
+function draw(){drawBg();drawPlatforms();drawPlayer()}
+function loop(){update();draw();requestAnimationFrame(loop)}
+function startGame(){document.getElementById('start').classList.add('hidden');document.getElementById('over').classList.add('hidden');init();loop()}
+document.addEventListener('keydown',e=>{keys[e.key]=true;e.preventDefault()});
+document.addEventListener('keyup',e=>keys[e.key]=false);
+let touchX=null;
+C.addEventListener('touchstart',e=>{touchX=e.touches[0].clientX});
+C.addEventListener('touchmove',e=>{e.preventDefault();const dx=e.touches[0].clientX-touchX;if(dx<-5)keys.ArrowLeft=true;else if(dx>5)keys.ArrowRight=true;touchX=e.touches[0].clientX},{passive:false});
+C.addEventListener('touchend',()=>{keys.ArrowLeft=false;keys.ArrowRight=false});
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>水果忍者</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(180deg,#1a0a2e,#2d1b4e);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:500px;padding:10px 20px;z-index:5}
+.info{display:flex;gap:15px}.info-item{background:rgba(255,255,255,0.1);padding:5px 15px;border-radius:15px;font-size:0.9em}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%;cursor:none}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#FF6B6B,#FFD93D);padding:40px;border-radius:20px;text-align:center;max-width:400px}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+.combo{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:3em;font-weight:bold;color:#FFD93D;text-shadow:0 0 20px rgba(255,217,61,0.5);pointer-events:none;opacity:0;transition:opacity 0.3s;z-index:5}
+</style>
+</head>
+<body>
+<div class="top-bar" style="position:relative">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">得分: <span id="score">0</span></div><div class="info-item">生命: <span id="lives">3</span></div></div>
+</div>
+<canvas id="game"></canvas>
+<div class="combo" id="combo"></div>
+
+<div class="overlay" id="start"><div class="box"><h1>🍉 水果忍者</h1><p>滑动切水果！<br>切到炸弹会扣分哦~</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>游戏结束</h1><p>得分: <span id="final">0</span></p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+let W,H,fruits,particles,score,lives,combo,comboTimer,swipeTrail,running,spawnTimer;
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
+window.addEventListener('resize',resize);resize();
+const fruitData=[
+{emoji:'🍉',points:10},{emoji:'🍊',points:10},{emoji:'🍋',points:10},
+{emoji:'🍎',points:10},{emoji:'🍐',points:10},{emoji:'🍇',points:20},
+{emoji:'🍓',points:20},{emoji:'🍑',points:20},{emoji:'🥝',points:20}
+];
+function init(){
+fruits=[];particles=[];score=0;lives=3;combo=0;swipeTrail=[];running=true;spawnTimer=0;
+document.getElementById('score').textContent=0;
+document.getElementById('lives').textContent=3;
+}
+function spawn(){
+const x=100+Math.random()*(W-200);
+const isBomb=Math.random()<0.15;
+fruits.push({
+x,y:H+50,vx:(Math.random()-0.5)*4,vy:-(10+Math.random()*5),
+emoji:isBomb?'💣':fruitData[Math.floor(Math.random()*fruitData.length)].emoji,
+points:isBomb?-50:fruitData[Math.floor(Math.random()*fruitData.length)].points,
+r:30,sliced:false,bomb:isBomb,gravity:0.2,angle:0,va:(Math.random()-0.5)*0.2
+});
+}
+function sliceFruit(f){
+if(f.sliced)return;
+f.sliced=true;
+for(let i=0;i<8;i++){
+particles.push({x:f.x,y:f.y,vx:(Math.random()-0.5)*8,vy:(Math.random()-0.5)*8,
+emoji:f.bomb?'💥':f.emoji,r:20,life:1,decay:0.02});
+}
+if(f.bomb){
+lives--;combo=0;document.getElementById('lives').textContent=lives;
+playSound(150,0.3);
+if(lives<=0)endGame();
+}else{
+combo++;score+=f.points*combo;document.getElementById('score').textContent=score;
+if(combo>1){const c=document.getElementById('combo');c.textContent=combo+'连击!';c.style.opacity=1;clearTimeout(comboTimer);comboTimer=setTimeout(()=>c.style.opacity=0,1000)}
+playSound(600+combo*50,0.1);
+}
+}
+function endGame(){running=false;document.getElementById('final').textContent=score;document.getElementById('over').classList.remove('hidden')}
+function update(){
+if(!running)return;
+spawnTimer++;
+if(spawnTimer>50){spawnTimer=0;for(let i=0;i<1+Math.floor(Math.random()*3);i++)spawn()}
+fruits.forEach(f=>{
+if(f.sliced)return;
+f.x+=f.vx;f.y+=f.vy;f.vy+=f.gravity;f.angle+=f.va;
+if(f.y>H+100&&!f.sliced&&!f.bomb){lives--;combo=0;document.getElementById('lives').textContent=lives;if(lives<=0)endGame()}
+});
+fruits=fruits.filter(f=>f.y<H+100);
+particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=0.1;p.life-=p.decay;p.r*=0.98});
+particles=particles.filter(p=>p.life>0);
+// swipe collision
+if(swipeTrail.length>1){
+const last=swipeTrail[swipeTrail.length-1];
+fruits.forEach(f=>{
+if(f.sliced)return;
+const dx=last.x-f.x,dy=last.y-f.y;
+if(Math.sqrt(dx*dx+dy*dy)<f.r+30)sliceFruit(f);
+});
+}
+}
+function draw(){
+ctx.fillStyle='#1a0a2e';ctx.fillRect(0,0,W,H);
+// swipe trail
+if(swipeTrail.length>1){
+ctx.strokeStyle='rgba(255,255,255,0.6)';ctx.lineWidth=3;ctx.lineCap='round';
+ctx.beginPath();ctx.moveTo(swipeTrail[0].x,swipeTrail[0].y);
+for(let i=1;i<swipeTrail.length;i++)ctx.lineTo(swipeTrail[i].x,swipeTrail[i].y);
+ctx.stroke();
+}
+fruits.forEach(f=>{
+if(f.sliced)return;
+ctx.save();ctx.translate(f.x,f.y);ctx.rotate(f.angle);
+ctx.font='50px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+ctx.fillText(f.emoji,0,0);
+ctx.restore();
+});
+particles.forEach(p=>{
+ctx.globalAlpha=p.life;
+ctx.font=p.r+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+ctx.fillText(p.emoji,p.x,p.y);
+});
+ctx.globalAlpha=1;
+}
+function loop(){update();draw();requestAnimationFrame(loop)}
+function startGame(){document.getElementById('start').classList.add('hidden');document.getElementById('over').classList.add('hidden');init();loop()}
+canvas.addEventListener('mousemove',e=>{swipeTrail.push({x:e.clientX,y:e.clientY});if(swipeTrail.length>10)swipeTrail.shift()});
+canvas.addEventListener('mousedown',()=>{swipeTrail=[]});
+canvas.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];swipeTrail.push({x:t.clientX,y:t.clientY});if(swipeTrail.length>10)swipeTrail.shift()},{passive:false});
+canvas.addEventListener('touchstart',e=>{swipeTrail=[]});
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

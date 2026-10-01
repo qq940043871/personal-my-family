@@ -1,0 +1,13 @@
+{
+  "name": "kids-programming-game",
+  "version": "1.0.0",
+  "description": "萌趣编程启蒙乐园 - 少儿编程游戏",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8088 -c-1",
+    "dev": "npx http-server -p 8088 -c-1"
+  },
+  "keywords": ["kids", "education", "game", "programming"],
+  "author": "",
+  "license": "MIT"
+}

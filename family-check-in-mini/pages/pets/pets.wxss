@@ -1,0 +1,782 @@
+.page {
+  padding: 20rpx 24rpx 60rpx;
+  background: #FFF6F0;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* ===== 三 Tab ===== */
+.tab-row {
+  display: flex;
+  background: #FFFFFF;
+  border-radius: 28rpx;
+  padding: 6rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+.tab-item {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  padding: 16rpx 0;
+  border-radius: 22rpx;
+  transition: all 0.25s ease;
+}
+.tab-item:active { transform: scale(0.96); }
+.tab-item.active { background: linear-gradient(135deg, #4F46E5, #7C3AED); }
+.tab-icon { font-size: 24rpx; }
+.tab-text { font-size: 24rpx; font-weight: 600; color: #64748B; }
+.tab-item.active .tab-text { color: #FFFFFF; }
+
+/* ===== 工具条 ===== */
+/* 成员条 + 分数条一律块级排布：
+   预览环境把 scroll-view 渲染成无 overflow 边界的普通块，横向溢出的标签会压到后面的浮标上。
+   改成整行换行 + 浮标单独成行，不再依赖任何裁切/滚动能力。 */
+.toolbar { margin-bottom: 20rpx; }
+.me-chip {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.me-chip-avatar {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  border: 2rpx solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.me-chip-emoji { font-size: 34rpx; }
+.me-chip-name {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+.score-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 10rpx 20rpx;
+  border-radius: 30rpx;
+  border: 2rpx solid;
+  margin-top: 12rpx;
+  white-space: nowrap;
+}
+.score-val { font-size: 26rpx; font-weight: 800; }
+.score-label { font-size: 20rpx; color: #8A8178; }
+.score-divider { width: 2rpx; height: 22rpx; background: #E2D6CC; }
+.score-hint { font-size: 20rpx; color: #8A8178; font-weight: 600; }
+
+/* ===== 稀有度分组 ===== */
+.rarity-section { margin-bottom: 24rpx; }
+.rarity-header {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  margin-bottom: 14rpx;
+}
+.rarity-pill {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 6rpx 20rpx;
+  border-radius: 30rpx;
+  flex-shrink: 0;
+}
+.rarity-dot { width: 10rpx; height: 10rpx; border-radius: 50%; }
+.rarity-pill-text { font-size: 26rpx; font-weight: 800; }
+.rarity-line { flex: 1; height: 2rpx; border-radius: 1rpx; }
+.rarity-count { font-size: 20rpx; color: #A8A29E; font-weight: 600; flex-shrink: 0; }
+
+/* ===== 领养网格 ===== */
+.pet-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16rpx;
+}
+.pet-card {
+  position: relative;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  border: 2rpx solid #F0E8DE;
+  padding: 28rpx 16rpx 18rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  box-shadow: 0 2rpx 8rpx rgba(138, 108, 78, 0.06);
+}
+.pet-card:active { transform: scale(0.96); }
+.pet-card-glow {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 100rpx;
+}
+.pet-corner {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 4rpx;
+  opacity: 0.9;
+}
+.pet-flag {
+  position: absolute;
+  top: 12rpx; right: 12rpx;
+  z-index: 1;
+  padding: 4rpx 14rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx;
+  line-height: 1.2;
+}
+.pet-flag.ready {
+  background: linear-gradient(135deg, #34D399, #10B981);
+  box-shadow: 0 2rpx 8rpx rgba(16, 185, 129, 0.35);
+  animation: petFlagBreathe 2.2s ease-in-out infinite;
+}
+.pet-flag.ready .pet-flag-text { font-size: 20rpx; color: #FFFFFF; font-weight: 700; }
+.pet-flag.lock {
+  padding: 0;
+  width: 34rpx;
+  height: 34rpx;
+  border-radius: 50%;
+  background: #F1F5F9;
+}
+.pet-flag.lock .pet-flag-text { font-size: 18rpx; }
+@keyframes petFlagBreathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+}
+.pet-icon {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 28rpx;
+  border: 2rpx solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pet-emoji { font-size: 52rpx; line-height: 1; }
+.pet-emoji.gray { filter: grayscale(1); opacity: 0.55; }
+.pet-name {
+  margin-top: 14rpx;
+  font-size: 28rpx;
+  font-weight: 800;
+  color: #1E293B;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pet-species {
+  margin-top: 2rpx;
+  font-size: 21rpx;
+  color: #94A3B8;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pet-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+  margin-top: 14rpx;
+  width: 100%;
+}
+.meta-chip { padding: 5rpx 14rpx; border-radius: 14rpx; background: #FFF7ED; }
+.meta-text { font-size: 20rpx; font-weight: 700; color: #F59E0B; white-space: nowrap; }
+.meta-chip.req { background: #F1F5F9; }
+.meta-chip.req .meta-text { color: #94A3B8; }
+.meta-chip.req.met { background: #ECFDF5; }
+.meta-chip.req.met .meta-text { color: #059669; }
+.meta-text.free { color: #F59E0B; }
+.pet-card.locked { background: #FBFAF8; border-color: #EFEAE2; box-shadow: none; }
+.pet-card.locked .pet-name { color: #94A3B8; }
+.pet-card.locked .pet-species { color: #C8C2BA; }
+
+/* ===== 我的宠物 ===== */
+.battle-entry {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx 24rpx;
+  background: linear-gradient(135deg, #FEF3C7, #FCE7F3);
+  border-radius: 18rpx;
+  border: 2rpx solid #FDE68A;
+  margin-bottom: 18rpx;
+}
+.battle-entry:active { transform: scale(0.98); }
+.battle-icon { font-size: 34rpx; }
+.battle-title { font-size: 24rpx; font-weight: 700; color: #92400E; }
+.battle-sub { font-size: 20rpx; color: #B45309; }
+.battle-arrow { margin-left: auto; font-size: 28rpx; color: #B45309; }
+
+.pet-detail-card {
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 18rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+.member-head { display: flex; align-items: center; gap: 10rpx; margin-bottom: 14rpx; }
+.member-head-icon { font-size: 30rpx; }
+.member-head-name { font-size: 26rpx; font-weight: 700; color: #1E293B; }
+.member-head-stats { margin-left: auto; font-size: 20rpx; color: #94A3B8; }
+
+.my-pets-scroll { margin-bottom: 16rpx; }
+.switch-hint {
+  display: block;
+  font-size: 20rpx;
+  color: #A88B6A;
+  font-weight: 600;
+  margin-bottom: 8rpx;
+}
+.pets-scroll-inner { display: block; width: 100%; }
+.pets-collection { display: flex; flex-wrap: wrap; gap: 12rpx; }
+.collection-pet {
+  width: 140rpx;
+  min-width: 140rpx;
+  background: #F8FAFC;
+  border-radius: 16rpx;
+  border: 3rpx solid #E2E8F0;
+  padding: 12rpx 10rpx 8rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+}
+.collection-pet:active { transform: scale(0.95); }
+.collection-icon { font-size: 38rpx; }
+.collection-name { font-size: 20rpx; font-weight: 700; color: #1E293B; }
+.collection-rarity { padding: 2rpx 12rpx; border-radius: 10rpx; }
+.collection-rarity-text { font-size: 16rpx; color: #FFFFFF; font-weight: 600; }
+.collection-actions { display: flex; gap: 8rpx; margin-top: 4rpx; }
+.collection-act {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 10rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.collection-act:active { transform: scale(0.9); background: #FFF6F0; }
+.collection-act-danger { background: #FEF2F2; border-color: #FECACA; }
+.collection-act-icon { font-size: 18rpx; }
+
+.no-pet {
+  padding: 24rpx 0;
+  text-align: center;
+  background: #F8FAFC;
+  border-radius: 16rpx;
+}
+.no-pet-text { font-size: 22rpx; color: #94A3B8; }
+
+.detail-body {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  padding-top: 16rpx;
+  border-top: 2rpx solid #F0E4D8;
+}
+.active-pet-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+  width: 180rpx;
+  flex-shrink: 0;
+}
+.pet-big-icon { font-size: 64rpx; line-height: 1.2; }
+.pet-detail-name { font-size: 24rpx; font-weight: 700; color: #1E293B; }
+.pet-detail-stage { font-size: 20rpx; font-weight: 600; }
+
+.grow-attrs { flex: 1; min-width: 0; }
+.grow-row { display: flex; align-items: center; gap: 12rpx; }
+.grow-title { font-size: 20rpx; font-weight: 600; color: #64748B; flex-shrink: 0; }
+.progress-bar {
+  flex: 1;
+  height: 14rpx;
+  background: #E2E8F0;
+  border-radius: 7rpx;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: #4F46E5;
+  border-radius: 7rpx;
+  transition: width 0.6s ease;
+}
+.grow-percent {
+  font-size: 22rpx;
+  font-weight: 700;
+  color: #4F46E5;
+  min-width: 56rpx;
+  text-align: right;
+}
+.grow-value {
+  font-size: 18rpx;
+  color: #94A3B8;
+  text-align: right;
+  display: block;
+  margin-top: 4rpx;
+}
+.attr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12rpx 20rpx;
+  margin-top: 14rpx;
+}
+.attr-item { display: flex; align-items: center; gap: 12rpx; }
+.attr-label { font-size: 18rpx; color: #64748B; flex-shrink: 0; width: 44rpx; }
+.attr-bar {
+  flex: 1;
+  height: 10rpx;
+  background: #E2E8F0;
+  border-radius: 5rpx;
+  overflow: hidden;
+}
+.attr-fill {
+  height: 100%;
+  background: #14B8A6;
+  border-radius: 5rpx;
+  transition: width 0.6s ease;
+}
+
+/* ===== 收集进度（原「宠物图鉴」的核心信息，并入领养中心） ===== */
+.collect-card {
+  background: linear-gradient(135deg, #EEF2FF, #F5F3FF);
+  border-radius: 20rpx;
+  padding: 18rpx 24rpx;
+  margin-bottom: 18rpx;
+  border: 2rpx solid #C7D2FE;
+}
+.collect-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+.collect-title { font-size: 24rpx; font-weight: 700; color: #3730A3; }
+.collect-num { font-size: 26rpx; font-weight: 800; color: #4F46E5; }
+.collect-track {
+  height: 12rpx;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 6rpx;
+  overflow: hidden;
+  margin-bottom: 8rpx;
+}
+.collect-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4F46E5, #7C3AED);
+  border-radius: 6rpx;
+  transition: width 0.6s ease;
+}
+.collect-footer { display: flex; align-items: center; justify-content: space-between; gap: 12rpx; }
+.collect-hint { font-size: 18rpx; color: #6D28D9; font-weight: 500; }
+.collect-remain { font-size: 18rpx; color: #8A8178; font-weight: 600; }
+.collect-remain.done { color: #059669; }
+.collect-toddler {
+  margin-top: 10rpx;
+  background: #FCE7F3;
+  border-radius: 12rpx;
+  padding: 10rpx 14rpx;
+}
+.collect-toddler-text { font-size: 20rpx; color: #BE185D; line-height: 1.5; }
+
+/* ===== 筛选胶囊：整行换行排布，不依赖 scroll-view 裁切 ===== */
+.filter-row { display: flex; flex-wrap: wrap; gap: 12rpx; margin-bottom: 20rpx; }
+.filter-chip {
+  padding: 10rpx 26rpx;
+  border-radius: 30rpx;
+  background: #FFFFFF;
+  border: 2rpx solid #EFEAE2;
+}
+.filter-chip:active { transform: scale(0.95); }
+.filter-text { font-size: 22rpx; font-weight: 700; color: #8A8178; }
+.filter-chip.active { background: linear-gradient(135deg, #4F46E5, #7C3AED); border-color: transparent; }
+.filter-chip.active .filter-text { color: #FFFFFF; }
+
+/* ===== 已拥有宠物：卡片标记 + 卡片内管理操作 ===== */
+.pet-card.owned { border-color: #A7F3D0; }
+.pet-flag.own { background: linear-gradient(135deg, #34D399, #059669); }
+.pet-flag.own .pet-flag-text { font-size: 18rpx; color: #FFFFFF; font-weight: 700; }
+.pet-acts {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-top: 14rpx;
+  width: 100%;
+}
+.pet-act {
+  height: 44rpx;
+  border-radius: 12rpx;
+  background: #F1F5F9;
+  padding: 0 14rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pet-act:active { transform: scale(0.94); }
+.pet-act-icon { font-size: 18rpx; }
+.pet-act-fight { flex: 1; background: linear-gradient(135deg, #4F46E5, #7C3AED); }
+.pet-act-on { flex: 1; background: #ECFDF5; }
+.pet-act-text { font-size: 18rpx; font-weight: 700; color: #FFFFFF; white-space: nowrap; }
+.pet-act-on .pet-act-text { color: #059669; }
+.pet-act-danger { background: #FEF2F2; }
+
+/* ===== 空状态 ===== */
+.empty { text-align: center; padding: 80rpx 0; }
+.empty-icon { font-size: 80rpx; }
+.empty-text {
+  display: block;
+  font-size: 24rpx;
+  color: #94A3B8;
+  margin-top: 12rpx;
+}
+
+/* ===== 宠物详情弹窗 ===== */
+.pdm-mask {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pdm-panel {
+  width: 640rpx;
+  max-height: 86vh;
+  background: #FFFFFF;
+  border-radius: 40rpx;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 28rpx 80rpx rgba(0, 0, 0, 0.2);
+  animation: pdmPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes pdmPop {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.pdm-head {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 36rpx 40rpx 28rpx;
+  gap: 12rpx;
+  flex-shrink: 0;
+}
+.pdm-close {
+  position: absolute;
+  top: 20rpx;
+  right: 20rpx;
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pdm-close-icon { font-size: 26rpx; color: #64748B; }
+.pdm-icon-ring {
+  position: relative;
+  width: 168rpx;
+  height: 168rpx;
+  border-radius: 50%;
+  border: 6rpx solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pdm-icon-bg {
+  width: 144rpx;
+  height: 144rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pdm-icon { font-size: 80rpx; line-height: 1; }
+.pdm-icon.locked { filter: grayscale(0.8); }
+.pdm-lock-badge {
+  position: absolute;
+  right: -4rpx;
+  bottom: -4rpx;
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 4rpx solid #E2E8F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pdm-lock-badge-icon { font-size: 24rpx; }
+.pdm-rarity-tag {
+  padding: 6rpx 28rpx;
+  border-radius: 40rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.12);
+}
+.pdm-rarity-text {
+  font-size: 22rpx;
+  color: #FFFFFF;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+}
+.pdm-name { font-size: 40rpx; font-weight: 800; color: #1E293B; }
+.pdm-species { font-size: 26rpx; color: #64748B; }
+
+.pdm-body {
+  flex: 1;
+  min-height: 0;
+  padding: 24rpx 40rpx 24rpx;
+  box-sizing: border-box;
+  /* 预览环境把 scroll-view 渲染成无 overflow 边界的普通块，
+     内容会溢出并钻进底部按钮行。显式声明滚动 + 裁切兜底。
+     真机微信 scroll-view 自身可滚，这条 CSS 无副作用。 */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.pdm-desc-title { display: block; font-size: 26rpx; font-weight: 700; color: #475569; }
+.pdm-desc {
+  display: block;
+  font-size: 26rpx;
+  color: #64748B;
+  line-height: 1.7;
+  margin-top: 12rpx;
+}
+.pdm-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24rpx;
+  margin-top: 24rpx;
+  background: #F8FAFC;
+  border-radius: 24rpx;
+  padding: 20rpx 24rpx;
+  width: 100%;
+}
+.pdm-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 128rpx;
+}
+.pdm-stat-val { font-size: 34rpx; font-weight: 800; color: #1E293B; }
+.pdm-stat-label { font-size: 20rpx; color: #94A3B8; margin-top: 4rpx; }
+.pdm-stat-divider { width: 2rpx; height: 48rpx; }
+.pdm-condition {
+  margin-top: 24rpx;
+  padding: 20rpx 28rpx;
+  border-radius: 24rpx;
+  background: #FEF2F2;
+  border: 2rpx solid #FECACA;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6rpx;
+}
+.pdm-condition.ok { background: #ECFDF5; border-color: #A7F3D0; }
+.pdm-condition-text { font-size: 26rpx; font-weight: 700; color: #EF4444; }
+.pdm-condition.ok .pdm-condition-text { color: #059669; }
+.pdm-condition-sub { font-size: 22rpx; color: #94A3B8; }
+
+.pdm-skills { margin-top: 24rpx; width: 100%; }
+.pdm-skills-title {
+  display: block;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 14rpx;
+}
+.pdm-skill-item {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 16rpx 20rpx;
+  border-radius: 24rpx;
+  border: 2rpx solid;
+  margin-bottom: 12rpx;
+}
+.pdm-skill-icon {
+  width: 68rpx;
+  height: 68rpx;
+  border-radius: 20rpx;
+  background: #FFFFFF;
+  border: 2rpx solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pdm-skill-icon-text { font-size: 36rpx; line-height: 1; }
+.pdm-skill-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2rpx; }
+.pdm-skill-name { font-size: 26rpx; font-weight: 700; color: #1E293B; }
+.pdm-skill-desc { font-size: 22rpx; color: #64748B; line-height: 1.4; }
+
+.pdm-footer {
+  display: flex;
+  gap: 20rpx;
+  padding: 28rpx 40rpx 36rpx;
+  flex-shrink: 0;
+  /* 兜底：即使上方内容意外溢出，按钮行也不透明、且始终盖在最上层 */
+  background: #FFFFFF;
+  position: relative;
+  z-index: 2;
+}
+.pdm-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24rpx 0;
+  border-radius: 28rpx;
+}
+.pdm-btn:active { transform: scale(0.97); }
+.pdm-btn-plain { background: #F3F4F6; }
+.pdm-btn-plain-text { font-size: 30rpx; font-weight: 700; color: #475569; }
+.pdm-btn-primary {
+  background: linear-gradient(135deg, #FF8A65, #FF6B6B);
+  box-shadow: 0 8rpx 24rpx rgba(255, 138, 101, 0.3);
+}
+.pdm-btn-primary.disabled { background: #E2E8F0; box-shadow: none; }
+.pdm-btn-primary-text { font-size: 30rpx; font-weight: 800; color: #FFFFFF; letter-spacing: 2rpx; }
+.pdm-btn-primary.disabled .pdm-btn-primary-text { color: #94A3B8; }
+
+/* 已拥有宠物时，底部改为「改名 / 放归 / 设为出战」三颗按钮 */
+.pdm-footer-three { gap: 12rpx; padding: 24rpx 24rpx 32rpx; }
+.pdm-footer-three .pdm-btn { padding: 22rpx 0; border-radius: 22rpx; }
+.pdm-footer-three .pdm-btn-plain-text,
+.pdm-footer-three .pdm-btn-primary-text { font-size: 24rpx; letter-spacing: 0; }
+.pdm-btn-danger { background: #FEF2F2; }
+.pdm-btn-danger-text { font-size: 24rpx; font-weight: 700; color: #EF4444; }
+
+/* ===== 领养成功弹窗 ===== */
+.modal-overlay {
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1200;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.modal-card {
+  background: #FFFFFF;
+  border-radius: 40rpx;
+  width: 640rpx;
+  max-height: 85vh;
+  overflow-y: auto;
+  text-align: center;
+  box-shadow: 0 28rpx 80rpx rgba(0, 0, 0, 0.2);
+  animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes popIn {
+  from { transform: scale(0.75); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.modal-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40rpx 40rpx 32rpx;
+  gap: 14rpx;
+}
+.modal-icon { font-size: 52rpx; animation: bounce 1.2s ease-in-out infinite; }
+.modal-title { font-size: 38rpx; font-weight: 800; color: #1E293B; }
+.pet-icon-ring {
+  width: 172rpx;
+  height: 172rpx;
+  border-radius: 50%;
+  border: 6rpx solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4rpx;
+}
+.pet-icon-bg {
+  width: 148rpx;
+  height: 148rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pet-big-icon { font-size: 84rpx; line-height: 1; }
+.rarity-tag {
+  padding: 6rpx 28rpx;
+  border-radius: 40rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.12);
+}
+.rarity-tag-text {
+  font-size: 22rpx;
+  color: #FFFFFF;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+}
+.modal-card .pet-name { margin-top: 4rpx; font-size: 40rpx; font-weight: 800; color: #1E293B; }
+.modal-card .pet-species { font-size: 26rpx; color: #64748B; }
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 40rpx 40rpx;
+}
+.pet-desc { font-size: 24rpx; color: #94A3B8; line-height: 1.5; }
+.pet-stats {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  margin-top: 24rpx;
+  background: #F8FAFC;
+  border-radius: 24rpx;
+  padding: 20rpx 36rpx;
+  width: 100%;
+  justify-content: center;
+}
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 128rpx;
+}
+.stat-val { font-size: 34rpx; font-weight: 800; color: #1E293B; }
+.stat-label { font-size: 20rpx; color: #94A3B8; margin-top: 4rpx; }
+.stat-divider { width: 2rpx; height: 48rpx; }
+.member-tip {
+  display: block;
+  font-size: 26rpx;
+  color: #8A8178;
+  font-weight: 600;
+  margin-top: 28rpx;
+}
+.modal-body .btn-ok {
+  width: 100%;
+  background: linear-gradient(135deg, #FF8A65, #FF6B6B);
+  padding: 26rpx 0;
+  border-radius: 28rpx;
+  margin-top: 28rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 138, 101, 0.3);
+}
+.modal-body .btn-ok:active { opacity: 0.85; transform: scale(0.97); }
+.btn-ok-text {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: 4rpx;
+}

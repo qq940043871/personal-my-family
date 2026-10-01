@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数独</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#E8F5E9,#C8E6C9);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#333;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:400px;padding:10px 20px;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+.back{color:#333;text-decoration:none;padding:5px 15px;background:#eee;border-radius:15px;font-size:0.9em}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:3px;background:#333;border-radius:10px;margin:20px 0}
+.cell{width:70px;height:70px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:1.8em;font-weight:bold;cursor:pointer;border:1px solid #ddd}
+.cell.fixed{background:#E8F5E9;color:#333}
+.cell.selected{background:#BBDEFB}
+.cell.error{background:#FFCDD2}
+.cell:nth-child(4n+1){border-left:3px solid #333}
+.cell:nth-child(n+13){border-top:3px solid #333}
+.num-pad{display:flex;gap:10px;margin:15px 0}
+.num-btn{width:50px;height:50px;background:#fff;border:2px solid #ddd;border-radius:10px;font-size:1.5em;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.num-btn:hover{background:#E8F5E9;border-color:#4CAF50}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#6BCB77,#4CAF50);padding:40px;border-radius:20px;text-align:center;max-width:400px;color:#fff}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<h2>📊 4×4 数独</h2>
+<div></div>
+</div>
+<div class="grid" id="grid"></div>
+<div class="num-pad">
+<button class="num-btn" onclick="setNum(1)">1</button>
+<button class="num-btn" onclick="setNum(2)">2</button>
+<button class="num-btn" onclick="setNum(3)">3</button>
+<button class="num-btn" onclick="setNum(4)">4</button>
+<button class="num-btn" onclick="setNum(0)" style="background:#ffcdd2">✕</button>
+</div>
+
+<div class="overlay" id="start"><div class="box"><h1>📊 数独</h1><p>每行、每列、每个2×2格子<br>都要包含1-4不重复！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>🎉 恭喜！</h1><p>你完成了数独！</p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+let puzzle,board,fixed,selected;
+const puzzles=[
+[[1,0,0,4],[0,4,1,0],[0,1,4,0],[4,0,0,1]],
+[[0,2,0,0],[3,0,0,2],[2,0,0,3],[0,0,2,0]],
+[[4,0,2,0],[0,1,0,4],[1,0,4,0],[0,3,0,1]],
+[[0,0,3,4],[4,3,0,0],[0,0,4,3],[3,4,0,0]]
+];
+function startGame(){
+document.getElementById('start').classList.add('hidden');
+document.getElementById('over').classList.add('hidden');
+puzzle=puzzles[Math.floor(Math.random()*puzzles.length)];
+board=puzzle.map(r=>[...r]);
+fixed=board.map(r=>r.map(v=>v!==0));
+selected=null;render();
+}
+function render(){
+const grid=document.getElementById('grid');grid.innerHTML='';
+for(let r=0;r<4;r++)for(let c=0;c<4;c++){
+const cell=document.createElement('div');
+cell.className='cell';
+if(fixed[r][c])cell.classList.add('fixed');
+if(selected&&selected[0]===r&&selected[1]===c)cell.classList.add('selected');
+if(board[r][c]&&!isValid(r,c,board[r][c]))cell.classList.add('error');
+cell.textContent=board[r][c]||'';
+cell.addEventListener('click',()=>{if(!fixed[r][c])selected=[r,c];render()});
+grid.appendChild(cell);
+}
+}
+function setNum(n){
+if(!selected)return;
+const[r,c]=selected;
+board[r][c]=n;render();
+// check win
+if(board.flat().every(v=>v>0)&&board.every((r,i)=>r.every((v,j)=>isValid(i,j,v)))){
+setTimeout(()=>{document.getElementById('over').classList.remove('hidden');playSound(700,0.3)},300);
+}
+}
+function isValid(r,c,n){
+if(n===0)return true;
+// row
+for(let cc=0;cc<4;cc++)if(cc!==c&&board[r][cc]===n)return false;
+// col
+for(let rr=0;rr<4;rr++)if(rr!==r&&board[rr][c]===n)return false;
+// box
+const br=Math.floor(r/2)*2,bc=Math.floor(c/2)*2;
+for(let rr=br;rr<br+2;rr++)for(let cc=bc;cc<bc+2;cc++)if((rr!==r||cc!==c)&&board[rr][cc]===n)return false;
+return true;
+}
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

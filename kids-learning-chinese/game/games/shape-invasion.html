@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>形状入侵</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1a2e;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:500px;padding:10px 20px}
+.info{display:flex;gap:15px}.info-item{background:rgba(255,255,255,0.1);padding:5px 15px;border-radius:15px;font-size:0.9em}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{border:2px solid rgba(255,255,255,0.2);border-radius:10px;margin-top:10px}
+.input-area{display:flex;gap:10px;margin:15px 0}
+.input{padding:10px 20px;font-size:1.2em;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:#fff;border-radius:10px;outline:none;text-align:center;width:150px}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#FF6B6B,#FFD93D);padding:40px;border-radius:20px;text-align:center;max-width:400px}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">得分: <span id="score">0</span></div><div class="info-item">生命: <span id="lives">3</span></div></div>
+</div>
+<canvas id="game" width="500" height="400"></canvas>
+<div class="input-area">
+<input class="input" id="input" placeholder="输入形状名" onkeydown="if(event.key==='Enter')submitAnswer()">
+</div>
+
+<div class="overlay" id="start"><div class="box"><h1>⭐ 形状入侵</h1><p>输入形状的中文名称<br>消灭下落的形状！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>游戏结束</h1><p>得分: <span id="final">0</span></p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+const W=500,H=400;
+const SHAPES=[
+{name:'圆形',emoji:'⭕',color:'#FF6B6B'},
+{name:'正方形',emoji:'⬜',color:'#4D96FF'},
+{name:'三角形',emoji:'🔺',color:'#6BCB77'},
+{name:'星形',emoji:'⭐',color:'#FFD93D'},
+{name:'心形',emoji:'❤️',color:'#F06292'},
+{name:'菱形',emoji:'💎',color:'#C084FC'}
+];
+let shapes,score,lives,running;
+function init(){
+shapes=[];score=0;lives=3;running=true;
+document.getElementById('score').textContent=0;document.getElementById('lives').textContent=3;
+for(let i=0;i<3;i++)spawnShape();
+}
+function spawnShape(){
+const s=SHAPES[Math.floor(Math.random()*SHAPES.length)];
+shapes.push({...s,x:50+Math.random()*(W-100),y:-30,vy:0.5+Math.random()*1+score/200});
+}
+function draw(){
+X.fillStyle='#1a1a2e';X.fillRect(0,0,W,H);
+shapes.forEach(s=>{
+X.font='40px serif';X.textAlign='center';X.textBaseline='middle';
+X.fillText(s.emoji,s.x,s.y);
+X.fillStyle='rgba(255,255,255,0.5)';X.font='12px sans-serif';
+X.fillText(s.name,s.x,s.y+30);
+});
+}
+function update(){
+if(!running)return;
+shapes.forEach((s,i)=>{
+s.y+=s.vy;
+if(s.y>H+30){shapes.splice(i,1);lives--;document.getElementById('lives').textContent=lives;
+if(lives<=0){running=false;document.getElementById('final').textContent=score;document.getElementById('over').classList.remove('hidden');playSound(200,0.3)}
+}
+});
+if(shapes.length<3+Math.floor(score/50)&&Math.random()<0.02)spawnShape();
+}
+function submitAnswer(){
+const input=document.getElementById('input');
+const answer=input.value.trim();input.value='';
+if(!answer)return;
+const idx=shapes.findIndex(s=>s.name===answer);
+if(idx>=0){
+shapes.splice(idx,1);score+=10;
+document.getElementById('score').textContent=score;
+playSound(600,0.1);
+}else{playSound(200,0.1)}
+}
+function loop(){update();draw();requestAnimationFrame(loop)}
+function startGame(){document.getElementById('start').classList.add('hidden');document.getElementById('over').classList.add('hidden');init();loop()}
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

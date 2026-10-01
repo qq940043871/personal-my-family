@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D保龄球</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1a2e;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 20px;position:fixed;top:0;z-index:10;background:rgba(0,0,0,0.5)}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%}
+.controls{position:fixed;bottom:20px;display:flex;gap:10px;z-index:10}
+.ctrl{padding:12px 25px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:12px;cursor:pointer;font-size:1em}
+.score-display{position:fixed;top:60px;right:20px;background:rgba(0,0,0,0.7);padding:15px;border-radius:15px;z-index:10;text-align:center}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div>🎳 3D保龄球</div>
+<div></div>
+</div>
+<canvas id="game"></canvas>
+<div class="score-display">
+<div style="font-size:0.8em">得分</div>
+<div style="font-size:2em" id="score">0</div>
+<div style="font-size:0.8em">第 <span id="frame">1</span> 轮</div>
+</div>
+<div class="controls">
+<button class="ctrl" onclick="throwBall()">🎳 投球</button>
+<button class="ctrl" onclick="resetPins()">🔄 重置</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x2d1b4e);
+const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,100);
+camera.position.set(0,8,15);camera.lookAt(0,0,-5);
+const renderer=new THREE.WebGLRenderer({canvas:document.getElementById('game'),antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+scene.add(new THREE.AmbientLight(0xffffff,0.5));
+const dirLight=new THREE.DirectionalLight(0xffffff,0.8);dirLight.position.set(5,15,10);scene.add(dirLight);
+// lane
+const laneGeo=new THREE.BoxGeometry(4,0.2,30);
+const laneMat=new THREE.MeshStandardMaterial({color:0x8D6E63});
+const lane=new THREE.Mesh(laneGeo,laneMat);lane.position.set(0,-0.1,-5);scene.add(lane);
+// gutters
+[-2.2,2.2].forEach(x=>{
+const gutter=new THREE.Mesh(new THREE.BoxGeometry(0.4,0.1,30),new THREE.MeshStandardMaterial({color:0x333}));
+gutter.position.set(x,0,-5);scene.add(gutter);
+});
+// pins
+const pinGeo=new THREE.CylinderGeometry(0.15,0.2,0.8,8);
+const pinMat=new THREE.MeshStandardMaterial({color:0xffffff});
+let pins=[];
+const pinPositions=[
+[0,0],[-0.4,-0.7],[0.4,-0.7],
+[-0.8,-1.4],[0,-1.4],[0.8,-1.4],
+[-1.2,-2.1],[-0.4,-2.1],[0.4,-2.1],[1.2,-2.1]
+];
+function createPins(){
+pins.forEach(p=>scene.remove(p));pins=[];
+pinPositions.forEach(([x,z])=>{
+const pin=new THREE.Mesh(pinGeo,pinMat);
+pin.position.set(x,0.4,z-8);scene.add(pin);pins.push(pin);
+});
+}
+createPins();
+// ball
+const ballGeo=new THREE.SphereGeometry(0.3,16,16);
+const ballMat=new THREE.MeshStandardMaterial({color:0xF44336});
+let ball=null,ballVelocity=null,throwing=false;
+let score=0,frame=1;
+function throwBall(){
+if(throwing)return;
+throwing=true;
+ball=new THREE.Mesh(ballGeo,ballMat);
+ball.position.set(Math.random()*2-1,0.3,10);scene.add(ball);
+ballVelocity={x:(Math.random()-0.5)*0.3,y:0,z:-0.4};
+}
+function resetPins(){createPins();throwing=false;if(ball){scene.remove(ball);ball=null}}
+function update(){
+if(!ball||!throwing)return;
+ball.position.x+=ballVelocity.x;
+ball.position.z+=ballVelocity.z;
+// check pin collision
+pins.forEach((pin,i)=>{
+if(!pin.visible)return;
+const dx=ball.position.x-pin.position.x;
+const dz=ball.position.z-pin.position.z;
+if(Math.sqrt(dx*dx+dz*dz)<0.5){
+pin.visible=false;score+=10;
+document.getElementById('score').textContent=score;
+}
+});
+// ball out of range
+if(ball.position.z<-15){
+throwing=false;scene.remove(ball);ball=null;
+frame++;document.getElementById('frame').textContent=frame;
+if(frame>10){alert('游戏结束！得分: '+score);score=0;frame=1;document.getElementById('score').textContent=0;document.getElementById('frame').textContent=1;createPins()}
+}
+}
+function animate(){requestAnimationFrame(animate);update();renderer.render(scene,camera)}
+window.addEventListener('resize',()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight)});
+animate();
+</script>
+</body>
+</html>

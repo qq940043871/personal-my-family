@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D地形探索</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 20px;position:fixed;top:0;z-index:10;background:rgba(0,0,0,0.5)}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%}
+.info{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);padding:10px 20px;border-radius:15px;z-index:10}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div>🏔️ 3D地形探索</div>
+<div></div>
+</div>
+<canvas id="game"></canvas>
+<div class="info">方向键飞行探索 · 鼠标拖拽旋转视角</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x87CEEB);scene.fog=new THREE.FogExp2(0x87CEEB,0.008);
+const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,500);
+camera.position.set(0,30,50);camera.lookAt(0,0,0);
+const renderer=new THREE.WebGLRenderer({canvas:document.getElementById('game'),antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+scene.add(new THREE.AmbientLight(0xffffff,0.4));
+const sunLight=new THREE.DirectionalLight(0xffffff,0.8);sunLight.position.set(50,80,30);scene.add(sunLight);
+// terrain
+const size=200,segments=100;
+const geo=new THREE.PlaneGeometry(size,size,segments,segments);
+geo.rotateX(-Math.PI/2);
+const vertices=geo.attributes.position.array;
+for(let i=0;i<vertices.length;i+=3){
+const x=vertices[i],z=vertices[i+2];
+vertices[i+1]=Math.sin(x*0.05)*Math.cos(z*0.05)*15+Math.sin(x*0.1)*5+Math.random()*2;
+}
+geo.computeVertexNormals();
+const mat=new THREE.MeshStandardMaterial({color:0x4CAF50,flatShading:true});
+const terrain=new THREE.Mesh(geo,mat);scene.add(terrain);
+// water
+const waterGeo=new THREE.PlaneGeometry(size,size);
+const waterMat=new THREE.MeshStandardMaterial({color:0x1565C0,transparent:true,opacity:0.6});
+const water=new THREE.Mesh(waterGeo,waterMat);water.rotation.x=-Math.PI/2;water.position.y=2;scene.add(water);
+// trees
+for(let i=0;i<50;i++){
+const x=Math.random()*size-size/2,z=Math.random()*size-size/2;
+const y=Math.sin(x*0.05)*Math.cos(z*0.05)*15+Math.sin(x*0.05)*5;
+if(y>5){
+const tree=new THREE.Group();
+const trunkGeo=new THREE.CylinderGeometry(0.3,0.4,3,8);
+const trunkMat=new THREE.MeshStandardMaterial({color:0x795548});
+const trunk=new THREE.Mesh(trunkGeo,trunkMat);trunk.position.y=1.5;tree.add(trunk);
+const leavesGeo=new THREE.ConeGeometry(2,4,8);
+const leavesMat=new THREE.MeshStandardMaterial({color:0x2E7D32});
+const leaves=new THREE.Mesh(leavesGeo,leavesMat);leaves.position.y=4;tree.add(leaves);
+tree.position.set(x,y,z);scene.add(tree);
+}
+}
+const keys={};
+let theta=0,phi=0.5,radius=60;
+document.addEventListener('keydown',e=>{keys[e.key]=true;e.preventDefault()});
+document.addEventListener('keyup',e=>keys[e.key]=false);
+let isDragging=false,lastMouse={x:0,y:0};
+renderer.domElement.addEventListener('mousedown',e=>{isDragging=true;lastMouse={x:e.clientX,y:e.clientY}});
+renderer.domElement.addEventListener('mousemove',e=>{
+if(!isDragging)return;
+theta+=(e.clientX-lastMouse.x)*0.005;phi=Math.max(0.1,Math.min(1.5,phi+(e.clientY-lastMouse.y)*0.005));
+lastMouse={x:e.clientX,y:e.clientY};
+});
+renderer.domElement.addEventListener('mouseup',()=>isDragging=false);
+renderer.domElement.addEventListener('wheel',e=>{radius=Math.max(20,Math.min(150,radius+e.deltaY*0.1))});
+function animate(){
+requestAnimationFrame(animate);
+if(keys.ArrowUp||keys.w)radius=Math.max(20,radius-0.5);
+if(keys.ArrowDown||keys.s)radius=Math.min(150,radius+0.5);
+if(keys.ArrowLeft||keys.a)theta-=0.02;
+if(keys.ArrowRight||keys.d)theta+=0.02;
+camera.position.x=Math.sin(theta)*Math.sin(phi)*radius;
+camera.position.y=Math.cos(phi)*radius;
+camera.position.z=Math.cos(theta)*Math.sin(phi)*radius;
+camera.lookAt(0,0,0);
+water.material.opacity=0.5+Math.sin(Date.now()*0.001)*0.1;
+renderer.render(scene,camera);
+}
+window.addEventListener('resize',()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight)});
+animate();
+</script>
+</body>
+</html>

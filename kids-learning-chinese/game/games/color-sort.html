@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>颜色分类</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:500px;padding:10px 20px}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.2);border-radius:15px;font-size:0.9em}
+.tubes{display:flex;gap:15px;padding:40px 20px;flex-wrap:wrap;justify-content:center}
+.tube{width:60px;min-height:200px;background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.3);border-top:none;border-radius:0 0 10px 10px;display:flex;flex-direction:column-reverse;cursor:pointer;transition:transform 0.2s;position:relative}
+.tube:hover{transform:scale(1.05)}
+.tube.selected{border-color:#FFD93D;box-shadow:0 0 15px rgba(255,217,61,0.5)}
+.ball{width:52px;height:32px;border-radius:8px;margin:2px auto;transition:all 0.3s}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#FF6B6B,#FFD93D);padding:40px;border-radius:20px;text-align:center;max-width:400px}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<h2>🧪 颜色分类</h2>
+<div></div>
+</div>
+<div class="tubes" id="tubes"></div>
+
+<div class="overlay" id="start"><div class="box"><h1>🧪 颜色分类</h1><p>点击一个管子，再点击另一个<br>把同颜色的球放到一起！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>🎉 恭喜！</h1><p>你完成了颜色分类！</p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+let tubes,selected;
+const colors=['#FF6B6B','#4D96FF','#6BCB77','#FFD93D'];
+function startGame(){
+document.getElementById('start').classList.add('hidden');
+document.getElementById('over').classList.add('hidden');
+selected=null;
+// create tubes: 4 colors, 4 balls each, + 2 empty
+const allBalls=[];
+colors.forEach(c=>{for(let i=0;i<4;i++)allBalls.push(c)});
+for(let i=allBalls.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[allBalls[i],allBalls[j]]=[allBalls[j],allBalls[i]]}
+tubes=[
+allBalls.slice(0,4),allBalls.slice(4,8),allBalls.slice(8,12),allBalls.slice(12,16),[],[]
+];
+render();
+}
+function render(){
+const div=document.getElementById('tubes');div.innerHTML='';
+tubes.forEach((tube,i)=>{
+const el=document.createElement('div');el.className='tube'+(selected===i?' selected':'');
+tube.forEach(color=>{
+const ball=document.createElement('div');ball.className='ball';ball.style.background=color;
+el.appendChild(ball);
+});
+el.addEventListener('click',()=>clickTube(i));
+div.appendChild(el);
+});
+}
+function clickTube(i){
+if(selected===null){
+if(tubes[i].length>0){selected=i;render()}
+}else{
+if(selected===i){selected=null;render();return}
+const from=tubes[selected];
+const to=tubes[i];
+if(to.length>=4){selected=null;render();return}
+if(from.length===0){selected=null;render();return}
+const color=from[from.length-1];
+// count same color on top
+let count=0;
+for(let j=from.length-1;j>=0;j--){if(from[j]===color)count++;else break}
+// check if destination is compatible
+if(to.length>0&&to[to.length-1]!==color){selected=null;render();return}
+// pour
+const space=4-to.length;
+const pour=Math.min(count,space);
+for(let j=0;j<pour;j++){to.push(from.pop())}
+selected=null;playSound(500,0.05);
+render();checkWin();
+}
+}
+function checkWin(){
+const won=tubes.every(t=>t.length===0||(t.length===4&&t.every(c=>c===t[0])));
+if(won){setTimeout(()=>{document.getElementById('over').classList.remove('hidden');playSound(700,0.3)},300)}
+}
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

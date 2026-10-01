@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萌趣编程启蒙乐园 - 黄金矿工</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/gold-miner.css">
+</head>
+<body>
+    <!-- 矿山背景 -->
+    <div class="mine-bg"></div>
+
+    <!-- 顶部状态栏 -->
+    <div id="top-bar">
+        <div class="stat">
+            <span class="icon">💰</span>
+            <span class="label">金钱</span>
+            <span class="value" id="score">0</span>
+        </div>
+        <div class="stat">
+            <span class="icon">⛏️</span>
+            <span class="label">关卡</span>
+            <span class="value" id="level">1</span>
+        </div>
+        <div class="stat">
+            <span class="icon">⏰</span>
+            <span class="label">时间</span>
+            <span class="value" id="time">60</span>
+        </div>
+    </div>
+
+    <!-- 游戏容器 -->
+    <div class="game-container" id="game-container">
+        <!-- 返回菜单 -->
+        <button class="back-btn" onclick="window.location.href='index.html'">← 返回菜单</button>
+
+        <!-- 目标金额 -->
+        <div class="target-hint">
+            目标：<span id="target-amount">100</span> 💰
+        </div>
+
+        <!-- 开始画面 -->
+        <div class="overlay-screen" id="start-screen">
+            <div class="screen-box">
+                <h1>黄金矿工</h1>
+                <p>移动鼠标瞄准金矿和钻石<br>点击鼠标放下钩子，达到目标金额过关！</p>
+                <button class="btn" onclick="GoldMiner.startGame()">开始冒险</button>
+            </div>
+        </div>
+
+        <!-- 关卡完成 -->
+        <div class="overlay-screen hidden" id="level-complete">
+            <div class="screen-box">
+                <h1>通关成功！</h1>
+                <p>达到目标金额！第 <span id="complete-level">1</span> 关完成</p>
+                <button class="btn" onclick="GoldMiner.nextLevel()">下一关</button>
+                <button class="btn btn-home btn-sm" onclick="window.location.href='index.html'" style="margin-top:12px">返回菜单</button>
+            </div>
+        </div>
+
+        <!-- 游戏结束 -->
+        <div class="overlay-screen hidden" id="game-over">
+            <div class="screen-box">
+                <h1>时间到！</h1>
+                <p>没有达到目标金额...<br>再试一次吧！</p>
+                <button class="btn btn-sec" onclick="GoldMiner.restartGame()">重新开始</button>
+                <button class="btn btn-home btn-sm" onclick="window.location.href='index.html'" style="margin-top:12px">返回菜单</button>
+            </div>
+        </div>
+
+        <!-- 全部通关 -->
+        <div class="overlay-screen hidden" id="complete-screen">
+            <div class="screen-box">
+                <h1>全部通关！</h1>
+                <p>你已经征服了所有矿山！<br>真是挖矿大师！</p>
+                <button class="btn" onclick="window.location.href='index.html'">返回菜单</button>
+            </div>
+        </div>
+
+        <!-- 矿工 -->
+        <div id="miner"></div>
+
+        <!-- 绳索 -->
+        <canvas id="rope-canvas"></canvas>
+
+        <!-- 钩子 -->
+        <div id="hook"></div>
+
+        <!-- 操作提示 -->
+        <div id="tip-bar">移动鼠标瞄准 · 点击放下钩子 · 抓取金矿赚钱！</div>
+
+        <!-- 倒计时 -->
+        <div id="countdown">60</div>
+    </div>
+
+    <script src="js/audio.js"></script>
+    <script src="js/gold-miner.js"></script>
+    <script>
+        window.onload = function() { GoldMiner.init(); };
+    </script>
+</body>
+</html>

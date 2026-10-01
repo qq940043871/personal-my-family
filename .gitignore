@@ -1,0 +1,47 @@
+# ================= 依赖 =================
+node_modules/
+
+# ================= 构建产物 =================
+dist/
+build/
+unpackage/
+
+# ================= 环境变量 / 密钥 =================
+.env
+.env.*
+!.env.example
+
+# ================= 日志 =================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ================= 微信小程序 =================
+project.private.config.json
+
+# ================= 编辑器 / IDE =================
+.idea/
+.vscode/
+*.swp
+*.swo
+.hbuilderx/
+
+# ================= AI 工具本地状态 =================
+.workbuddy/
+.wbapp_*.genie
+.claude/
+
+# ================= 临时 / 调试文件 =================
+*.tmp
+*.bak
+*~
+~$*
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# family-check-in-tools 中的下划线开头调试脚本与截图
+family-check-in-tools/_*

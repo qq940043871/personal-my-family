@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数轴跳跃</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(180deg,#87CEEB,#E8F5E9);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#333;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px;padding:10px 20px;background:rgba(255,255,255,0.3)}
+.back{color:#333;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.5);border-radius:15px;font-size:0.9em}
+.question{font-size:1.5em;margin:15px 0;text-align:center}
+.line-container{width:90%;max-width:550px;margin:20px 0;position:relative}
+.line{height:4px;background:#333;position:relative}
+.tick{position:absolute;top:-8px;width:2px;height:20px;background:#333}
+.tick-label{position:absolute;top:22px;font-size:0.8em;transform:translateX(-50%)}
+.character{position:absolute;top:-40px;font-size:2em;transition:left 0.5s;transform:translateX(-50%)}
+.options{display:flex;gap:15px;margin:20px 0}
+.opt{padding:12px 25px;background:#fff;border:2px solid #ddd;border-radius:12px;cursor:pointer;font-size:1.2em;transition:all 0.2s}
+.opt:hover{border-color:#4D96FF;transform:scale(1.05)}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#6BCB77,#4CAF50);padding:40px;border-radius:20px;text-align:center;max-width:400px;color:#fff}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div>🦘 数轴跳跃</div>
+<div></div>
+</div>
+<div class="question" id="question"></div>
+<div class="line-container">
+<div class="line" id="line"></div>
+<div class="character" id="char">🐸</div>
+</div>
+<div class="options" id="options"></div>
+
+<div class="overlay" id="start"><div class="box"><h1>🦘 数轴跳跃</h1><p>在数轴上跳跃<br>学习加减法！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>游戏结束</h1><p>得分: <span id="final">0</span></p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+let position,target,score,round;
+function startGame(){
+document.getElementById('start').classList.add('hidden');
+document.getElementById('over').classList.add('hidden');
+score=0;round=0;position=0;nextRound();
+}
+function nextRound(){
+round++;if(round>10){document.getElementById('final').textContent=score;document.getElementById('over').classList.remove('hidden');return}
+// build line
+const line=document.getElementById('line');line.innerHTML='';
+for(let i=-5;i<=15;i++){
+const tick=document.createElement('div');tick.className='tick';tick.style.left=((i+5)/20*100)+'%';
+const label=document.createElement('div');label.className='tick-label';label.textContent=i;label.style.left=((i+5)/20*100)+'%';
+line.appendChild(tick);line.appendChild(label);
+}
+// question
+const op=Math.random()<0.5?'+':'-';
+const a=rand(0,10),b=rand(1,5);
+target=op==='+'?a+b:a-b;
+position=a;
+document.getElementById('question').textContent=`从 ${a} 出发，${op} ${b} 到哪里？`;
+document.getElementById('char').style.left=((position+5)/20*100)+'%';
+// options
+const opts=[target];
+while(opts.length<3){const n=target+rand(-3,3);if(!opts.includes(n)&&n>=-5&&n<=15)opts.push(n)}
+opts.sort(()=>Math.random()-0.5);
+const div=document.getElementById('options');div.innerHTML='';
+opts.forEach(o=>{
+const btn=document.createElement('div');btn.className='opt';btn.textContent=o;
+btn.addEventListener('click',()=>{
+if(o===target){
+position=target;
+document.getElementById('char').style.left=((position+5)/20*100)+'%';
+score+=10;playSound(600,0.1);
+setTimeout(nextRound,800);
+}else{playSound(200,0.1)}
+});
+div.appendChild(btn);
+});
+}
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

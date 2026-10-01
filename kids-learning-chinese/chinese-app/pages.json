@@ -1,0 +1,70 @@
+{
+  "easycom": {
+    "autoscan": true,
+    "custom": {}
+  },
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "汉字冒险岛",
+        "navigationBarBackgroundColor": "#6C63FF",
+        "navigationBarTextStyle": "white",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/learning/learning",
+      "style": {
+        "navigationBarTitleText": "浏览",
+        "navigationBarBackgroundColor": "#6C63FF",
+        "navigationBarTextStyle": "white"
+      }
+    },
+    {
+      "path": "pages/exercise/exercise",
+      "style": {
+        "navigationBarTitleText": "闯关练习",
+        "navigationBarBackgroundColor": "#6C63FF",
+        "navigationBarTextStyle": "white",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/report/report",
+      "style": {
+        "navigationBarTitleText": "学习报告",
+        "navigationBarBackgroundColor": "#6C63FF",
+        "navigationBarTextStyle": "white"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "汉字冒险岛",
+    "navigationBarBackgroundColor": "#6C63FF",
+    "backgroundColor": "#E8EEF6"
+  },
+  "tabBar": {
+    "custom": false,
+    "color": "#78909C",
+    "selectedColor": "#5B7FFF",
+    "backgroundColor": "#F0F4FA",
+    "borderStyle": "white",
+	"fontSize":"16px",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/learning/learning",
+        "text": "浏览"
+      },
+      {
+        "pagePath": "pages/report/report",
+        "text": "报告"
+      }
+    ]
+  }
+}

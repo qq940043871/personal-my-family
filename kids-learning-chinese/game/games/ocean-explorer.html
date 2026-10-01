@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>海洋探索</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0D47A1;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px;padding:10px 20px;position:fixed;top:0;z-index:10;background:rgba(0,0,0,0.3)}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%}
+.info{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);padding:15px 25px;border-radius:15px;z-index:10;max-width:400px;text-align:center}
+.depth{position:fixed;right:20px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);padding:10px;border-radius:10px;z-index:10;text-align:center;font-size:0.9em}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div>🐠 海洋探索</div>
+<div></div>
+</div>
+<canvas id="game"></canvas>
+<div class="depth">深度<br><span id="depth" style="font-size:1.5em">0</span>m</div>
+<div class="info" id="info">上下滚动探索不同深度的海洋<br>点击查看生物信息</div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+let W,H,scrollY,creatures;
+function resize(){W=C.width=window.innerWidth;H=C.height=window.innerHeight}
+window.addEventListener('resize',resize);resize();
+const zoneData=[
+{depth:0,name:'浅海区',color:'#1565C0',creatures:[{emoji:'🐟',name:'小鱼',info:'浅海最常见的鱼类'},{emoji:'🦐',name:'虾',info:'小虾米是很多鱼的食物'},{emoji:'🐚',name:'贝壳',info:'美丽的贝壳藏在沙子里'}]},
+{depth:200,name:'中层带',color:'#0D47A1',creatures:[{emoji:'🦑',name:'鱿鱼',info:'鱿鱼能在黑暗中发光'},{emoji:'🐙',name:'章鱼',info:'章鱼有8条腕足，非常聪明'},{emoji:'🐢',name:'海龟',info:'海龟可以活100岁以上'}]},
+{depth:500,name:'深海区',color:'#0A193A',creatures:[{emoji:'🦈',name:'鲨鱼',info:'鲨鱼是海洋顶级捕食者'},{emoji:'🐋',name:'鲸鱼',info:'蓝鲸是地球上最大的动物'},{emoji:'🐬',name:'海豚',info:'海豚非常聪明，喜欢玩耍'}]},
+{depth:1000,name:'深渊带',color:'#050A1A',creatures:[{emoji:'🐡',name:'河鲀',info:'河鲀遇到危险会膨胀变大'},{emoji:'🦞',name:'龙虾',info:'龙虾可以活到100岁'},{emoji:'🦀',name:'螃蟹',info:'螃蟹横着走路'}]},
+{depth:2000,name:'超深渊',color:'#020408',creatures:[{emoji:'🪼',name:'水母',info:'水母没有大脑和心脏'},{emoji:'🌑',name:'深海鱼',info:'深海鱼能自己发光'},{emoji:'⭐',name:'海星',info:'海星断了还能再生'}]}
+];
+function init(){scrollY=0;creatures=[];generateCreatures()}
+function generateCreatures(){
+creatures=[];
+zoneData.forEach(zone=>{
+for(let i=0;i<5;i++){
+const c=zone.creatures[Math.floor(Math.random()*zone.creatures.length)];
+creatures.push({
+...c,x:100+Math.random()*(W-200),y:zone.depth*2+Math.random()*200,
+size:30+Math.random()*20,vx:(Math.random()-0.5)*2,wobble:Math.random()*Math.PI*2
+});
+}
+});
+}
+function drawBg(){
+const zoneIdx=Math.min(zoneData.length-1,Math.floor(scrollY/400));
+const zone=zoneData[zoneIdx];
+const grad=X.createLinearGradient(0,0,0,H);
+grad.addColorStop(0,zone.color);grad.addColorStop(1,zoneData[Math.min(zoneData.length-1,zoneIdx+1)].color);
+X.fillStyle=grad;X.fillRect(0,0,W,H);
+// light rays (only in shallow water)
+if(scrollY<600){
+X.globalAlpha=0.05;
+for(let i=0;i<5;i++){
+X.fillStyle='#4FC3F7';
+const x=(i*200+scrollY*0.1)%W;
+X.beginPath();X.moveTo(x,0);X.lineTo(x+30,0);X.lineTo(x+60,H);X.lineTo(x+30,H);X.fill();
+}
+X.globalAlpha=1;
+}
+// particles
+X.fillStyle='rgba(255,255,255,0.2)';
+for(let i=0;i<30;i++){
+const px=(i*73+Date.now()*0.02)%W;
+const py=(i*37+scrollY*0.5)%H;
+X.beginPath();X.arc(px,py,1+Math.sin(Date.now()*0.001+i)*1,0,Math.PI*2);X.fill();
+}
+}
+function drawCreatures(){
+creatures.forEach(c=>{
+const screenY=c.y-scrollY;
+if(screenY<-50||screenY>H+50)return;
+c.x+=c.vx;c.wobble+=0.03;
+if(c.x<50||c.x>W-50)c.vx*=-1;
+X.font=c.size+'px serif';X.textAlign='center';X.textBaseline='middle';
+X.fillText(c.emoji,c.x+Math.sin(c.wobble)*5,screenY);
+});
+}
+function drawZoneInfo(){
+const zoneIdx=Math.min(zoneData.length-1,Math.floor(scrollY/400));
+const zone=zoneData[zoneIdx];
+X.fillStyle='rgba(255,255,255,0.3)';X.font='14px sans-serif';X.textAlign='left';
+X.fillText(zone.name+' ('+zone.depth+'m+)',20,40);
+}
+C.addEventListener('click',e=>{
+const mx=e.clientX,my=e.clientY;
+creatures.forEach(c=>{
+const screenY=c.y-scrollY;
+if(Math.abs(mx-c.x)<c.size&&Math.abs(my-screenY)<c.size){
+document.getElementById('info').innerHTML=`<strong>${c.name}</strong><br>${c.info}`;
+}
+});
+});
+window.addEventListener('wheel',e=>{scrollY=Math.max(0,Math.min(4000,scrollY+e.deltaY));document.getElementById('depth').textContent=Math.floor(scrollY/2)});
+let touchY=null;
+C.addEventListener('touchstart',e=>{touchY=e.touches[0].clientY});
+C.addEventListener('touchmove',e=>{e.preventDefault();if(touchY)scrollY=Math.max(0,Math.min(4000,scrollY-(e.touches[0].clientY-touchY)*2));touchY=e.touches[0].clientY;document.getElementById('depth').textContent=Math.floor(scrollY/2)},{passive:false});
+function draw(){drawBg();drawCreatures();drawZoneInfo()}
+function loop(){draw();requestAnimationFrame(loop)}
+init();loop();
+</script>
+</body>
+</html>

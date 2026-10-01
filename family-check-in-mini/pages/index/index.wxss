@@ -1,0 +1,342 @@
+.page {
+  padding: 28rpx 32rpx 60rpx;
+  background: #FFF6F0;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* ===== 头部 ===== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  min-width: 0;
+}
+.header-title {
+  font-size: 42rpx;
+  font-weight: 800;
+  color: #1A1A1A;
+}
+.header-sub {
+  font-size: 22rpx;
+  color: #8A8178;
+}
+.switch-btn {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  background: #FFFFFF;
+  border: 2rpx solid #FFD9C7;
+  border-radius: 32rpx;
+  padding: 12rpx 24rpx;
+  flex-shrink: 0;
+}
+.switch-btn:active { background: #FFF3EC; }
+.switch-icon { font-size: 24rpx; }
+.switch-text { font-size: 24rpx; font-weight: 600; color: #FF6D3B; }
+
+/* ===== 我的英雄卡 ===== */
+.hero-card {
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 26rpx 28rpx 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 138, 101, 0.10);
+  margin-bottom: 28rpx;
+}
+.hc-top { display: flex; align-items: center; gap: 18rpx; }
+.hc-avatar {
+  width: 108rpx;
+  height: 108rpx;
+  border-radius: 50%;
+  border: 4rpx solid #FF8A65;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #F3F4F6;
+}
+.hc-avatar-img { width: 100%; height: 100%; display: block; border-radius: 50%; }
+.hc-avatar-emoji { font-size: 56rpx; }
+.hc-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  min-width: 0;
+}
+.hc-name { font-size: 38rpx; font-weight: 800; color: #1A1A1A; }
+.hc-meta { font-size: 23rpx; color: #8A8178; }
+.hc-arrow { font-size: 40rpx; color: #D6CCBF; font-weight: 300; }
+
+.hc-stats {
+  display: flex;
+  align-items: stretch;
+  background: #FFF9F5;
+  border-radius: 22rpx;
+  padding: 18rpx 8rpx;
+}
+.hc-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+}
+.hc-stat-val {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #1A1A1A;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.hc-stat-label {
+  font-size: 20rpx;
+  color: #A88B6A;
+  white-space: nowrap;
+}
+
+.hc-bottom { display: flex; align-items: center; gap: 16rpx; }
+.hc-pet {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  background: #FFF6F0;
+  border-radius: 16rpx;
+  padding: 10rpx 16rpx;
+  flex: 1;
+  min-width: 0;
+}
+.hc-pet-icon { font-size: 32rpx; flex-shrink: 0; }
+.hc-pet-info { display: flex; flex-direction: column; min-width: 0; }
+.hc-pet-name {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: #1A1A1A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hc-pet-species {
+  font-size: 18rpx;
+  color: #A88B6A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hc-progress-track {
+  flex: 1;
+  height: 14rpx;
+  background: #F3EDE5;
+  border-radius: 7rpx;
+  overflow: hidden;
+  flex-shrink: 0;
+  min-width: 100rpx;
+}
+.hc-progress-fill {
+  height: 100%;
+  border-radius: 7rpx;
+  transition: width 0.6s ease;
+}
+
+/* ===== 我的今日任务 ===== */
+.tasks-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+}
+.tasks-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #1A1A1A;
+}
+.tasks-count { font-size: 24rpx; color: #8A8178; }
+.tasks-tip { font-size: 20rpx; font-weight: 700; color: #4F46E5; }
+.task-cell-photo { font-size: 22rpx; flex-shrink: 0; }
+.tasks-grid { display: flex; flex-wrap: wrap; gap: 16rpx; margin-bottom: 24rpx; }
+.task-cell {
+  width: calc(50% - 8rpx);
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 18rpx 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+.task-cell:active { background: #FFEDD5; transform: scale(0.98); }
+.task-cell.done { opacity: 0.55; }
+.task-check {
+  width: 40rpx;
+  height: 40rpx;
+  min-width: 40rpx;
+  border-radius: 50%;
+  border: 3rpx solid #F3EDE5;
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  color: #22C55E;
+  font-weight: 800;
+}
+.task-cell.done .task-check {
+  background: #22C55E;
+  border-color: #22C55E;
+  color: #FFFFFF;
+}
+.task-cell-body { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.task-cell-name {
+  font-size: 23rpx;
+  font-weight: 600;
+  color: #1A1A1A;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.task-cell.done .task-cell-name { text-decoration: line-through; color: #94A3B8; }
+.task-cell-meta {
+  font-size: 18rpx;
+  color: #8A8178;
+  margin-top: 2rpx;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tasks-empty {
+  width: 100%;
+  padding: 50rpx 0;
+  text-align: center;
+}
+.tasks-empty-icon { font-size: 72rpx; display: block; }
+.tasks-empty-text {
+  display: block;
+  font-size: 26rpx;
+  color: #94A3B8;
+  margin-top: 12rpx;
+}
+
+/* ===== 领养提醒 ===== */
+.adopt-reminder {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  background: linear-gradient(90deg, #FEF3C7, #FCE7F3);
+  border-radius: 24rpx;
+  padding: 20rpx 28rpx;
+  margin-bottom: 24rpx;
+  border: 2rpx solid #FDE68A;
+}
+.adopt-reminder-icon { font-size: 36rpx; }
+.adopt-reminder-text { flex: 1; font-size: 26rpx; font-weight: 700; color: #92400E; }
+.adopt-reminder-arrow { font-size: 32rpx; color: #B45309; font-weight: 800; }
+
+/* ===== 家庭速览条 ===== */
+.fam-strip {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  background: #FFFFFF;
+  border-radius: 26rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+.fam-strip-label {
+  font-size: 28rpx;
+  font-weight: 800;
+  color: #1A1A1A;
+  flex-shrink: 0;
+}
+.fam-strip-avatars {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.fs-avatar {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  border: 3rpx solid #FFFFFF;
+  overflow: hidden;
+  background: #F3F4F6;
+  margin-left: -14rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.fs-avatar:first-child { margin-left: 0; }
+.fs-me { border-color: #FF8A65; }
+.fs-avatar-img { width: 100%; height: 100%; display: block; border-radius: 50%; }
+.fs-avatar-emoji { font-size: 28rpx; }
+.fam-strip-sub {
+  flex: 1;
+  font-size: 22rpx;
+  color: #8A8178;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fam-strip-arrow {
+  font-size: 32rpx;
+  color: #D6CCBF;
+  font-weight: 300;
+  flex-shrink: 0;
+}
+
+/* ===== 底部挑战 ===== */
+.bottom-row { display: flex; align-items: center; gap: 20rpx; }
+.challenge-banner {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  background: linear-gradient(90deg, #FF8A65, #FFB088);
+  border-radius: 44rpx;
+  padding: 22rpx 28rpx;
+}
+.challenge-info { display: flex; flex-direction: column; gap: 4rpx; flex: 1; min-width: 0; }
+.challenge-title { font-size: 26rpx; font-weight: 700; color: #FFFFFF; }
+.challenge-sub { font-size: 20rpx; color: rgba(255, 255, 255, 0.9); }
+.challenge-progress { display: flex; flex-direction: column; gap: 6rpx; width: 180rpx; flex-shrink: 0; }
+.challenge-track {
+  height: 12rpx;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 6rpx;
+  overflow: hidden;
+}
+.challenge-fill {
+  height: 100%;
+  background: #FFFFFF;
+  border-radius: 6rpx;
+  transition: width 0.6s ease;
+}
+.challenge-num { font-size: 18rpx; color: #FFFFFF; text-align: right; }
+.challenge-check { font-size: 36rpx; font-weight: 800; color: #FFFFFF; }
+.fab-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  background: linear-gradient(135deg, #FF8A65, #FF6B6B);
+  border-radius: 44rpx;
+  width: 170rpx;
+  height: 92rpx;
+  box-shadow: 0 8rpx 20rpx rgba(255, 138, 101, 0.35);
+  flex-shrink: 0;
+}
+.fab-btn:active { opacity: 0.85; }
+.fab-icon { font-size: 28rpx; font-weight: 800; color: #FFFFFF; }
+.fab-text { font-size: 30rpx; font-weight: 800; color: #FFFFFF; }

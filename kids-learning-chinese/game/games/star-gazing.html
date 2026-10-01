@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>观星</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a2a;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px;padding:10px 20px;position:fixed;top:0;z-index:10;background:rgba(0,0,0,0.5)}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%}
+.info-box{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);padding:15px 25px;border-radius:15px;z-index:10;max-width:400px;text-align:center}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div>🌟 观星</div>
+<div></div>
+</div>
+<canvas id="game"></canvas>
+<div class="info-box" id="info">点击星座查看名称<br>移动鼠标探索星空</div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+let W,H,stars,constellations,mouseX,mouseY;
+function resize(){W=C.width=window.innerWidth;H=C.height=window.innerHeight}
+window.addEventListener('resize',resize);resize();
+const constData=[
+{name:'北斗七星',stars:[[200,150],[220,160],[240,155],[260,150],[280,140],[300,145],[310,130]],color:'#4D96FF'},
+{name:'猎户座',stars:[[400,200],[420,220],[440,200],[430,250],[410,280],[430,300],[450,280]],color:'#FF6B6B'},
+{name:'天蝎座',stars:[[100,300],[120,320],[140,310],[160,330],[180,340],[200,330],[220,350]],color:'#C084FC'},
+{name:'大熊座',stars:[[500,100],[520,120],[540,110],[530,140],[510,160],[530,180],[550,170]],color:'#6BCB77'},
+{name:'仙后座',stars:[[350,80],[370,100],[390,80],[410,100],[430,80]],color:'#FFD93D'}
+];
+function init(){
+stars=[];
+for(let i=0;i<200;i++)stars.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*2,bright:Math.random()});
+constellations=constData.map(c=>({...c,visible:false}));
+mouseX=W/2;mouseY=H/2;
+}
+function draw(){
+X.fillStyle='#0a0a2a';X.fillRect(0,0,W,H);
+// background stars
+stars.forEach(s=>{
+const flicker=0.5+Math.sin(Date.now()*0.003+s.x)*0.3;
+X.fillStyle=`rgba(255,255,255,${s.bright*flicker})`;
+X.beginPath();X.arc(s.x,s.y,s.r,0,Math.PI*2);X.fill();
+});
+// constellations
+constellations.forEach(c=>{
+const isNear=c.stars.some(([sx,sy])=>Math.abs(mouseX-sx)<50&&Math.abs(mouseY-sy)<50);
+// draw lines
+X.strokeStyle=c.color+'40';X.lineWidth=1;
+X.beginPath();
+c.stars.forEach(([x,y],i)=>{if(i===0)X.moveTo(x,y);else X.lineTo(x,y)});
+X.stroke();
+// draw stars
+c.stars.forEach(([x,y])=>{
+const glow=isNear?1:0.3;
+X.fillStyle=c.color;X.globalAlpha=glow;
+X.shadowColor=c.color;X.shadowBlur=isNear?10:3;
+X.beginPath();X.arc(x,y,isNear?5:3,0,Math.PI*2);X.fill();
+});
+X.globalAlpha=1;X.shadowBlur=0;
+// label
+if(isNear){
+X.fillStyle=c.color;X.font='bold 16px sans-serif';X.textAlign='center';
+X.fillText(c.name,c.stars[0][0],c.stars[0][1]-20);
+document.getElementById('info').innerHTML=`<strong style="color:${c.color}">${c.name}</strong>`;
+}
+});
+// shooting star
+if(Math.random()<0.003){
+const sx=Math.random()*W,sy=Math.random()*H*0.5;
+X.strokeStyle='rgba(255,255,255,0.8)';X.lineWidth=2;
+X.beginPath();X.moveTo(sx,sy);X.lineTo(sx+50,sy+20);X.stroke();
+}
+}
+function loop(){draw();requestAnimationFrame(loop)}
+C.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY});
+C.addEventListener('touchmove',e=>{mouseX=e.touches[0].clientX;mouseY=e.touches[0].clientY});
+init();loop();
+</script>
+</body>
+</html>

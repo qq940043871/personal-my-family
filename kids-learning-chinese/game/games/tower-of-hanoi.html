@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>汉诺塔</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px;padding:10px 20px}
+.info{display:flex;gap:15px}.info-item{background:rgba(255,255,255,0.15);padding:5px 15px;border-radius:15px;font-size:0.9em}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.2);border-radius:15px;font-size:0.9em}
+.diff{display:flex;gap:10px;margin:10px 0}
+.diff-btn{padding:8px 15px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;cursor:pointer;font-size:0.9em}
+.diff-btn.active{background:#FFD93D;color:#333;border-color:#FFD93D}
+.board{display:flex;gap:30px;margin-top:20px;align-items:flex-end;height:300px}
+.peg{width:180px;display:flex;flex-direction:column-reverse;align-items:center;position:relative;cursor:pointer}
+.peg-rod{width:8px;height:250px;background:rgba(255,255,255,0.3);border-radius:4px;position:absolute;bottom:0}
+.disc{height:28px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:0.8em;font-weight:bold;cursor:pointer;transition:transform 0.15s;margin:2px 0;position:relative;z-index:1}
+.disc:hover{transform:scale(1.05)}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#FFD93D,#FF9800);padding:40px;border-radius:20px;text-align:center;max-width:400px}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">步数: <span id="moves">0</span></div><div class="info-item">最少: <span id="min">7</span></div></div>
+</div>
+<div class="diff">
+<button class="diff-btn" onclick="setDiscs(3,this)">3层</button>
+<button class="diff-btn active" onclick="setDiscs(4,this)">4层</button>
+<button class="diff-btn" onclick="setDiscs(5,this)">5层</button>
+<button class="diff-btn" onclick="setDiscs(6,this)">6层</button>
+</div>
+<div class="board" id="board"></div>
+
+<div class="overlay" id="start"><div class="box"><h1>🗼 汉诺塔</h1><p>把所有圆盘从左边移到右边<br>每次只能移动一个，小的在上</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>🎉 恭喜！</h1><p>用了 <span id="final">0</span> 步完成！<br>最少需要 <span id="minMoves">7</span> 步</p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+let pegs,numDiscs,moves,selected;
+const colors=['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#C084FC','#FF9800'];
+function setDiscs(n,el){
+document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('active'));
+el.classList.add('active');numDiscs=n;
+document.getElementById('min').textContent=Math.pow(2,n)-1;
+}
+numDiscs=4;
+function startGame(){
+document.getElementById('start').classList.add('hidden');
+document.getElementById('over').classList.add('hidden');
+pegs=[[],[],[]];moves=0;selected=null;
+for(let i=numDiscs;i>=1;i--)pegs[0].push(i);
+document.getElementById('moves').textContent=0;
+document.getElementById('min').textContent=Math.pow(2,numDiscs)-1;
+render();
+}
+function render(){
+const board=document.getElementById('board');board.innerHTML='';
+for(let p=0;p<3;p++){
+const peg=document.createElement('div');peg.className='peg';
+peg.innerHTML='<div class="peg-rod"></div>';
+pegs[p].forEach((d,i)=>{
+const disc=document.createElement('div');
+disc.className='disc';
+disc.style.width=(d*25+30)+'px';
+disc.style.background=colors[(d-1)%colors.length];
+disc.textContent=d;
+disc.addEventListener('click',()=>clickPeg(p));
+peg.appendChild(disc);
+});
+peg.addEventListener('click',()=>clickPeg(p));
+board.appendChild(peg);
+}
+}
+function clickPeg(p){
+if(selected===null){
+if(pegs[p].length>0){selected=p;playSound(400,0.05)}
+}else{
+if(p===selected){selected=null;return}
+const disc=pegs[selected][pegs[selected].length-1];
+const topDisc=pegs[p].length>0?pegs[p][pegs[p].length-1]:Infinity;
+if(disc<topDisc){
+pegs[p].push(pegs[selected].pop());
+moves++;document.getElementById('moves').textContent=moves;
+playSound(500,0.05);
+if(pegs[2].length===numDiscs){
+setTimeout(()=>{
+document.getElementById('final').textContent=moves;
+document.getElementById('minMoves').textContent=Math.pow(2,numDiscs)-1;
+document.getElementById('over').classList.remove('hidden');
+playSound(700,0.3);
+},300);
+}
+}else{playSound(200,0.1)}
+selected=null;
+}
+render();
+}
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

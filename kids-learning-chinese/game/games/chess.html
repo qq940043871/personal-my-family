@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>国际象棋</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#4E342E,#3E2723);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:400px;padding:10px 20px}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+.board{display:grid;grid-template-columns:repeat(8,50px);gap:0;border:3px solid #8D6E63;border-radius:5px;margin:10px 0}
+.cell{width:50px;height:50px;display:flex;align-items:center;justify-content:center;font-size:1.8em;cursor:pointer}
+.cell.light{background:#D7CCC8}
+.cell.dark{background:#795548}
+.cell.selected{background:#FFD93D}
+.cell.valid{background:#81C784}
+.cell.check{background:#F44336}
+.status{font-size:1.2em;margin:10px 0;background:rgba(255,255,255,0.1);padding:8px 20px;border-radius:10px}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#8D6E63,#5D4037);padding:40px;border-radius:20px;text-align:center;max-width:400px}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div>♟️ 国际象棋</div>
+</div>
+<div class="status" id="status">白方回合</div>
+<div class="board" id="board"></div>
+
+<div class="overlay" id="start"><div class="box"><h1>♟️ 国际象棋</h1><p>点击棋子选择，再点击目标<br>简单AI对手！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1 id="endTitle">游戏结束</h1><p id="endMsg"></p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.2);color:#fff;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+const PIECES={K:'♔',Q:'♕',R:'♖',B:'♗',N:'♘',P:'♙',k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟'};
+let board,turn,selected,validMoves,gameOver;
+function startGame(){
+document.getElementById('start').classList.add('hidden');
+document.getElementById('over').classList.add('hidden');
+board=[
+['r','n','b','q','k','b','n','r'],
+['p','p','p','p','p','p','p','p'],
+['','','','','','','',''],
+['','','','','','','',''],
+['','','','','','','',''],
+['','','','','','','',''],
+['P','P','P','P','P','P','P','P'],
+['R','N','B','Q','K','B','N','R']
+];
+turn='white';selected=null;validMoves=[];gameOver=false;render();
+}
+function render(){
+const div=document.getElementById('board');div.innerHTML='';
+for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+const cell=document.createElement('div');cell.className='cell '+((r+c)%2===0?'light':'dark');
+if(selected&&selected[0]===r&&selected[1]===c)cell.classList.add('selected');
+if(validMoves.some(m=>m[0]===r&&m[1]===c))cell.classList.add('valid');
+const piece=board[r][c];
+if(piece)cell.textContent=PIECES[piece];
+cell.addEventListener('click',()=>handleClick(r,c));
+div.appendChild(cell);
+}
+document.getElementById('status').textContent=turn==='white'?'白方回合':'黑方回合';
+}
+function handleClick(r,c){
+if(gameOver)return;
+const piece=board[r][c];
+if(selected){
+const move=validMoves.find(m=>m[0]===r&&m[1]===c);
+if(move){
+board[r][c]=board[selected[0]][selected[1]];
+board[selected[0]][selected[1]]='';
+selected=null;validMoves=[];
+playSound(500,0.05);
+turn=turn==='white'?'black':'white';render();
+if(turn==='black')setTimeout(aiMove,500);return;
+}
+}
+if(piece&&isWhite(piece)===turn){
+selected=[r,c];validMoves=getBasicMoves(r,c);render();
+}
+}
+function isWhite(p){return p===p.toUpperCase()}
+function getBasicMoves(r,c){
+const moves=[];const piece=board[r][c];const white=isWhite(piece);
+const type=piece.toUpperCase();
+if(type==='P'){
+const dir=white?-1:1;
+if(r+dir>=0&&r+dir<8&&!board[r+dir][c])moves.push([r+dir,c]);
+if((white&&r===6||!white&&r===1)&&!board[r+dir][c]&&!board[r+dir*2][c])moves.push([r+dir*2,c]);
+if(c>0&&board[r+dir][c-1]&&isWhite(board[r+dir][c-1])!==white)moves.push([r+dir,c-1]);
+if(c<7&&board[r+dir][c+1]&&isWhite(board[r+dir][c+1])!==white)moves.push([r+dir,c+1]);
+}
+if(type==='R'||type==='Q')for(const[dr,dc]of[[0,1],[0,-1],[1,0],[-1,0]]){for(let i=1;i<8;i++){const nr=r+dr*i,nc=c+dc*i;if(nr<0||nr>=8||nc<0||nc>=8)break;if(board[nr][nc]){if(isWhite(board[nr][nc])!==white)moves.push([nr,nc]);break}moves.push([nr,nc])}}
+if(type==='B'||type==='Q')for(const[dr,dc]of[[1,1],[1,-1],[-1,1],[-1,-1]]){for(let i=1;i<8;i++){const nr=r+dr*i,nc=c+dc*i;if(nr<0||nr>=8||nc<0||nc>=8)break;if(board[nr][nc]){if(isWhite(board[nr][nc])!==white)moves.push([nr,nc]);break}moves.push([nr,nc])}}
+if(type==='N')for(const[dr,dc]of[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]]){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<8&&nc>=0&&nc<8&&(!board[nr][nc]||isWhite(board[nr][nc])!==white))moves.push([nr,nc])}
+if(type==='K')for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){if(dr===0&&dc===0)continue;const nr=r+dr,nc=c+dc;if(nr>=0&&nr<8&&nc>=0&&nc<8&&(!board[nr][nc]||isWhite(board[nr][nc])!==white))moves.push([nr,nc])}
+return moves;
+}
+function aiMove(){
+if(gameOver)return;
+const allMoves=[];
+for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+if(board[r][c]&&!isWhite(board[r][c])){
+const moves=getBasicMoves(r,c);
+moves.forEach(m=>allMoves.push({from:[r,c],to:m}));
+}
+}
+if(allMoves.length===0){endGame('白方获胜！');return}
+const move=allMoves[Math.floor(Math.random()*allMoves.length)];
+board[move.to[0]][move.to[1]]=board[move.from[0]][move.from[1]];
+board[move.from[0]][move.from[1]]='';
+turn='white';playSound(500,0.05);render();
+}
+function endGame(msg){gameOver=true;document.getElementById('endTitle').textContent=msg;document.getElementById('over').classList.remove('hidden')}
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

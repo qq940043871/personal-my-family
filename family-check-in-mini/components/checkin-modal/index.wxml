@@ -1,0 +1,57 @@
+<view class="modal-overlay" wx:if="{{show}}" bindtap="onClose">
+  <view class="modal-card" catchtap="noop">
+    <text class="modal-icon">{{evolved ? '🎊' : '🎉'}}</text>
+    <text class="modal-title">{{titleText}}</text>
+    <text class="modal-msg" wx:if="{{member}}">{{messageText}}</text>
+
+    <!-- 幼儿专属：掉落星星 -->
+    <view wx:if="{{member.age <= 4 && !evolved}}" class="stars-animation">
+      <text
+        wx:for="{{starList}}"
+        wx:key="*this"
+        class="star-fall"
+        style="animation-delay: {{index * 0.15}}s"
+      >⭐</text>
+    </view>
+
+    <!-- 幼儿专属：进化大动画 -->
+    <view wx:if="{{member.age <= 4 && evolved}}" class="toddler-evolve">
+      <text class="toddler-big">🐣 → 🐔</text>
+      <text class="toddler-cheer">蛋蛋长大啦！咯咯咯～</text>
+    </view>
+
+    <!-- 签到照片 -->
+    <view wx:if="{{photo}}" class="photo-preview-wrap">
+      <image class="photo-preview" src="{{photo}}" mode="aspectFill" />
+      <text class="photo-label">📷 签到照片</text>
+    </view>
+
+    <!-- 宠物成长条 -->
+    <view class="grow-bar" wx:if="{{member}}">
+      <view class="grow-fill" style="width: {{growRatio}}%"></view>
+    </view>
+    <text class="grow-text" wx:if="{{member && stage}}">
+      {{member.pet.name}} · {{stage.stage}} · {{growRatio}}%
+    </text>
+
+    <!-- 奶奶专属经文 -->
+    <view wx:if="{{verse}}" class="verse-card">
+      <text class="verse-text">“{{verse.text}}”</text>
+      <text class="verse-ref">— {{verse.ref}}</text>
+    </view>
+
+    <!-- 9 岁孩子：龙鳞 -->
+    <view wx:if="{{member.age === 9 && member.dragonScales}}" class="dragon-scale-info">
+      <text>🐉 已收集龙鳞：{{member.dragonScales}} 片</text>
+    </view>
+
+    <!-- 夫妻羁绊 -->
+    <view wx:if="{{coupleBond}}" class="couple-banner">
+      <text>💕 今日夫妻双双全勤！羁绊加成生效，宠物成长 x1.5</text>
+    </view>
+
+    <view class="btn-ok" bindtap="onClose">
+      <text>{{buttonText}}</text>
+    </view>
+  </view>
+</view>

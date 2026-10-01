@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>蚂蚁王国</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#8BC34A;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#333;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px;padding:10px 20px;background:rgba(255,255,255,0.3)}
+.back{color:#333;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.4);border-radius:15px;font-size:0.9em}
+.info{display:flex;gap:15px}.info-item{background:rgba(255,255,255,0.3);padding:5px 15px;border-radius:15px;font-size:0.9em;font-weight:bold}
+canvas{border:2px solid rgba(0,0,0,0.1);border-radius:10px;margin-top:10px}
+.controls{display:flex;gap:10px;margin:10px 0}
+.ctrl{padding:8px 20px;background:rgba(255,255,255,0.4);border:none;border-radius:10px;cursor:pointer;font-size:0.9em}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">🐜 <span id="count">10</span></div><div class="info-item">🍎 <span id="food">0</span></div></div>
+</div>
+<canvas id="game" width="600" height="400"></canvas>
+<div class="controls">
+<button class="ctrl" onclick="addFood()">🍎 放食物</button>
+<button class="ctrl" onclick="addAnts()">🐜 +5蚂蚁</button>
+</div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+const W=600,H=400;
+let ants,foods,nest,foodCollected;
+function init(){
+nest={x:W/2,y:H/2,r:30};
+ants=[];foods=[];foodCollected=0;
+for(let i=0;i<10;i++)ants.push(createAnt());
+}
+function createAnt(){
+const angle=Math.random()*Math.PI*2;
+return{x:nest.x+Math.cos(angle)*40,y:nest.y+Math.sin(angle)*40,
+vx:(Math.random()-0.5)*2,vy:(Math.random()-0.5)*2,
+carrying:false,target:null,wanderAngle:Math.random()*Math.PI*2};
+}
+function addFood(){
+for(let i=0;i<3;i++){
+foods.push({x:50+Math.random()*(W-100),y:50+Math.random()*(H-100),r:5,collected:false});
+}
+}
+function addAnts(){for(let i=0;i<5;i++)ants.push(createAnt())}
+function draw(){
+X.fillStyle='#8BC34A';X.fillRect(0,0,W,H);
+// dirt texture
+X.fillStyle='rgba(139,114,79,0.1)';
+for(let i=0;i<50;i++){X.fillRect(Math.random()*W,Math.random()*H,2,2)}
+// nest
+X.fillStyle='#795548';X.beginPath();X.arc(nest.x,nest.y,nest.r,0,Math.PI*2);X.fill();
+X.fillStyle='#5D4037';X.beginPath();X.arc(nest.x,nest.y,nest.r-5,0,Math.PI*2);X.fill();
+X.fillStyle='#3E2723';X.font='12px sans-serif';X.textAlign='center';X.fillText('蚁巢',nest.x,nest.y+4);
+// food
+foods.forEach(f=>{
+if(f.collected)return;
+X.fillStyle='#F44336';X.beginPath();X.arc(f.x,f.y,f.r,0,Math.PI*2);X.fill();
+X.fillStyle='#FF8A80';X.beginPath();X.arc(f.x-2,f.y-2,f.r*0.4,0,Math.PI*2);X.fill();
+});
+// ants
+ants.forEach(a=>{
+X.fillStyle=a.carrying?'#4CAF50':'#333';
+X.save();X.translate(a.x,a.y);X.rotate(Math.atan2(a.vy,a.vx));
+X.beginPath();X.ellipse(0,0,4,2.5,0,0,Math.PI*2);X.fill();
+X.beginPath();X.arc(5,0,2,0,Math.PI*2);X.fill();
+X.beginPath();X.arc(-3,0,2,0,Math.PI*2);X.fill();
+// legs
+X.strokeStyle='#333';X.lineWidth=0.5;
+for(let i=-1;i<=1;i++){X.beginPath();X.moveTo(i*2,2);X.lineTo(i*2+1,4);X.stroke();X.beginPath();X.moveTo(i*2,-2);X.lineTo(i*2+1,-4);X.stroke()}
+X.restore();
+if(a.carrying){X.fillStyle='#F44336';X.beginPath();X.arc(a.x,a.y-3,2,0,Math.PI*2);X.fill()}
+});
+}
+function update(){
+ants.forEach(a=>{
+if(a.carrying){
+// return to nest
+const dx=nest.x-a.x,dy=nest.y-a.y;
+const dist=Math.sqrt(dx*dx+dy*dy);
+if(dist<nest.r){a.carrying=false;foodCollected++;document.getElementById('food').textContent=foodCollected;
+a.vx=(Math.random()-0.5)*2;a.vy=(Math.random()-0.5)*2;
+}else{a.vx=dx/dist*1.5;a.vy=dy/dist*1.5}
+}else{
+// find food
+let nearest=null,nearestDist=Infinity;
+foods.forEach(f=>{
+if(f.collected)return;
+const dx=f.x-a.x,dy=f.y-a.y;
+const dist=Math.sqrt(dx*dx+dy*dy);
+if(dist<nearestDist&&dist<150){nearest=f;nearestDist=dist}
+});
+if(nearest&&nearestDist<10){
+nearest.collected=true;a.carrying=true;
+}else if(nearest){
+const dx=nearest.x-a.x,dy=nearest.y-a.y;
+const dist=Math.sqrt(dx*dx+dy*dy);
+a.vx=dx/dist*1.5+a.vx*0.3;a.vy=dy/dist*1.5+a.vy*0.3;
+}else{
+a.wanderAngle+=Math.random()*0.4-0.2;
+a.vx+=Math.cos(a.wanderAngle)*0.2;a.vy+=Math.sin(a.wanderAngle)*0.2;
+}
+}
+a.vx=Math.max(-2,Math.min(2,a.vx));a.vy=Math.max(-2,Math.min(2,a.vy));
+a.x+=a.vx;a.y+=a.vy;
+if(a.x<5||a.x>W-5)a.vx*=-1;
+if(a.y<5||a.y>H-5)a.vy*=-1;
+a.x=Math.max(5,Math.min(W-5,a.x));a.y=Math.max(5,Math.min(H-5,a.y));
+});
+document.getElementById('count').textContent=ants.length;
+// auto spawn food
+if(foods.filter(f=>!f.collected).length<3&&Math.random()<0.005)addFood();
+}
+function loop(){update();draw();requestAnimationFrame(loop)}
+C.addEventListener('click',e=>{
+const r=C.getBoundingClientRect();
+foods.push({x:(e.clientX-r.left)*(W/r.width),y:(e.clientY-r.top)*(H/r.height),r:5,collected:false});
+});
+init();loop();
+</script>
+</body>
+</html>

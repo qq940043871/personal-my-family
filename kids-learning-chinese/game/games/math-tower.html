@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数学塔防</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1a2e;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px;padding:10px 20px}
+.info{display:flex;gap:15px}.info-item{background:rgba(255,255,255,0.1);padding:5px 15px;border-radius:15px;font-size:0.9em}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{border:2px solid rgba(255,255,255,0.2);border-radius:10px;margin-top:10px}
+.question{background:rgba(255,255,255,0.1);padding:10px 20px;border-radius:10px;margin:10px 0;text-align:center;font-size:1.3em}
+.options{display:flex;gap:10px;margin:10px 0}
+.opt{padding:10px 20px;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;cursor:pointer;font-size:1.1em}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#667eea,#764ba2);padding:40px;border-radius:20px;text-align:center;max-width:400px}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">生命: <span id="lives">10</span></div><div class="info-item">波次: <span id="wave">1</span></div></div>
+</div>
+<canvas id="game" width="600" height="300"></canvas>
+<div class="question" id="question"></div>
+<div class="options" id="options"></div>
+
+<div class="overlay" id="start"><div class="box"><h1>🏰 数学塔防</h1><p>答对题目建造防御塔<br>阻止敌人通过！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>游戏结束</h1><p>波次: <span id="final">1</span></p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+const W=600,H=300;
+let enemies,towers,lives,wave,frame;
+function init(){
+enemies=[];towers=[];lives=10;wave=0;frame=0;
+document.getElementById('lives').textContent=10;document.getElementById('wave').textContent=1;
+nextWave();nextQ();
+}
+function nextWave(){
+wave++;document.getElementById('wave').textContent=wave;
+for(let i=0;i<3+wave;i++){
+setTimeout(()=>spawnEnemy(),i*800);
+}
+}
+function spawnEnemy(){
+enemies.push({x:0,y:50+Math.random()*200, speed:1+wave*0.2, hp:1+Math.floor(wave/3), size:20});
+}
+function nextQ(){
+const ops=['+','-','×'];const op=ops[Math.floor(Math.random()*3)];
+let a,b,ans;
+if(op==='+'){a=rand(1,10+wave);b=rand(1,10+wave);ans=a+b}
+else if(op==='-'){a=rand(5,20+wave);b=rand(1,a);ans=a-b}
+else{a=rand(2,9);b=rand(2,9);ans=a*b}
+document.getElementById('question').textContent=`${a} ${op} ${b} = ? 建造防御塔！`;
+const opts=[ans];while(opts.length<4){const n=ans+rand(-5,10);if(n>0&&!opts.includes(n))opts.push(n)}
+opts.sort(()=>Math.random()-0.5);
+const div=document.getElementById('options');div.innerHTML='';
+opts.forEach(o=>{
+const btn=document.createElement('div');btn.className='opt';btn.textContent=o;
+btn.addEventListener('click',()=>{
+if(o===ans){
+towers.push({x:100+Math.random()*400,y:50+Math.random()*200,range:80,damage:1});
+playSound(600,0.1);
+}else{playSound(200,0.1)}
+nextQ();
+});
+div.appendChild(btn);
+});
+}
+function draw(){
+X.fillStyle='#0a0a2a';X.fillRect(0,0,W,H);
+// path
+X.fillStyle='rgba(255,255,255,0.05)';X.fillRect(0,40,W,220);
+// towers
+towers.forEach(t=>{
+X.fillStyle='#4D96FF';X.shadowColor='#4D96FF';X.shadowBlur=8;
+X.beginPath();X.arc(t.x,t.y,15,0,Math.PI*2);X.fill();
+X.fillStyle='#fff';X.font='16px sans-serif';X.textAlign='center';X.textBaseline='middle';
+X.fillText('🏰',t.x,t.y);X.shadowBlur=0;
+// range
+X.strokeStyle='rgba(77,150,255,0.2)';X.beginPath();X.arc(t.x,t.y,t.range,0,Math.PI*2);X.stroke();
+});
+// enemies
+enemies.forEach(e=>{
+X.fillStyle='#FF6B6B';X.shadowColor='#FF6B6B';X.shadowBlur=5;
+X.beginPath();X.arc(e.x,e.y,e.size/2,0,Math.PI*2);X.fill();
+X.fillStyle='#fff';X.font='14px sans-serif';X.textAlign='center';
+X.fillText(e.hp,e.x,e.y+4);X.shadowBlur=0;
+});
+}
+function update(){
+enemies.forEach((e,i)=>{
+e.x+=e.speed;
+if(e.x>W){lives--;document.getElementById('lives').textContent=lives;enemies.splice(i,1);
+if(lives<=0){document.getElementById('final').textContent=wave;document.getElementById('over').classList.remove('hidden');playSound(200,0.3)}
+}
+});
+// tower shooting
+towers.forEach(t=>{
+enemies.forEach((e,i)=>{
+const dist=Math.sqrt((t.x-e.x)**2+(t.y-e.y)**2);
+if(dist<t.range&&frame%30===0){
+e.hp--;playSound(500,0.03);
+if(e.hp<=0){enemies.splice(i,1)}
+}
+});
+});
+// next wave
+if(enemies.length===0&&frame%60===0)nextWave();
+frame++;
+}
+function loop(){update();draw();requestAnimationFrame(loop)}
+function startGame(){document.getElementById('start').classList.add('hidden');document.getElementById('over').classList.add('hidden');init();loop()}
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

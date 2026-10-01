@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>黑白棋</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#1a1a2e,#16213e);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:400px;padding:10px 20px}
+.info{display:flex;gap:15px}.info-item{background:rgba(255,255,255,0.1);padding:5px 15px;border-radius:15px;font-size:0.9em}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+.board{display:grid;gap:2px;padding:10px;background:#333;border-radius:10px;margin:10px 0}
+.cell{width:45px;height:45px;background:#4CAF50;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.cell:hover{background:#66BB6A}
+.cell .disc{width:35px;height:35px;border-radius:50%;transition:all 0.3s}
+.cell .disc.black{background:#333;box-shadow:inset 0 2px 4px rgba(255,255,255,0.2)}
+.cell .disc.white{background:#fff;box-shadow:inset 0 2px 4px rgba(0,0,0,0.2)}
+.cell.valid{background:#81C784;box-shadow:0 0 5px rgba(255,255,255,0.3)}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#333,#111);padding:40px;border-radius:20px;text-align:center;max-width:400px;border:2px solid #555}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">⚫ <span id="black">2</span></div><div class="info-item">⚪ <span id="white">2</span></div></div>
+</div>
+<div class="board" id="board"></div>
+
+<div class="overlay" id="start"><div class="box"><h1>⚫ 黑白棋</h1><p>点击放置棋子<br>翻转对方的棋子！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1 id="endTitle">游戏结束</h1><p id="endMsg"></p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.2);color:#fff;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+let board,turn,gameOver;
+function startGame(){
+document.getElementById('start').classList.add('hidden');
+document.getElementById('over').classList.add('hidden');
+board=Array.from({length:8},()=>Array(8).fill(0));
+board[3][3]=1;board[3][4]=2;board[4][3]=2;board[4][4]=1;
+turn=1;gameOver=false;render();
+}
+function render(){
+const div=document.getElementById('board');div.innerHTML='';
+let validMoves=[];
+if(!gameOver)validMoves=getValidMoves(turn);
+for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+const cell=document.createElement('div');cell.className='cell';
+if(validMoves.some(m=>m[0]===r&&m[1]===c))cell.classList.add('valid');
+if(board[r][c]){const disc=document.createElement('div');disc.className='disc '+(board[r][c]===1?'black':'white');cell.appendChild(disc)}
+cell.addEventListener('click',()=>placePiece(r,c));
+div.appendChild(cell);
+}
+const bc=board.flat().filter(v=>v===1).length;
+const wc=board.flat().filter(v=>v===2).length;
+document.getElementById('black').textContent=bc;
+document.getElementById('white').textContent=wc;
+}
+function getValidMoves(player){
+const moves=[];
+for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+if(board[r][c]!==0)continue;
+if(getFlips(r,c,player).length>0)moves.push([r,c]);
+}
+return moves;
+}
+function getFlips(r,c,player){
+const other=player===1?2:1;
+const dirs=[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+const flips=[];
+for(const[dr,dc]of dirs){
+const line=[];
+let nr=r+dr,nc=c+dc;
+while(nr>=0&&nr<8&&nc>=0&&nc<8&&board[nr][nc]===other){
+line.push([nr,nc]);nr+=dr;nc+=dc;
+}
+if(line.length>0&&nr>=0&&nr<8&&nc>=0&&nc<8&&board[nr][nc]===player){
+flips.push(...line);
+}
+}
+return flips;
+}
+function placePiece(r,c){
+if(gameOver||board[r][c]!==0)return;
+const flips=getFlips(r,c,turn);
+if(flips.length===0)return;
+board[r][c]=turn;
+flips.forEach(([fr,fc])=>board[fr][fc]=turn);
+playSound(500,0.05);
+turn=turn===1?2:1;
+// check if next player has moves
+if(getValidMoves(turn).length===0){
+turn=turn===1?2:1;
+if(getValidMoves(turn).length===0)endGame();
+}
+render();
+}
+function endGame(){
+gameOver=true;
+const bc=board.flat().filter(v=>v===1).length;
+const wc=board.flat().filter(v=>v===2).length;
+document.getElementById('endTitle').textContent=bc>wc?'⚫ 黑棋赢！':wc>bc?'⚪ 白棋赢！':'平局！';
+document.getElementById('endMsg').textContent=`黑: ${bc} vs 白: ${wc}`;
+document.getElementById('over').classList.remove('hidden');
+}
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

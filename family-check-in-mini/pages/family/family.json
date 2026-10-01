@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "全家总览",
+  "navigationBarBackgroundColor": "#FFF6F0",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#FFF6F0",
+  "enablePullDownRefresh": true
+}

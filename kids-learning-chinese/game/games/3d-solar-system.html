@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D太阳系</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 20px;position:fixed;top:0;z-index:10;background:rgba(0,0,0,0.5)}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+.info{font-size:0.9em}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%}
+.controls{position:fixed;bottom:20px;display:flex;gap:10px;z-index:10}
+.ctrl{padding:8px 20px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;cursor:pointer;font-size:0.9em}
+.planet-info{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);padding:15px 25px;border-radius:15px;text-align:center;z-index:10;min-width:200px}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info">🌍 3D太阳系</div>
+<div></div>
+</div>
+<canvas id="game"></canvas>
+<div class="planet-info" id="info">点击行星查看信息</div>
+<div class="controls">
+<button class="ctrl" onclick="speed=0.5">🐢 慢速</button>
+<button class="ctrl" onclick="speed=1">🚶 正常</button>
+<button class="ctrl" onclick="speed=3">🚀 快速</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,2000);
+const renderer=new THREE.WebGLRenderer({canvas:document.getElementById('game'),antialias:true});
+renderer.setSize(window.innerWidth,renderer.setSize(window.innerHeight));
+renderer.setPixelRatio(window.devicePixelRatio);
+camera.position.set(0,80,150);camera.lookAt(0,0,0);
+// stars
+const starsGeo=new THREE.BufferGeometry();
+const starPos=new Float32Array(3000);
+for(let i=0;i<3000;i++)starPos[i]=(Math.random()-0.5)*2000;
+starsGeo.setAttribute('position',new THREE.BufferAttribute(starPos,3));
+const starsMat=new THREE.PointsMaterial({color:0xffffff,size:1.5});
+scene.add(new THREE.Points(starsGeo,starsMat));
+// sun
+const sunGeo=new THREE.SphereGeometry(8,32,32);
+const sunMat=new THREE.MeshBasicMaterial({color:0xFFD93D});
+const sun=new THREE.Mesh(sunGeo,sunMat);
+scene.add(sun);
+const sunLight=new THREE.PointLight(0xffffff,2,500);
+scene.add(sunLight);
+scene.add(new THREE.AmbientLight(0x333333));
+// planets
+const planetData=[
+{name:'水星',r:1.5,d:20,color:0xBDB76B,speed:4.15,info:'水星是最小的行星，也是离太阳最近的行星'},
+{name:'金星',r:2.5,d:30,color:0xFFC107,speed:1.62,info:'金星是最热的行星，表面温度可达465°C'},
+{name:'地球',r:2.5,d:40,color:0x2196F3,speed:1,info:'我们的家园！唯一已知有生命的行星'},
+{name:'火星',r:2,d:50,color:0xF44336,speed:0.53,info:'火星被称为红色星球，科学家正在探索中'},
+{name:'木星',r:5,d:70,color:0xFF9800,speed:0.084,info:'木星是最大的行星，有一个大红斑'},
+{name:'土星',r:4.5,d:90,color:0xFFD54F,speed:0.034,info:'土星有美丽的光环！'},
+{name:'天王星',r:3.5,d:110,color:0x4DD0E1,speed:0.012,info:'天王星是躺着自转的行星'},
+{name:'海王星',r:3.5,d:130,color:0x3F51B5,speed:0.006,info:'海王星是最远的行星'}
+];
+const planets=[];
+planetData.forEach(p=>{
+const geo=new THREE.SphereGeometry(p.r,24,24);
+const mat=new THREE.MeshStandardMaterial({color:p.color});
+const mesh=new THREE.Mesh(geo,mat);
+scene.add(mesh);
+// orbit line
+const orbitGeo=new THREE.RingGeometry(p.d-0.1,p.d,64);
+const orbitMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.1,side:THREE.DoubleSide});
+const orbit=new THREE.Mesh(orbitGeo,orbitMat);
+orbit.rotation.x=Math.PI/2;scene.add(orbit);
+// ring for Saturn
+if(p.name==='土星'){
+const ringGeo=new THREE.RingGeometry(p.r+1,p.r+3,32);
+const ringMat=new THREE.MeshBasicMaterial({color:0xFFD54F,transparent:true,opacity:0.5,side:THREE.DoubleSide});
+const ring=new THREE.Mesh(ringGeo,ringMat);
+mesh.add(ring);ring.rotation.x=Math.PI/3;
+}
+planets.push({...p,mesh,angle:Math.random()*Math.PI*2});
+});
+let speed=1,time=0;
+// mouse interaction
+const raycaster=new THREE.Raycaster();
+const mouse=new THREE.Vector2();
+window.addEventListener('click',e=>{
+mouse.x=(e.clientX/window.innerWidth)*2-1;
+mouse.y=-(e.clientY/window.innerHeight)*2+1;
+raycaster.setFromCamera(mouse,camera);
+const meshes=planets.map(p=>p.mesh);
+const intersects=raycaster.intersectObjects(meshes);
+if(intersects.length>0){
+const planet=planets.find(p=>p.mesh===intersects[0].object);
+document.getElementById('info').innerHTML=`<strong>${planet.name}</strong><br>${planet.info}`;
+}
+});
+function animate(){
+requestAnimationFrame(animate);
+time+=0.01*speed;
+sun.rotation.y+=0.002;
+planets.forEach(p=>{
+p.angle+=p.speed*0.01*speed;
+p.mesh.position.x=Math.cos(p.angle)*p.d;
+p.mesh.position.z=Math.sin(p.angle)*p.d;
+p.mesh.rotation.y+=0.02;
+});
+// camera orbit
+camera.position.x=Math.sin(time*0.1)*160;
+camera.position.z=Math.cos(time*0.1)*160;
+camera.lookAt(0,0,0);
+renderer.render(scene,camera);
+}
+window.addEventListener('resize',()=>{
+camera.aspect=window.innerWidth/window.innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(window.innerWidth,window.innerHeight);
+});
+animate();
+</script>
+</body>
+</html>

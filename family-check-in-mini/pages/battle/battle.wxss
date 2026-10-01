@@ -1,0 +1,200 @@
+.page {
+  padding: 24rpx 24rpx 60rpx;
+  box-sizing: border-box;
+}
+
+.card {
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 28rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+.card-title { font-size: 30rpx; font-weight: 600; color: #1E293B; }
+.card-subtitle { font-size: 24rpx; color: #64748B; }
+
+.player-card.selected { border: 3rpx solid #4F46E5; }
+.player-card.blue.selected { border-color: #2563EB; }
+
+.select-scroll { display: block; width: 100%; }
+.select-row { display: flex; flex-wrap: wrap; gap: 12rpx; }
+.select-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 24rpx;
+  background: #F8FAFC;
+  border-radius: 20rpx;
+  border: 3rpx solid transparent;
+  min-width: 150rpx;
+}
+.select-item:active { transform: scale(0.94); }
+.select-item.active { border-color: #4F46E5; background: #EEF2FF; }
+.select-icon { font-size: 48rpx; }
+.select-name { font-size: 26rpx; font-weight: 600; color: #1E293B; margin-top: 6rpx; }
+.select-owner { font-size: 22rpx; color: #94A3B8; }
+.select-power { font-size: 20rpx; color: #F59E0B; font-weight: 600; margin-top: 4rpx; }
+.select-bonus {
+  font-size: 18rpx;
+  color: #DB2777;
+  background: #FCE7F3;
+  border-radius: 999rpx;
+  padding: 2rpx 10rpx;
+  margin-top: 4rpx;
+}
+
+.vs-divider { text-align: center; margin: 8rpx 0 16rpx; }
+.vs-big { font-size: 48rpx; font-weight: 900; color: #E2E8F0; }
+
+.start-btn {
+  background: linear-gradient(135deg, #4F46E5, #7C3AED);
+  color: #FFFFFF;
+  text-align: center;
+  padding: 28rpx 0;
+  border-radius: 40rpx;
+  font-size: 32rpx;
+  font-weight: 700;
+  margin-bottom: 24rpx;
+  box-shadow: 0 10rpx 28rpx rgba(79, 70, 229, 0.3);
+}
+.start-btn:active { transform: scale(0.96); }
+
+/* 对战区 */
+.arena {
+  background: linear-gradient(180deg, #1E1B4B, #312E81);
+  border-radius: 32rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
+}
+.battle-scene {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+.fighter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 200rpx;
+  transition: transform 0.2s;
+}
+.fighter.attack { transform: translateX(30rpx); }
+.fighter.hit { transform: translateX(-15rpx); }
+.fighter.right.attack { transform: translateX(-30rpx); }
+.fighter.right.hit { transform: translateX(15rpx); }
+.fighter-icon { font-size: 80rpx; line-height: 1.2; }
+.fighter-name { font-size: 28rpx; font-weight: 700; color: #FFFFFF; margin-top: 4rpx; }
+.fighter-owner { font-size: 22rpx; color: #A5B4FC; }
+.fighter-bonus {
+  font-size: 20rpx;
+  color: #FBCFE8;
+  background: rgba(219, 39, 119, 0.35);
+  border-radius: 999rpx;
+  padding: 2rpx 12rpx;
+  margin-top: 4rpx;
+}
+.hp-bar-wrap {
+  width: 160rpx;
+  height: 16rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8rpx;
+  overflow: hidden;
+  margin-top: 8rpx;
+}
+.hp-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #EF4444, #10B981);
+  border-radius: 8rpx;
+  transition: width 0.3s ease;
+}
+.hp-text { font-size: 20rpx; color: #C7D2FE; margin-top: 2rpx; }
+.vs-zone { text-align: center; width: 140rpx; }
+.vs-text { font-size: 48rpx; font-weight: 900; color: #F59E0B; display: block; }
+.battle-round-text { font-size: 22rpx; color: #A5B4FC; margin-top: 4rpx; }
+
+.battle-log {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 16rpx;
+  padding: 16rpx 20rpx;
+  margin-bottom: 20rpx;
+  min-height: 180rpx;
+}
+.log-line {
+  display: block;
+  font-size: 24rpx;
+  color: #C7D2FE;
+  line-height: 1.8;
+}
+
+.battle-actions { text-align: center; }
+.btn-fight {
+  background: linear-gradient(135deg, #F59E0B, #EF4444);
+  color: #FFFFFF;
+  padding: 24rpx 0;
+  border-radius: 40rpx;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+.btn-fight:active { transform: scale(0.96); opacity: 0.9; }
+.btn-row { display: flex; gap: 16rpx; }
+.btn-again, .btn-leave {
+  flex: 1;
+  padding: 24rpx 0;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+.btn-again { background: #F59E0B; color: #FFFFFF; }
+.btn-leave { background: rgba(255, 255, 255, 0.15); color: #FFFFFF; }
+.btn-again:active, .btn-leave:active { transform: scale(0.96); opacity: 0.9; }
+
+/* 战力对比 */
+.compare-row { display: flex; gap: 16rpx; }
+.compare-side { flex: 1; }
+.compare-name {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #1E293B;
+  text-align: center;
+  display: block;
+  margin-bottom: 12rpx;
+}
+.compare-divider { width: 2rpx; background: #E2E8F0; }
+.attr-compare { display: flex; align-items: center; gap: 8rpx; margin-bottom: 10rpx; }
+.attr-label { font-size: 22rpx; color: #64748B; width: 110rpx; }
+.mini-bar {
+  flex: 1;
+  height: 10rpx;
+  background: #E2E8F0;
+  border-radius: 5rpx;
+  overflow: hidden;
+}
+.mini-fill {
+  height: 100%;
+  background: #4F46E5;
+  border-radius: 5rpx;
+  transition: width 0.6s ease;
+}
+.mini-fill.right { background: #2563EB; }
+.attr-val {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #1E293B;
+  width: 50rpx;
+  text-align: right;
+}
+
+.notice {
+  padding: 20rpx 24rpx;
+  background: #FFFBEB;
+  border-radius: 20rpx;
+  border-left: 6rpx solid #F59E0B;
+}
+.notice-text { font-size: 22rpx; color: #92400E; line-height: 1.6; }

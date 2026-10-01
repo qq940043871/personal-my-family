@@ -1,0 +1,205 @@
+/* ============================================================
+   萌趣编程启蒙乐园 - 共享样式模块 V2
+   全屏游戏布局、现代玻璃形态组件
+   ============================================================ */
+
+/* Child-friendly font */
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&display=swap');
+
+/* ===== RESET ===== */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Comic Neue', 'Segoe UI', 'Microsoft YaHei', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== TOP-BAR (compact, full-width) ===== */
+.top-bar {
+  width: 100%;
+  padding: 12px 32px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.top-bar .stat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.top-bar .stat .icon {
+  font-size: 22px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.top-bar .stat .value {
+  font-size: 22px;
+  font-weight: 800;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  min-width: 32px;
+  text-align: center;
+}
+
+/* ===== GAME CONTAINER (full-viewport) ===== */
+.game-container {
+  flex: 1;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  z-index: 5;
+}
+
+/* ===== OVERLAY SCREENS (immersive glass) ===== */
+.overlay-screen {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 15, 30, 0.75);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+.screen-box {
+  text-align: center;
+  padding: 48px 40px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 32px;
+  backdrop-filter: blur(10px);
+  animation: screenFloat 3s ease-in-out infinite;
+  max-width: 520px;
+  width: 90%;
+}
+
+@keyframes screenFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.screen-box h1 {
+  font-size: clamp(32px, 5vw, 48px);
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+}
+
+.screen-box p {
+  font-size: clamp(15px, 2vw, 19px);
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: 32px;
+  line-height: 1.8;
+}
+
+/* ===== BUTTONS (modern, vibrant) ===== */
+.btn {
+  display: inline-block;
+  padding: 16px 48px;
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 8px 32px rgba(67, 233, 123, 0.3);
+  letter-spacing: 1px;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+  border-radius: 50px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.btn:hover {
+  transform: translateY(-4px) scale(1.04);
+  box-shadow: 0 16px 48px rgba(67, 233, 123, 0.45);
+}
+
+.btn:hover::after { opacity: 1; }
+
+.btn:active {
+  transform: translateY(-1px) scale(0.97);
+}
+
+.btn-sec {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  box-shadow: 0 8px 32px rgba(245, 87, 108, 0.3);
+}
+
+.btn-sec:hover { box-shadow: 0 16px 48px rgba(245, 87, 108, 0.45); }
+
+.btn-home {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+}
+
+.btn-home:hover { box-shadow: 0 16px 48px rgba(102, 126, 234, 0.45); }
+
+.btn-sm {
+  padding: 10px 28px;
+  font-size: 15px;
+}
+
+/* ===== TIP BAR (inline, subtle) ===== */
+.tip-bar {
+  width: 100%;
+  padding: 10px 24px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 15px;
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.15);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+  z-index: 5;
+}
+
+/* ===== SCORE FLOAT EFFECT ===== */
+.score-float {
+  position: absolute;
+  color: white;
+  font-size: 28px;
+  font-weight: 900;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+  padding: 8px 20px;
+  border-radius: 30px;
+  animation: scoreFloat 1.2s ease-out forwards;
+  pointer-events: none;
+  z-index: 25;
+}
+
+@keyframes scoreFloat {
+  0% { transform: translateY(0) scale(0.5); opacity: 1; }
+  40% { transform: translateY(-30px) scale(1.2); opacity: 0.9; }
+  100% { transform: translateY(-70px) scale(1); opacity: 0; }
+}
+
+/* ===== UTILITY ===== */
+.hidden { display: none !important; }

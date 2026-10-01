@@ -1,0 +1,153 @@
+<view class="page">
+
+  <!-- 说明 -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">⚔️ 宠物比武</text>
+      <text class="card-subtitle">选择两位选手开始对战</text>
+    </view>
+  </view>
+
+  <!-- 红方 -->
+  <view class="card player-card {{player1Id ? 'selected' : ''}}">
+    <view class="card-header">
+      <text class="card-title">🔴 红方</text>
+      <text class="card-subtitle" wx:if="{{player1Id}}">已选择</text>
+    </view>
+    <view class="select-scroll">
+      <view class="select-row">
+        <view
+          wx:for="{{playerList}}"
+          wx:key="id"
+          class="select-item {{player1Id === item.id ? 'active' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="pick1"
+        >
+          <text class="select-icon">{{item.petIcon}}</text>
+          <text class="select-name">{{item.petName}}</text>
+          <text class="select-owner">{{item.emoji}} {{item.name}}</text>
+          <text class="select-power">战力 {{item.power}}</text>
+          <text wx:if="{{item.isToddler}}" class="select-bonus">🍼 萌宠 +{{item.bonus}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="vs-divider">
+    <text class="vs-big">VS</text>
+  </view>
+
+  <!-- 蓝方 -->
+  <view class="card player-card blue {{player2Id ? 'selected' : ''}}">
+    <view class="card-header">
+      <text class="card-title">🔵 蓝方</text>
+      <text class="card-subtitle" wx:if="{{player2Id}}">已选择</text>
+    </view>
+    <view class="select-scroll">
+      <view class="select-row">
+        <view
+          wx:for="{{playerList}}"
+          wx:key="id"
+          class="select-item {{player2Id === item.id ? 'active' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="pick2"
+        >
+          <text class="select-icon">{{item.petIcon}}</text>
+          <text class="select-name">{{item.petName}}</text>
+          <text class="select-owner">{{item.emoji}} {{item.name}}</text>
+          <text class="select-power">战力 {{item.power}}</text>
+          <text wx:if="{{item.isToddler}}" class="select-bonus">🍼 萌宠 +{{item.bonus}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 对战区域 -->
+  <view class="arena" wx:if="{{showArena}}">
+    <view class="battle-scene">
+      <view class="fighter left {{phase === 'attack1' ? 'attack' : ''}} {{phase === 'hit2' ? 'hit' : ''}}">
+        <text class="fighter-icon">{{player1.petIcon}}</text>
+        <text class="fighter-name">{{player1.petName}}</text>
+        <text class="fighter-owner">{{player1.emoji}} {{player1.name}}</text>
+        <text wx:if="{{player1.isToddler}}" class="fighter-bonus">🍼 萌宠加成 +{{player1.bonus}}</text>
+        <view class="hp-bar-wrap">
+          <view class="hp-bar" style="width: {{hp1}}%"></view>
+        </view>
+        <text class="hp-text">{{hp1}}%</text>
+      </view>
+
+      <view class="vs-zone">
+        <text class="vs-text">VS</text>
+        <text class="battle-round-text">{{roundText}}</text>
+      </view>
+
+      <view class="fighter right {{phase === 'attack2' ? 'attack' : ''}} {{phase === 'hit1' ? 'hit' : ''}}">
+        <text class="fighter-icon">{{player2.petIcon}}</text>
+        <text class="fighter-name">{{player2.petName}}</text>
+        <text class="fighter-owner">{{player2.emoji}} {{player2.name}}</text>
+        <text wx:if="{{player2.isToddler}}" class="fighter-bonus">🍼 萌宠加成 +{{player2.bonus}}</text>
+        <view class="hp-bar-wrap">
+          <view class="hp-bar" style="width: {{hp2}}%"></view>
+        </view>
+        <text class="hp-text">{{hp2}}%</text>
+      </view>
+    </view>
+
+    <view class="battle-log">
+      <text wx:for="{{logLines}}" wx:key="*this" class="log-line">{{item}}</text>
+    </view>
+
+    <view class="battle-actions">
+      <view wx:if="{{phase === 'ready'}}" class="btn-fight" bindtap="startFight">
+        <text>⚔️ 开始比武</text>
+      </view>
+      <view wx:elif="{{phase === 'finish'}}" class="btn-row">
+        <view class="btn-again" bindtap="rematch">
+          <text>🔄 再来一局</text>
+        </view>
+        <view class="btn-leave" bindtap="resetBattle">
+          <text>返回</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 开始按钮 -->
+  <view wx:if="{{player1Id && player2Id && phase === 'idle'}}" class="start-btn" bindtap="toReady">
+    <text>准备战斗!</text>
+  </view>
+
+  <!-- 战力对比 -->
+  <view class="card" wx:if="{{attrCompare.length && phase === 'idle'}}">
+    <view class="card-header">
+      <text class="card-title">战力对比</text>
+    </view>
+    <view class="compare-row">
+      <view class="compare-side">
+        <text class="compare-name">{{player1.petName}}</text>
+        <view wx:for="{{attrCompare}}" wx:key="key" class="attr-compare">
+          <text class="attr-label">{{item.label}}</text>
+          <view class="mini-bar">
+            <view class="mini-fill" style="width: {{item.v1}}%"></view>
+          </view>
+          <text class="attr-val">{{item.v1}}</text>
+        </view>
+      </view>
+      <view class="compare-divider"></view>
+      <view class="compare-side">
+        <text class="compare-name">{{player2.petName}}</text>
+        <view wx:for="{{attrCompare}}" wx:key="key" class="attr-compare">
+          <text class="attr-label">{{item.label}}</text>
+          <view class="mini-bar">
+            <view class="mini-fill right" style="width: {{item.v2}}%"></view>
+          </view>
+          <text class="attr-val">{{item.v2}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="notice">
+    <text class="notice-text">💡 全家都能上场：3 岁及以下的小朋友带「🍼 萌宠加成」参战，宠物解锁按成长进度算而不是积分。</text>
+  </view>
+</view>

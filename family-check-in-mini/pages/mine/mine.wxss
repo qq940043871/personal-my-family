@@ -1,0 +1,218 @@
+.page {
+  padding: 24rpx 24rpx 60rpx;
+  box-sizing: border-box;
+}
+
+.card {
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  padding: 28rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+.card-title { font-size: 30rpx; font-weight: 600; color: #1E293B; }
+.card-subtitle { font-size: 22rpx; color: #94A3B8; }
+
+/* ===== 我的资料卡 ===== */
+.profile-card { padding: 30rpx 28rpx 24rpx; }
+.profile-top { display: flex; align-items: center; gap: 20rpx; }
+.profile-avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  border: 4rpx solid #FF8A65;
+  overflow: hidden;
+  background: #F3F4F6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.profile-avatar-img { width: 100%; height: 100%; display: block; border-radius: 50%; }
+.profile-avatar-emoji { font-size: 60rpx; }
+.profile-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8rpx; }
+.profile-name-row { display: flex; align-items: center; gap: 12rpx; }
+.profile-name { font-size: 36rpx; font-weight: 800; color: #1E293B; }
+.profile-tag {
+  font-size: 20rpx;
+  font-weight: 700;
+  border: 2rpx solid;
+  border-radius: 12rpx;
+  padding: 2rpx 14rpx;
+}
+.profile-meta { font-size: 23rpx; color: #64748B; }
+.profile-stats { font-size: 21rpx; color: #94A3B8; }
+.profile-actions {
+  display: flex;
+  gap: 14rpx;
+  margin-top: 24rpx;
+}
+.profile-btn {
+  flex: 1;
+  height: 72rpx;
+  border-radius: 20rpx;
+  background: #FFF6F0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.profile-btn:active { transform: scale(0.96); }
+.profile-btn-text { font-size: 24rpx; font-weight: 700; color: #FF6D3B; }
+.profile-btn-ghost { background: #F8FAFC; border: 2rpx solid #E2E8F0; }
+.profile-btn-ghost-text { font-size: 24rpx; font-weight: 700; color: #475569; }
+.profile-btn-accent { background: linear-gradient(135deg, #FF8A65, #FF6D3B); }
+.profile-btn-accent-text { font-size: 24rpx; font-weight: 700; color: #FFFFFF; }
+
+/* ===== 家庭管理行 ===== */
+.fm-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18rpx 4rpx;
+  border-bottom: 2rpx solid #F8FAFC;
+}
+.fm-row:last-child { border-bottom: none; }
+.fm-row-left { display: flex; align-items: center; gap: 16rpx; min-width: 0; }
+.fm-row-avatar {
+  width: 68rpx;
+  height: 68rpx;
+  border-radius: 50%;
+  background: #F5EFE8;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.fm-row-avatar-img { width: 100%; height: 100%; display: block; border-radius: 50%; }
+.fm-row-avatar-emoji { font-size: 36rpx; }
+.fm-row-info { display: flex; flex-direction: column; gap: 4rpx; min-width: 0; }
+.fm-row-name-line { display: flex; align-items: center; gap: 8rpx; }
+.fm-row-name { font-size: 28rpx; font-weight: 700; color: #1E293B; }
+.fm-row-me {
+  font-size: 18rpx;
+  color: #FF6D3B;
+  background: #FFF3EC;
+  border: 2rpx solid #FFB088;
+  border-radius: 10rpx;
+  padding: 0 10rpx;
+}
+.fm-row-role { font-size: 22rpx; color: #94A3B8; }
+.fm-row-actions { display: flex; gap: 12rpx; flex-shrink: 0; }
+.fm-act {
+  padding: 10rpx 24rpx;
+  border-radius: 24rpx;
+  background: #F8FAFC;
+  border: 2rpx solid #E2E8F0;
+}
+.fm-act:active { transform: scale(0.94); }
+.fm-act-text { font-size: 22rpx; font-weight: 600; color: #475569; }
+.fm-act-del { background: #FEF2F2; border-color: #FECACA; }
+.fm-act-del-text { color: #EF4444; }
+.see-family { font-size: 24rpx; color: #FF6D3B; font-weight: 600; }
+
+.add-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  border: 3rpx dashed #FFB088;
+  background: #FFF6F0;
+}
+.add-card:active { transform: scale(0.98); background: #FFEDD5; }
+.add-icon { font-size: 36rpx; }
+.add-text { font-size: 30rpx; font-weight: 700; color: #FF8A65; }
+
+.member-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+.member-left { display: flex; align-items: center; gap: 16rpx; }
+.member-emoji { font-size: 56rpx; }
+.member-name { font-size: 30rpx; font-weight: 600; color: #1E293B; display: block; }
+.member-role { font-size: 24rpx; color: #94A3B8; }
+.member-pet-icon { font-size: 56rpx; }
+
+.member-actions { display: flex; gap: 16rpx; margin-bottom: 20rpx; }
+.member-action-btn {
+  padding: 12rpx 28rpx;
+  border-radius: 28rpx;
+  background: #F8FAFC;
+  border: 2rpx solid #E2E8F0;
+}
+.member-action-btn:active { transform: scale(0.95); }
+.member-action-text { font-size: 24rpx; font-weight: 600; color: #475569; }
+.member-action-pet { background: #FFF6F0; border-color: #FFD9C2; }
+.member-action-pet-text { color: #FF8A65; }
+.member-action-delete { background: #FEF2F2; border-color: #FECACA; }
+.member-action-delete-text { color: #EF4444; }
+
+.member-progress { margin-bottom: 16rpx; }
+.mp-label { font-size: 24rpx; color: #64748B; display: block; margin-bottom: 6rpx; }
+.mp-bar-row { display: flex; align-items: center; gap: 12rpx; }
+.progress-bar {
+  flex: 1;
+  height: 12rpx;
+  background: #E2E8F0;
+  border-radius: 6rpx;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: #4F46E5;
+  border-radius: 6rpx;
+  transition: width 0.6s ease;
+}
+.mp-value {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #1E293B;
+  min-width: 70rpx;
+  text-align: right;
+}
+.member-bottom-stats {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  font-size: 22rpx;
+  color: #94A3B8;
+}
+
+.stats-grid { display: flex; flex-wrap: wrap; }
+.stat-item { width: 50%; text-align: center; padding: 20rpx 0; }
+.stat-value {
+  display: block;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #4F46E5;
+}
+.stat-label { font-size: 22rpx; color: #94A3B8; margin-top: 4rpx; }
+
+.about-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  padding: 12rpx 0;
+  border-bottom: 2rpx solid #F8FAFC;
+}
+.about-label { font-size: 24rpx; font-weight: 700; color: #475569; }
+.about-value { font-size: 24rpx; color: #94A3B8; line-height: 1.5; }
+.reset-btn {
+  margin-top: 24rpx;
+  padding: 22rpx 0;
+  text-align: center;
+  background: #FEF2F2;
+  border: 2rpx solid #FECACA;
+  border-radius: 28rpx;
+}
+.reset-btn:active { background: #FEE2E2; }
+.reset-btn-text { font-size: 28rpx; font-weight: 700; color: #EF4444; }

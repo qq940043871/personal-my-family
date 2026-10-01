@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>接鸡蛋</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(180deg,#87CEEB,#8BC34A);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#333;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:500px;padding:10px 20px}
+.info{display:flex;gap:15px}.info-item{background:rgba(255,255,255,0.3);padding:5px 15px;border-radius:15px;font-size:0.9em;font-weight:bold}
+.back{color:#333;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.4);border-radius:15px;font-size:0.9em}
+canvas{margin-top:10px;cursor:none}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,basket_x,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#FFD93D,#FF9800);padding:40px;border-radius:20px;text-align:center;max-width:400px}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">得分: <span id="score">0</span></div><div class="info-item">生命: <span id="lives">3</span></div></div>
+</div>
+<canvas id="game" width="500" height="600"></canvas>
+
+<div class="overlay" id="start"><div class="box"><h1>🥚 接鸡蛋</h1><p>移动篮子接住掉落的鸡蛋<br>金色蛋加分，炸弹扣命！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>游戏结束</h1><p>得分: <span id="final">0</span></p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+const W=500,H=600;
+let basket,eggs,score,lives,running,timer;
+function init(){
+basket={x:W/2-50,y:H-60,w:100,h:40};
+eggs=[];score=0;lives=3;running=true;timer=0;
+document.getElementById('score').textContent=0;
+document.getElementById('lives').textContent=3;
+}
+function spawnEgg(){
+const golden=Math.random()<0.15;
+const bomb=Math.random()<0.1;
+eggs.push({x:50+Math.random()*(W-100),y:-30,r:15,
+vy:2+Math.random()*2+score/100,
+emoji:golden?'⭐':bomb?'💣':'🥚',
+points:golden?50:bomb?-1:10,golden,bomb});
+}
+function draw(){
+X.fillStyle='#87CEEB';X.fillRect(0,0,W,H);
+// ground
+X.fillStyle='#8BC34A';X.fillRect(0,H-40,W,40);
+// chicken
+X.font='40px serif';X.textAlign='center';
+const cx=W/2+Math.sin(Date.now()*0.002)*50;
+X.fillText('🐔',cx,50);
+// eggs
+eggs.forEach(e=>{
+X.font='30px serif';X.textAlign='center';X.textBaseline='middle';
+X.fillText(e.emoji,e.x,e.y);
+});
+// basket
+X.fillStyle='#8D6E63';X.fillRect(basket.x,basket.y,basket.w,basket.h);
+X.fillStyle='#A1887F';X.fillRect(basket.x+5,basket.y+5,basket.w-10,basket.h-10);
+X.fillStyle='#6D4C41';X.fillRect(basket.x+10,basket.y+2,basket.w-20,5);
+// basket handle
+X.strokeStyle='#6D4C41';X.lineWidth=3;X.beginPath();
+X.arc(basket.x+basket.w/2,basket.y-10,25,Math.PI,0);X.stroke();
+}
+function update(){
+if(!running)return;
+timer++;
+if(timer%30===0)spawnEgg();
+eggs.forEach((e,i)=>{
+e.y+=e.vy;
+if(e.y>e.r+basket.y&&e.y<basket.y+basket.h&&e.x>basket.x&&e.x<basket.x+basket.w){
+score+=e.points;
+document.getElementById('score').textContent=score;
+if(e.bomb){lives--;document.getElementById('lives').textContent=lives;playSound(150,0.3);
+if(lives<=0){running=false;document.getElementById('final').textContent=score;document.getElementById('over').classList.remove('hidden')}
+}else{playSound(e.golden?800:500,0.1)}
+eggs.splice(i,1);
+}else if(e.y>H+30){
+if(!e.bomb){lives--;document.getElementById('lives').textContent=lives;
+if(lives<=0){running=false;document.getElementById('final').textContent=score;document.getElementById('over').classList.remove('hidden')}
+}
+eggs.splice(i,1);
+}
+});
+}
+function loop(){update();draw();requestAnimationFrame(loop)}
+function startGame(){document.getElementById('start').classList.add('hidden');document.getElementById('over').classList.add('hidden');init();loop()}
+document.addEventListener('mousemove',e=>{const r=C.getBoundingClientRect();basket.x=Math.max(0,Math.min(W-basket.w,(e.clientX-r.left)*(W/r.width)-basket.w/2))});
+C.addEventListener('touchmove',e=>{e.preventDefault();const r=C.getBoundingClientRect();basket.x=Math.max(0,Math.min(W-basket.w,(e.touches[0].clientX-r.left)*(W/r.width)-basket.w/2))},{passive:false});
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

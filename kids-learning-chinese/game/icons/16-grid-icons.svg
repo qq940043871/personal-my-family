@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 592 592" width="592" height="592">
+  <defs>
+    <!-- Global styles: single color, 2px stroke, rounded caps, no fill -->
+    <style>
+      .icon-line { fill: none; stroke: #5B8FE8; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+      .icon-fill { fill: #5B8FE8; }
+    </style>
+  </defs>
+
+  <!-- ============================================================ -->
+  <!-- Row 1: Game category icons -->
+  <!-- ============================================================ -->
+
+  <!-- 1. Fish — Big Fish Eats Small Fish -->
+  <g id="icon-fish" data-name="fish" transform="translate(86, 86)">
+    <ellipse class="icon-line" cx="-6" cy="0" rx="24" ry="15"/>
+    <polygon class="icon-line" points="16,-20 16,20 34,0"/>
+    <circle class="icon-fill" cx="-14" cy="-4" r="2.5"/>
+  </g>
+
+  <!-- 2. Keyboard — Keyboard Agent -->
+  <g id="icon-keyboard" data-name="keyboard" transform="translate(226, 86)">
+    <rect class="icon-line" x="-30" y="-20" rx="5" width="60" height="40"/>
+    <rect class="icon-line" x="-15" y="8" rx="3" width="30" height="6"/>
+  </g>
+
+  <!-- 3. Book — Chinese Character Adventure -->
+  <g id="icon-book" data-name="book" transform="translate(366, 86)">
+    <line class="icon-line" x1="0" y1="-18" x2="0" y2="18"/>
+    <path class="icon-line" d="M 0 -18 Q -14 -18, -20 -12 L -20 16 Q -14 11, 0 14"/>
+    <path class="icon-line" d="M 0 -18 Q 14 -18, 20 -12 L 20 16 Q 14 11, 0 14"/>
+  </g>
+
+  <!-- 4. Pickaxe — Gold Miner -->
+  <g id="icon-pickaxe" data-name="pickaxe" transform="translate(506, 86)">
+    <line class="icon-line" x1="-22" y1="24" x2="14" y2="-14"/>
+    <path class="icon-line" d="M 4 -20 Q 18 -34, 28 -24 Q 18 -18, 8 -20"/>
+  </g>
+
+  <!-- ============================================================ -->
+  <!-- Row 2: Common game UI controls -->
+  <!-- ============================================================ -->
+
+  <!-- 5. Gear — Settings -->
+  <g id="icon-settings" data-name="settings" transform="translate(86, 226)">
+    <circle class="icon-line" cx="0" cy="0" r="12"/>
+    <line class="icon-line" x1="0" y1="-12" x2="0" y2="-20"/>
+    <line class="icon-line" x1="12" y1="0" x2="20" y2="0"/>
+    <line class="icon-line" x1="0" y1="12" x2="0" y2="20"/>
+    <line class="icon-line" x1="-12" y1="0" x2="-20" y2="0"/>
+    <line class="icon-line" x1="8.5" y1="-8.5" x2="14.1" y2="-14.1"/>
+    <line class="icon-line" x1="8.5" y1="8.5" x2="14.1" y2="14.1"/>
+    <line class="icon-line" x1="-8.5" y1="8.5" x2="-14.1" y2="14.1"/>
+    <line class="icon-line" x1="-8.5" y1="-8.5" x2="-14.1" y2="-14.1"/>
+  </g>
+
+  <!-- 6. Sound/Speaker — Volume control -->
+  <g id="icon-sound" data-name="sound" transform="translate(226, 226)">
+    <rect class="icon-line" x="-28" y="-16" rx="3" width="18" height="32"/>
+    <polygon class="icon-line" points="-10,-16 -10,16 3,10 3,-10"/>
+    <path class="icon-line" d="M 8 -6 Q 16 -4, 16 0 Q 16 4, 8 6"/>
+    <path class="icon-line" d="M 13 -11 Q 23 -7, 23 0 Q 23 7, 13 11"/>
+  </g>
+
+  <!-- 7. Pause — Pause game -->
+  <g id="icon-pause" data-name="pause" transform="translate(366, 226)">
+    <rect class="icon-line" x="-12" y="-16" rx="2" width="9" height="32"/>
+    <rect class="icon-line" x="3" y="-16" rx="2" width="9" height="32"/>
+  </g>
+
+  <!-- 8. Back Arrow — Return / navigation -->
+  <g id="icon-back" data-name="back" transform="translate(506, 226)">
+    <line class="icon-line" x1="22" y1="0" x2="-22" y2="0"/>
+    <polyline class="icon-line" points="-22,0 -6,-16"/>
+    <polyline class="icon-line" points="-22,0 -6,16"/>
+  </g>
+
+  <!-- ============================================================ -->
+  <!-- Row 3: HUD & feedback indicators -->
+  <!-- ============================================================ -->
+
+  <!-- 9. Star — Score / rating -->
+  <g id="icon-star" data-name="star" transform="translate(86, 366)">
+    <polygon class="icon-line" points="0,-25 6,-8 24,-8 10,3 15,20 0,10 -15,20 -10,3 -24,-8 -6,-8"/>
+  </g>
+
+  <!-- 10. Heart — Lives / health -->
+  <g id="icon-heart" data-name="heart" transform="translate(226, 366)">
+    <path class="icon-line" d="M 0 22 C 0 8, -28 -2, -28 -10 C -28 -20, -14 -24, -6 -14 C -3 -10, -1 -4, 0 4 C 1 -4, 3 -10, 6 -14 C 14 -24, 28 -20, 28 -10 C 28 -2, 0 8, 0 22 Z"/>
+  </g>
+
+  <!-- 11. Clock — Timer -->
+  <g id="icon-clock" data-name="clock" transform="translate(366, 366)">
+    <circle class="icon-line" cx="0" cy="0" r="22"/>
+    <line class="icon-line" x1="0" y1="0" x2="-8" y2="-10"/>
+    <line class="icon-line" x1="0" y1="0" x2="12" y2="-6"/>
+    <circle class="icon-fill" cx="0" cy="0" r="2.5"/>
+  </g>
+
+  <!-- 12. Crown — Achievement / level complete -->
+  <g id="icon-crown" data-name="crown" transform="translate(506, 366)">
+    <rect class="icon-line" x="-24" y="8" rx="3" width="48" height="12"/>
+    <path class="icon-line" d="M -24 8 L -30 -6 L -12 2 L 0 -20 L 12 2 L 30 -6 L 24 8"/>
+  </g>
+
+  <!-- ============================================================ -->
+  <!-- Row 4: Programming concepts (future modules) -->
+  <!-- ============================================================ -->
+
+  <!-- 13. Home — Main menu / homepage -->
+  <g id="icon-home" data-name="home" transform="translate(86, 506)">
+    <polygon class="icon-line" points="0,-28 -30,6 30,6"/>
+    <rect class="icon-line" x="-22" y="6" rx="2" width="44" height="22"/>
+    <rect class="icon-line" x="-6" y="14" rx="2" width="12" height="14"/>
+  </g>
+
+  <!-- 14. Mouse/Cursor — Mouse training -->
+  <g id="icon-mouse" data-name="mouse" transform="translate(226, 506)">
+    <path class="icon-line" d="M -22 -24 L -22 16 L -12 8 L 4 20 L 12 14 L -4 2 L 18 0 Z"/>
+  </g>
+
+  <!-- 15. Loop/Repeat — Loops concept (Programming Town L2) -->
+  <g id="icon-loop" data-name="loop" transform="translate(366, 506)">
+    <path class="icon-line" d="M -12 -12 Q 0 -26, 12 -12"/>
+    <path class="icon-line" d="M 12 -12 L 8 -15 M 12 -12 L 8 -9"/>
+    <path class="icon-line" d="M 12 12 Q 0 26, -12 12"/>
+    <path class="icon-line" d="M -12 12 L -8 15 M -12 12 L -8 9"/>
+  </g>
+
+  <!-- 16. Branch/Diamond — Conditionals concept (Programming Town L3) -->
+  <g id="icon-branch" data-name="branch" transform="translate(506, 506)">
+    <polygon class="icon-line" points="0,-26 26,0 0,26 -26,0"/>
+    <line class="icon-line" x1="26" y1="0" x2="34" y2="0"/>
+    <line class="icon-line" x1="0" y1="26" x2="0" y2="34"/>
+  </g>
+
+</svg>

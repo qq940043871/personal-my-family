@@ -1,0 +1,112 @@
+<view class="page">
+
+  <!-- ===== 我的资料卡 ===== -->
+  <view class="card profile-card" wx:if="{{me}}">
+    <view class="profile-top">
+      <view class="profile-avatar" style="border-color: {{me.themeColor}}">
+        <image wx:if="{{me.avatarUrl}}" class="profile-avatar-img" src="{{me.avatarUrl}}" mode="aspectFill" />
+        <text wx:else class="profile-avatar-emoji">{{me.emoji}}</text>
+      </view>
+      <view class="profile-info">
+        <view class="profile-name-row">
+          <text class="profile-name">{{me.name}}</text>
+          <text class="profile-tag" style="color: {{me.themeColor}}; border-color: {{me.themeColor}}55; background: {{me.themeColor}}14">{{me.role}}</text>
+        </view>
+        <text class="profile-meta">{{me.age}}岁 · 🐾 {{me.petName}} · {{myStage.stage}}</text>
+        <text class="profile-stats">🔥 {{me.streak}} 天连签 · {{me.points}} {{me.scoreLabel}} · 今日 {{myDoneCount}}/{{myTotalCount}}</text>
+      </view>
+    </view>
+    <view class="profile-actions">
+      <view class="profile-btn" bindtap="openMyEdit">
+        <text class="profile-btn-text">✏️ 编辑资料</text>
+      </view>
+      <view class="profile-btn profile-btn-ghost" bindtap="openMyDetail">
+        <text class="profile-btn-ghost-text">📊 我的详情</text>
+      </view>
+      <view class="profile-btn profile-btn-accent" bindtap="switchRole">
+        <text class="profile-btn-accent-text">🔄 切换身份</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 家庭管理 ===== -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">🏠 {{familyName}} · 家庭管理</text>
+      <text class="card-subtitle">{{memberCount}} 位成员</text>
+    </view>
+
+    <view class="add-card" bindtap="openAdd">
+      <text class="add-icon">➕</text>
+      <text class="add-text">添加家庭成员</text>
+    </view>
+
+    <view wx:for="{{familyMembers}}" wx:key="id" class="fm-row">
+      <view class="fm-row-left">
+        <view class="fm-row-avatar">
+          <image wx:if="{{item.avatarUrl}}" class="fm-row-avatar-img" src="{{item.avatarUrl}}" mode="aspectFill" />
+          <text wx:else class="fm-row-avatar-emoji">{{item.emoji}}</text>
+        </view>
+        <view class="fm-row-info">
+          <view class="fm-row-name-line">
+            <text class="fm-row-name">{{item.name}}</text>
+            <text class="fm-row-me" wx:if="{{item.isMe}}">我</text>
+          </view>
+          <text class="fm-row-role">{{item.role}} · {{item.age}}岁</text>
+        </view>
+      </view>
+      <view class="fm-row-actions">
+        <view class="fm-act" data-id="{{item.id}}" bindtap="openEdit">
+          <text class="fm-act-text">编辑</text>
+        </view>
+        <view class="fm-act fm-act-del" data-id="{{item.id}}" data-name="{{item.name}}" bindtap="onDelete">
+          <text class="fm-act-text fm-act-del-text">删除</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 家庭数据总览 ===== -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">家庭数据总览</text>
+      <text class="see-family" bindtap="goFamily">看全家 ›</text>
+    </view>
+    <view class="stats-grid">
+      <view class="stat-item">
+        <text class="stat-value">{{memberCount}}</text>
+        <text class="stat-label">成员</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.totalCheckins}}</text>
+        <text class="stat-label">总签到</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{statsTotalPoints}}</text>
+        <text class="stat-label">总积分</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{stats.todayDone}}/{{stats.todayTotal}}</text>
+        <text class="stat-label">今日完成</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 关于与数据 ===== -->
+  <view class="card">
+    <view class="card-header">
+      <text class="card-title">关于</text>
+    </view>
+    <view class="about-row">
+      <text class="about-label">设计原则</text>
+      <text class="about-value">不是用同一把尺子量所有人，而是每个人都有一把属于自己的尺子</text>
+    </view>
+    <view class="about-row">
+      <text class="about-label">数据存储</text>
+      <text class="about-value">全部保存在本机，不上传服务器</text>
+    </view>
+    <view class="reset-btn" bindtap="onReset">
+      <text class="reset-btn-text">恢复初始演示数据</text>
+    </view>
+  </view>
+</view>

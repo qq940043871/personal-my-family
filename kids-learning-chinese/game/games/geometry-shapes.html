@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>几何形状</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#E3F2FD,#BBDEFB);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#333;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:500px;padding:10px 20px;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+.back{color:#333;text-decoration:none;padding:5px 15px;background:#eee;border-radius:15px;font-size:0.9em}
+.question{font-size:1.5em;margin:20px 0;text-align:center}
+.shape-display{width:200px;height:200px;display:flex;align-items:center;justify-content:center;margin:10px 0}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:15px;padding:20px;max-width:400px;width:100%}
+.opt{padding:15px;background:#fff;border:2px solid #ddd;border-radius:12px;cursor:pointer;text-align:center;font-size:1.1em;transition:all 0.2s}
+.opt:hover{border-color:#4D96FF;transform:scale(1.02)}
+.opt.correct{border-color:#4CAF50;background:#E8F5E9}
+.opt.wrong{border-color:#F44336;background:#FFEBEE}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#4D96FF,#667eea);padding:40px;border-radius:20px;text-align:center;max-width:400px;color:#fff}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div>📐 几何形状</div>
+<div></div>
+</div>
+<div class="question" id="question">这是什么形状？</div>
+<canvas id="shape" width="200" height="200"></canvas>
+<div class="options" id="options"></div>
+
+<div class="overlay" id="start"><div class="box"><h1>📐 几何形状</h1><p>认识不同的几何图形<br>选择正确的名称！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>游戏结束</h1><p>答对: <span id="final">0</span>/10</p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+const shapes=[
+{name:'圆形',draw:ctx=>{ctx.beginPath();ctx.arc(100,100,70,0,Math.PI*2);ctx.fill();ctx.stroke()}},
+{name:'正方形',draw:ctx=>{ctx.fillRect(30,30,140,140);ctx.strokeRect(30,30,140,140)}},
+{name:'三角形',draw:ctx=>{ctx.beginPath();ctx.moveTo(100,20);ctx.lineTo(180,180);ctx.lineTo(20,180);ctx.closePath();ctx.fill();ctx.stroke()}},
+{name:'长方形',draw:ctx=>{ctx.fillRect(20,50,160,100);ctx.strokeRect(20,50,160,100)}},
+{name:'五边形',draw:ctx=>{ctx.beginPath();for(let i=0;i<5;i++){const a=i*Math.PI*2/5-Math.PI/2;const x=100+Math.cos(a)*70,y=100+Math.sin(a)*70;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)}ctx.closePath();ctx.fill();ctx.stroke()}},
+{name:'六边形',draw:ctx=>{ctx.beginPath();for(let i=0;i<6;i++){const a=i*Math.PI*2/6;const x=100+Math.cos(a)*70,y=100+Math.sin(a)*70;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)}ctx.closePath();ctx.fill();ctx.stroke()}},
+{name:'菱形',draw:ctx=>{ctx.beginPath();ctx.moveTo(100,20);ctx.lineTo(170,100);ctx.lineTo(100,180);ctx.lineTo(30,100);ctx.closePath();ctx.fill();ctx.stroke()}},
+{name:'星形',draw:ctx=>{ctx.beginPath();for(let i=0;i<10;i++){const a=i*Math.PI/5-Math.PI/2;const r=i%2===0?70:35;const x=100+Math.cos(a)*r,y=100+Math.sin(a)*r;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)}ctx.closePath();ctx.fill();ctx.stroke()}}
+];
+let round=0,correct=0,current;
+function startGame(){
+document.getElementById('start').classList.add('hidden');
+document.getElementById('over').classList.add('hidden');
+round=0;correct=0;nextRound();
+}
+function nextRound(){
+if(round>=10){document.getElementById('final').textContent=correct;document.getElementById('over').classList.remove('hidden');return}
+round++;current=shapes[Math.floor(Math.random()*shapes.length)];
+const canvas=document.getElementById('shape'),ctx=canvas.getContext('2d');
+ctx.clearRect(0,0,200,200);
+ctx.fillStyle=`hsl(${Math.random()*360},60%,70%)`;ctx.strokeStyle='#333';ctx.lineWidth=2;
+current.draw(ctx);
+// options
+const opts=[current.name];
+while(opts.length<4){const s=shapes[Math.floor(Math.random()*shapes.length)].name;if(!opts.includes(s))opts.push(s)}
+opts.sort(()=>Math.random()-0.5);
+const div=document.getElementById('options');div.innerHTML='';
+opts.forEach(o=>{
+const btn=document.createElement('div');btn.className='opt';btn.textContent=o;
+btn.addEventListener('click',()=>{
+document.querySelectorAll('.opt').forEach(b=>{if(b.textContent===current.name)b.classList.add('correct')});
+if(o===correct.name){correct++;btn.classList.add('correct');playSound(600,0.1)}
+else{btn.classList.add('wrong');playSound(200,0.1)}
+setTimeout(nextRound,800);
+});
+div.appendChild(btn);
+});
+}
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

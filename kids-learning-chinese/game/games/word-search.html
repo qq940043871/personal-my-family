@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>找单词</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#E8F5E9,#C8E6C9);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#333;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:500px;padding:10px 20px;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+.back{color:#333;text-decoration:none;padding:5px 15px;background:#eee;border-radius:15px;font-size:0.9em}
+.words{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:10px;max-width:500px}
+.word{padding:5px 12px;background:#fff;border-radius:8px;font-size:0.9em;cursor:pointer;transition:all 0.2s}
+.word.found{background:#4CAF50;color:#fff;text-decoration:line-through}
+.grid{display:grid;gap:2px;padding:15px;background:#fff;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);margin:10px 0}
+.cell{width:35px;height:35px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:1em;cursor:pointer;border-radius:4px;transition:all 0.15s;user-select:none}
+.cell:hover{background:#E8F5E9}
+.cell.selected{background:#FFD93D}
+.cell.found{background:#4CAF50;color:#fff}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#4CAF50,#2E7D32);padding:40px;border-radius:20px;text-align:center;max-width:400px;color:#fff}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div>🔤 找单词</div>
+</div>
+<div class="words" id="words"></div>
+<div class="grid" id="grid"></div>
+
+<div class="overlay" id="start"><div class="box"><h1>🔤 找单词</h1><p>在字母网格中找出隐藏的单词<br>点击单词的首尾字母！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>🎉 全部找到！</h1><p>太棒了！</p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+const SIZE=10;
+const WORD_LIST=['CAT','DOG','SUN','RUN','BIG','RED','HAT','PIG','CUP','BUS'];
+let grid,wordsToFind,foundWords,selectedCells;
+function startGame(){
+document.getElementById('start').classList.add('hidden');
+document.getElementById('over').classList.add('hidden');
+// pick random words
+wordsToFind=[];foundWords=[];
+const shuffled=[...WORD_LIST].sort(()=>Math.random()-0.5);
+for(let i=0;i<5;i++)wordsToFind.push(shuffled[i]);
+// create grid
+grid=Array.from({length:SIZE},()=>Array(SIZE).fill(''));
+// place words
+wordsToFind.forEach(word=>{
+let placed=false;
+for(let attempt=0;attempt<50&&!placed;attempt++){
+const dir=Math.random()<0.5?'h':'v';
+const maxR=dir==='v'?SIZE-word.length:SIZE;
+const maxC=dir==='h'?SIZE-word.length:SIZE;
+const r=Math.floor(Math.random()*maxR);
+const c=Math.floor(Math.random()*maxC);
+let canPlace=true;
+for(let i=0;i<word.length;i++){
+const nr=dir==='v'?r+i:r,nc=dir==='h'?c+i:c;
+if(grid[nr][nc]&&grid[nr][nc]!==word[i]){canPlace=false;break}
+}
+if(canPlace){
+for(let i=0;i<word.length;i++){
+const nr=dir==='v'?r+i:r,nc=dir==='h'?c+i:c;
+grid[nr][nc]=word[i];
+}
+placed=true;
+}
+}
+});
+// fill empty with random letters
+for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++){
+if(!grid[r][c])grid[r][c]=String.fromCharCode(65+Math.floor(Math.random()*26));
+}
+selectedCells=[];render();
+}
+function render(){
+const gridDiv=document.getElementById('grid');gridDiv.innerHTML='';
+gridDiv.style.gridTemplateColumns=`repeat(${SIZE},35px)`;
+for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++){
+const cell=document.createElement('div');cell.className='cell';
+cell.textContent=grid[r][c];
+if(selectedCells.some(s=>s[0]===r&&s[1]===c))cell.classList.add('selected');
+cell.addEventListener('click',()=>selectCell(r,c));
+gridDiv.appendChild(cell);
+}
+const wordsDiv=document.getElementById('words');wordsDiv.innerHTML='';
+wordsToFind.forEach(w=>{
+const el=document.createElement('div');el.className='word'+(foundWords.includes(w)?' found':'');
+el.textContent=w;wordsDiv.appendChild(el);
+});
+}
+function selectCell(r,c){
+if(selectedCells.length===0){selectedCells=[[r,c]];render();return}
+if(selectedCells.length===1){
+const[sr,sc]=selectedCells[0];
+// check if in line
+if(r===sr||c===sc||Math.abs(r-sr)===Math.abs(c-sc)){
+selectedCells.push([r,c]);
+// extract word
+let word='';
+const dr=Math.sign(r-sr),dc=Math.sign(c-sc);
+let cr=sr,cc=sc;
+while(true){
+word+=grid[cr][cc];
+if(cr===r&&cc===c)break;
+cr+=dr;cc+=dc;
+}
+// check if valid word
+if(wordsToFind.includes(word)&&!foundWords.includes(word)){
+foundWords.push(word);playSound(600,0.1);
+if(foundWords.length===wordsToFind.length)setTimeout(()=>{document.getElementById('over').classList.remove('hidden');playSound(800,0.3)},500);
+}
+selectedCells=[];render();
+}else{selectedCells=[[r,c]];render()}
+}
+}
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

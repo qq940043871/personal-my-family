@@ -1,0 +1,65 @@
+<view class="page">
+
+  <!-- 头部 -->
+  <view class="hero">
+    <text class="hero-emoji">🏠</text>
+    <text class="hero-title">欢迎来到{{familyName}}</text>
+    <text class="hero-sub">先告诉我们：你是谁？</text>
+  </view>
+
+  <!-- 选择身份 -->
+  <view class="grid">
+    <view
+      wx:for="{{members}}"
+      wx:key="id"
+      class="role-card {{selectedId === item.id ? 'active' : ''}}"
+      style="border-color: {{selectedId === item.id ? item.themeColor : 'transparent'}}"
+      data-id="{{item.id}}"
+      bindtap="selectMember"
+    >
+      <view class="role-check" wx:if="{{selectedId === item.id}}">✓</view>
+      <image wx:if="{{item.avatarUrl}}" class="role-avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+      <text wx:else class="role-avatar-emoji">{{item.emoji}}</text>
+      <text class="role-name">{{item.name}}</text>
+      <text class="role-meta">{{item.role}} · {{item.age}}岁</text>
+    </view>
+
+    <!-- 新建身份 -->
+    <view class="role-card create-card {{creating ? 'active' : ''}}" bindtap="startCreate">
+      <view class="role-check" wx:if="{{creating}}">✓</view>
+      <view class="role-avatar role-avatar-create"><text class="role-plus">＋</text></view>
+      <text class="role-name">新建身份</text>
+      <text class="role-meta">我还不是家庭成员</text>
+    </view>
+  </view>
+
+  <!-- 新建面板 -->
+  <view class="card create-panel" wx:if="{{creating}}">
+    <view class="form-row">
+      <text class="form-label">我的名字</text>
+      <input class="form-input" placeholder="例如：小明" value="{{newName}}" bindinput="onNameInput" maxlength="8" />
+    </view>
+    <view class="form-row">
+      <text class="form-label">我的年龄</text>
+      <input class="form-input" type="number" placeholder="例如：9" value="{{newAge}}" bindinput="onAgeInput" maxlength="3" />
+    </view>
+    <view class="form-tip">头像会按年龄段自动搭配，之后可以在「我的」里修改</view>
+  </view>
+
+  <!-- 家庭名 -->
+  <view class="card">
+    <view class="form-row">
+      <text class="form-label">我们的家庭叫</text>
+      <input class="form-input" value="{{familyName}}" bindinput="onFamilyName" maxlength="8" placeholder="我们家" />
+    </view>
+  </view>
+
+  <!-- 确认 -->
+  <view class="confirm-btn {{canConfirm ? '' : 'disabled'}}" bindtap="confirm">
+    <text class="confirm-text">进入我的视角 →</text>
+  </view>
+
+  <view class="footnote">
+    <text class="footnote-text">进入后，签到、宠物、结算都默认以你的视角展示；可以在底部「家庭」查看全家，也可以随时切换身份。</text>
+  </view>
+</view>

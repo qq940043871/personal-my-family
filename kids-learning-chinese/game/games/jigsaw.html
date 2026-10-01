@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>拼图游戏</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#E8F5E9,#C8E6C9);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#333;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:500px;padding:10px 20px;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+.back{color:#333;text-decoration:none;padding:5px 15px;background:#eee;border-radius:15px;font-size:0.9em}
+.game{display:flex;gap:20px;padding:20px;flex-wrap:wrap;justify-content:center}
+.target{border:3px solid #4CAF50;border-radius:10px;overflow:hidden}
+.puzzle-area{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;background:#fff;padding:3px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1)}
+.piece{width:100px;height:100px;cursor:pointer;border-radius:5px;transition:transform 0.15s;user-select:none}
+.piece:hover{transform:scale(1.05)}
+.piece.empty{background:rgba(0,0,0,0.05);border:2px dashed #ccc}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#6BCB77,#4CAF50);padding:40px;border-radius:20px;text-align:center;max-width:400px;color:#fff}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<h2>🧩 拼图游戏</h2>
+<div></div>
+</div>
+<div class="game">
+<div class="target"><canvas id="target" width="300" height="300"></canvas></div>
+<div class="puzzle-area" id="puzzle"></div>
+</div>
+
+<div class="overlay" id="start"><div class="box"><h1>🧩 拼图游戏</h1><p>拖动拼图块到正确位置<br>还原完整图片！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>🎉 完成！</h1><p>你成功还原了拼图！</p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+const targetCanvas=document.getElementById('target'),tCtx=targetCanvas.getContext('2d');
+let pieces,correctOrder,emptyIndex;
+function drawTarget(){
+const colors=['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#C084FC','#FF9800','#00BCD4','#795548','#9C27B0'];
+tCtx.fillStyle='#fff';tCtx.fillRect(0,0,300,300);
+for(let r=0;r<3;r++)for(let c=0;c<3;c++){
+if(r*3+c===8)continue;
+tCtx.fillStyle=colors[r*3+c];
+tCtx.fillRect(c*100+5,r*100+5,90,90);
+tCtx.fillStyle='#fff';tCtx.font='bold 30px sans-serif';tCtx.textAlign='center';tCtx.textBaseline='middle';
+tCtx.fillText(r*3+c+1,c*100+50,r*100+50);
+}
+// emoji pattern
+const emojis=['🌈','☀️','🌙','⭐','🌸','🍎','🐟','🦋'];
+tCtx.font='40px serif';
+emojis.forEach((e,i)=>{const r=Math.floor(i/3),c=i%3;tCtx.fillText(e,c*100+50,r*100+70)});
+}
+function startGame(){
+document.getElementById('start').classList.add('hidden');
+document.getElementById('over').classList.add('hidden');
+drawTarget();
+correctOrder=Array.from({length:9},(_,i)=>i);
+pieces=[...correctOrder];
+do{for(let i=8;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pieces[i],pieces[j]]=[pieces[j],pieces[i]]}}
+while(!isSolvable());
+emptyIndex=pieces.indexOf(8);
+render();
+}
+function isSolvable(){
+let inv=0;const arr=pieces.filter(p=>p!==8);
+for(let i=0;i<arr.length;i++)for(let j=i+1;j<arr.length;j++)if(arr[i]>arr[j])inv++;
+return inv%2===0;
+}
+function render(){
+const puzzle=document.getElementById('puzzle');puzzle.innerHTML='';
+const colors=['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#C084FC','#FF9800','#00BCD4','#795548','#fff'];
+const emojis=['🌈','☀️','🌙','⭐','🌸','🍎','🐟','🦋',''];
+pieces.forEach((p,i)=>{
+const piece=document.createElement('div');
+piece.className='piece'+(p===8?' empty':'');
+if(p!==8){
+piece.style.background=colors[p];
+piece.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:2em">${emojis[p]}</div>`;
+}
+piece.addEventListener('click',()=>movePiece(i));
+puzzle.appendChild(piece);
+});
+}
+function movePiece(i){
+const row=Math.floor(i/3),col=i%3;
+const eRow=Math.floor(emptyIndex/3),eCol=emptyIndex%3;
+if((Math.abs(row-eRow)===1&&col===eCol)||(Math.abs(col-eCol)===1&&row===eRow)){
+[pieces[i],pieces[emptyIndex]]=[pieces[emptyIndex],pieces[i]];
+emptyIndex=i;playSound(400,0.05);render();
+if(pieces.every((p,i)=>p===correctOrder[i])){
+setTimeout(()=>{document.getElementById('over').classList.remove('hidden');playSound(700,0.3)},300);
+}
+}
+}
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>激光迷宫</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#1a1a2e,#2d1b4e);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:500px;padding:10px 20px}
+.info{display:flex;gap:15px}.info-item{background:rgba(255,255,255,0.1);padding:5px 15px;border-radius:15px;font-size:0.9em}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{border:2px solid rgba(255,255,255,0.2);border-radius:10px;margin-top:10px}
+.controls{display:flex;gap:10px;margin:10px 0}
+.ctrl{padding:8px 20px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;cursor:pointer}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#F44336,#FF5722);padding:40px;border-radius:20px;text-align:center;max-width:400px}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">关卡: <span id="level">1</span></div></div>
+</div>
+<canvas id="game" width="500" height="500"></canvas>
+
+<div class="overlay" id="start"><div class="box"><h1>🔴 激光迷宫</h1><p>点击镜子旋转方向<br>引导激光到达目标！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>🎉 恭喜！</h1><p>激光到达目标！</p><button class="btn" onclick="nextLevel()">下一关</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+const W=500,H=500,COLS=8,ROWS=8,CELL=60;
+let grid,mirrors,source,target,level,beam;
+function init(lv){
+level=lv;document.getElementById('level').textContent=level;
+grid=Array.from({length:ROWS},()=>Array(COLS).fill(null));
+source={r:0,c:0,dir:'right'};
+target={r:ROWS-1,c:COLS-1};
+mirrors=[];
+// place mirrors
+const count=3+level;
+for(let i=0;i<count;i++){
+let r,c;
+do{r=Math.floor(Math.random()*ROWS);c=Math.floor(Math.random()*COLS)}
+while(grid[r][c]||(r===source.r&&c===source.c)||(r===target.r&&c===target.c));
+grid[r][c]={type:'mirror',dir:Math.random()<0.5?'/':'\\'};
+mirrors.push({r,c});
+}
+traceBeam();
+}
+function traceBeam(){
+beam=[];
+let{r,c,dir}=source;
+for(let i=0;i<100;i++){
+beam.push({r,c});
+if(r===target.r&&c===target.c)break;
+let nr=r,nc=c;
+if(dir==='right')nc++;else if(dir==='left')nc--;
+else if(dir==='up')nr--;else nr++;
+if(nr<0||nr>=ROWS||nc<0||nc>=COLS)break;
+const cell=grid[nr][nc];
+if(cell&&cell.type==='mirror'){
+if(cell.dir==='/'){
+if(dir==='right')dir='up';else if(dir==='left')dir='down';
+else if(dir==='up')dir='right';else dir='left';
+}else{
+if(dir==='right')dir='down';else if(dir==='left')dir='up';
+else if(dir==='up')dir='left';else dir='right';
+}
+}
+r=nr;c=nc;
+}
+}
+function draw(){
+X.fillStyle='#0a0a2a';X.fillRect(0,0,W,H);
+// grid
+X.strokeStyle='rgba(255,255,255,0.05)';
+for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+X.strokeRect(c*CELL+10,r*CELL+10,CELL,CELL);
+}
+// beam
+X.strokeStyle='#F44336';X.lineWidth=3;X.shadowColor='#F44336';X.shadowBlur=8;
+X.beginPath();
+beam.forEach((b,i)=>{
+const x=b.c*CELL+CELL/2+10,y=b.r*CELL+CELL/2+10;
+if(i===0)X.moveTo(x,y);else X.lineTo(x,y);
+});
+X.stroke();X.shadowBlur=0;
+// source
+X.fillStyle='#F44336';X.beginPath();X.arc(source.c*CELL+CELL/2+10,source.r*CELL+CELL/2+10,15,0,Math.PI*2);X.fill();
+X.fillStyle='#fff';X.font='16px sans-serif';X.textAlign='center';X.textBaseline='middle';
+X.fillText('🔴',source.c*CELL+CELL/2+10,source.r*CELL+CELL/2+10);
+// target
+X.fillStyle='#6BCB77';X.beginPath();X.arc(target.c*CELL+CELL/2+10,target.r*CELL+CELL/2+10,15,0,Math.PI*2);X.fill();
+X.fillText('🎯',target.c*CELL+CELL/2+10,target.r*CELL+CELL/2+10);
+// mirrors
+mirrors.forEach(m=>{
+const cell=grid[m.r][m.c];
+if(!cell)return;
+const x=m.c*CELL+CELL/2+10,y=m.r*CELL+CELL/2+10;
+X.strokeStyle='#FFD93D';X.lineWidth=3;
+X.beginPath();
+if(cell.dir==='/'){X.moveTo(x-15,y+15);X.lineTo(x+15,y-15)}
+else{X.moveTo(x-15,y-15);X.lineTo(x+15,y+15)}
+X.stroke();
+// mirror handle
+X.fillStyle='rgba(255,255,255,0.3)';X.beginPath();X.arc(x,y,5,0,Math.PI*2);X.fill();
+});
+// check win
+if(beam.length>0){
+const last=beam[beam.length-1];
+if(last.r===target.r&&last.c===target.c){
+setTimeout(()=>{document.getElementById('over').classList.remove('hidden');playSound(700,0.3)},500);
+}
+}
+}
+C.addEventListener('click',e=>{
+const r=C.getBoundingClientRect();
+const mx=(e.clientX-r.left)*(W/r.width),my=(e.clientY-r.top)*(H/r.height);
+const c=Math.floor((mx-10)/CELL),row=Math.floor((my-10)/CELL);
+if(row>=0&&row<ROWS&&c>=0&&c<COLS&&grid[row][c]){
+grid[row][c].dir=grid[row][c].dir==='/'?'\\':'/';
+traceBeam();playSound(400,0.05);draw();
+}
+});
+function nextLevel(){document.getElementById('over').classList.add('hidden');init(level+1)}
+function startGame(){document.getElementById('start').classList.add('hidden');document.getElementById('over').classList.add('hidden');init(1)}
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

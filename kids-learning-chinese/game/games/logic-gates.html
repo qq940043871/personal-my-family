@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>逻辑门</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#1a1a2e,#16213e);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px;padding:10px 20px}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+.question{background:rgba(255,255,255,0.1);padding:15px 25px;border-radius:15px;margin:15px 0;text-align:center;font-size:1.2em}
+.gate-display{font-size:3em;margin:10px 0}
+.options{display:flex;gap:15px;margin:15px 0}
+.opt{padding:15px 30px;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);color:#fff;border-radius:12px;cursor:pointer;font-size:1.5em;transition:all 0.2s}
+.opt:hover{background:rgba(255,255,255,0.25);transform:scale(1.05)}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#4D96FF,#667eea);padding:40px;border-radius:20px;text-align:center;max-width:400px;color:#fff}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div>⚡ 逻辑门</div>
+<div style="font-size:0.9em">得分: <span id="score">0</span></div>
+</div>
+<div class="question" id="question"></div>
+<div class="gate-display" id="gateDisplay"></div>
+<div class="options" id="options"></div>
+
+<div class="overlay" id="start"><div class="box"><h1>⚡ 逻辑门</h1><p>学习基本逻辑门<br>选择正确的输出！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>游戏结束</h1><p>得分: <span id="final">0</span></p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+let score=0,round=0;
+const gates=[
+{type:'AND',symbol:'∧',calc:(a,b)=>a&&b,desc:'AND门：两个都为1才输出1'},
+{type:'OR',symbol:'∨',calc:(a,b)=>a||b,desc:'OR门：至少一个为1就输出1'},
+{type:'NOT',symbol:'¬',calc:(a)=>!a,desc:'NOT门：取反'},
+{type:'XOR',symbol:'⊕',calc:(a,b)=>a!==b,desc:'XOR门：不同才输出1'}
+];
+function startGame(){
+document.getElementById('start').classList.add('hidden');
+document.getElementById('over').classList.add('hidden');
+score=0;round=0;nextRound();
+}
+function nextRound(){
+round++;if(round>10){document.getElementById('final').textContent=score;document.getElementById('over').classList.remove('hidden');return}
+const gate=gates[Math.floor(Math.random()*gates.length)];
+const a=Math.random()<0.5?0:1;
+const b=Math.random()<0.5?0:1;
+const answer=gate.calc(a===1,b===1)?1:0;
+document.getElementById('question').textContent=gate.desc;
+if(gate.type==='NOT'){
+document.getElementById('gateDisplay').textContent=`¬${a} = ?`;
+}else{
+document.getElementById('gateDisplay').textContent=`${a} ${gate.symbol} ${b} = ?`;
+}
+const opts=[answer];while(opts.length<2)if(!opts.includes(1-answer))opts.push(1-answer);
+opts.sort(()=>Math.random()-0.5);
+const div=document.getElementById('options');div.innerHTML='';
+opts.forEach(o=>{
+const btn=document.createElement('div');btn.className='opt';btn.textContent=o;
+btn.addEventListener('click',()=>{
+if(o===answer){score+=10;playSound(600,0.1);btn.style.borderColor='#4CAF50'}
+else{playSound(200,0.1);btn.style.borderColor='#F44336'}
+document.getElementById('score').textContent=score;
+setTimeout(nextRound,800);
+});
+div.appendChild(btn);
+});
+}
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+/* ============================================================
+   键盘小特工 - 游戏样式 V2
+   全屏沉浸式森林主题
+   ============================================================ */
+
+/* ===== BODY LAYOUT ===== */
+body {
+  background: #0a1f0a;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===== FOREST BACKGROUND (AI-generated image) ===== */
+.forest-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: url('../images/forest-bg.png') center/cover no-repeat;
+}
+
+/* Subtle dark overlay for game readability */
+.forest-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 15, 5, 0.2);
+}
+
+.fg-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.fg-layer.particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.fg-dot {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #FFEB3B;
+  border-radius: 50%;
+  box-shadow: 0 0 10px #FFEB3B, 0 0 20px #FFEB3B, 0 0 6px #CDDC39;
+  animation: fireflyGlow 3s ease-in-out infinite;
+}
+
+@keyframes fireflyGlow {
+  0%, 100% { opacity: 0.15; transform: scale(0.8) translateY(0); }
+  50% { opacity: 0.7; transform: scale(1.3) translateY(-12px); }
+}
+
+.fg-leaf {
+  position: absolute;
+  font-size: 16px;
+  opacity: 0.4;
+  animation: leafDrift linear infinite;
+}
+
+@keyframes leafDrift {
+  0% { transform: translateY(0) rotate(0deg) translateX(0); }
+  25% { transform: translateY(-25px) rotate(90deg) translateX(15px); }
+  50% { transform: translateY(-15px) rotate(180deg) translateX(-10px); }
+  75% { transform: translateY(-20px) rotate(270deg) translateX(5px); }
+  100% { transform: translateY(0) rotate(360deg) translateX(0); }
+}
+
+/* ===== TOP BAR ===== */
+#top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: rgba(13, 40, 24, 0.6);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 10px 32px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+#top-bar .stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+#top-bar .icon { font-size: 20px; }
+
+#top-bar .value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffd54f;
+  text-shadow: 0 0 12px rgba(255, 213, 79, 0.4);
+  min-width: 28px;
+  text-align: center;
+}
+
+/* ===== GAME CONTAINER ===== */
+#game-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  z-index: 2;
+}
+
+/* Grid overlay */
+#game-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ===== OVERLAY SCREENS ===== */
+#start-screen, #level-complete, #game-over, #complete-screen {
+  background: rgba(10, 20, 10, 0.82);
+}
+
+#start-screen h1, #level-complete h1, #game-over h1, #complete-screen h1 {
+  background: linear-gradient(135deg, #81c784, #4caf50);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== PLAYER ===== */
+#player {
+  position: absolute;
+  z-index: 10;
+  filter: drop-shadow(0 0 16px rgba(66, 165, 245, 0.5));
+}
+
+/* ===== FRUIT (CSS shapes replacing emoji) ===== */
+.fruit {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  z-index: 6;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+  animation: fruitFloat 2.5s ease-in-out infinite;
+  border-radius: 50%;
+}
+
+.fruit .fruit-core {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+}
+
+.fruit .fruit-stem {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 3px;
+  height: 8px;
+  background: #5D4037;
+  border-radius: 2px;
+  transform: translateX(-50%);
+}
+
+/* Fruit colors */
+.fruit-red .fruit-core { background: radial-gradient(circle at 35% 30%, #FF5252, #C62828); }
+.fruit-yellow .fruit-core { background: radial-gradient(circle at 35% 30%, #FFEE58, #F9A825); }
+.fruit-orange .fruit-core { background: radial-gradient(circle at 35% 30%, #FF9800, #E65100); }
+.fruit-green .fruit-core { background: radial-gradient(circle at 35% 30%, #69F0AE, #2E7D32); }
+.fruit-purple .fruit-core { background: radial-gradient(circle at 35% 30%, #CE93D8, #7B1FA2); }
+.fruit-pink .fruit-core { background: radial-gradient(circle at 35% 30%, #F48FB1, #C2185B); }
+.fruit-lime .fruit-core { background: radial-gradient(circle at 35% 30%, #CDDC39, #827717); }
+.fruit-cherry .fruit-core { 
+  background: radial-gradient(circle at 35% 30%, #EF5350, #B71C1C);
+  inset: 2px;
+}
+.fruit-blue .fruit-core { background: radial-gradient(circle at 35% 30%, #42A5F5, #1565C0); }
+
+/* Star fruit */
+.fruit-star .fruit-core.star-shape {
+  background: radial-gradient(circle at 40% 35%, #FFD54F, #FF8F00);
+  border-radius: 0;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+/* Highlight on all fruits */
+.fruit .fruit-core::after {
+  content: '';
+  position: absolute;
+  top: 15%;
+  left: 20%;
+  width: 30%;
+  height: 25%;
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+}
+
+@keyframes fruitFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  33% { transform: translateY(-8px) rotate(5deg); }
+  66% { transform: translateY(-4px) rotate(-3deg); }
+}
+
+.fruit.collected {
+  animation: fruitCollect 0.5s ease-out forwards;
+}
+
+@keyframes fruitCollect {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2.5) rotate(720deg); opacity: 0; }
+}
+
+/* ===== OBSTACLE (SVG warning triangle) ===== */
+.obstacle {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  z-index: 7;
+  filter: drop-shadow(0 6px 20px rgba(255, 82, 82, 0.5));
+  animation: obstaclePulse 2s ease-in-out infinite;
+}
+
+.obstacle svg {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes obstaclePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* ===== FINISH LINE ===== */
+.finish-zone {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  background: linear-gradient(180deg, 
+    rgba(255, 215, 0, 0.15),
+    rgba(255, 152, 0, 0.3),
+    rgba(255, 215, 0, 0.15));
+  border-left: 2px dashed rgba(255, 255, 255, 0.15);
+  z-index: 4;
+  animation: finishGlow 3s ease-in-out infinite;
+}
+
+@keyframes finishGlow {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* ===== HUD ===== */
+.game-hud {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  gap: 12px;
+  z-index: 15;
+}
+
+.hud-item {
+  background: rgba(13, 40, 24, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 8px 16px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.hud-item .hud-val {
+  color: #ffd54f;
+  font-weight: 800;
+}
+
+/* ===== KEYBOARD HINT ===== */
+.keyboard-hint {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 15;
+}
+
+.key-hint {
+  width: 44px;
+  height: 44px;
+  background: rgba(13, 40, 24, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+
+.key-hint.active {
+  background: rgba(66, 165, 245, 0.4);
+  border-color: rgba(66, 165, 245, 0.5);
+  color: white;
+  box-shadow: 0 0 18px rgba(66, 165, 245, 0.4);
+  transform: scale(1.1);
+}
+
+.key-hint.space {
+  width: 100px;
+}
+
+/* ===== COUNTDOWN ===== */
+#countdown {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 120px;
+  font-weight: 900;
+  color: #ffd54f;
+  text-shadow: 0 0 40px rgba(255, 213, 79, 0.5);
+  z-index: 25;
+  display: none;
+}
+
+/* ===== MESSAGE ===== */
+.game-msg {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(239, 83, 80, 0.85);
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+  padding: 16px 32px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  animation: msgPop 1.5s ease-out forwards;
+  z-index: 30;
+  box-shadow: 0 8px 32px rgba(239, 83, 80, 0.4);
+}
+
+@keyframes msgPop {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  20% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+  80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+}
+
+/* ===== TIP BAR ===== */
+#tip-bar {
+  position: absolute;
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 20px;
+  background: rgba(13, 40, 24, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 100px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  z-index: 15;
+  white-space: nowrap;
+}
+
+/* ===== BACK BUTTON ===== */
+.back-btn {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  padding: 6px 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.55);
+  border-radius: 100px;
+  cursor: pointer;
+  font-size: 13px;
+  z-index: 25;
+  transition: all 0.3s;
+  font-family: inherit;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+/* ===== BG DECO (CSS shapes replacing emoji) ===== */
+.bg-deco {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
+}
+
+.bg-deco.tree {
+  animation: treeSway 5s ease-in-out infinite;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tree-top {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  margin-bottom: 2px;
+}
+
+.tree-trunk {
+  width: 8px;
+  height: 16px;
+  border-radius: 2px;
+}
+
+@keyframes treeSway {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2deg); }
+}
+
+.bg-deco.bush {
+  animation: bushBob 4s ease-in-out infinite;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.bush-circle {
+  width: 18px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.bush-circle.bush-dot {
+  width: 12px;
+  height: 10px;
+}
+
+@keyframes bushBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}

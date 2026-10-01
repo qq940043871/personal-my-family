@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100个趣味小游戏 - 萌趣编程启蒙乐园</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            padding: 40px 20px 20px;
+            color: white;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .back-link {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            padding: 8px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            transition: background 0.3s;
+        }
+        .back-link:hover { background: rgba(255,255,255,0.3); }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            background: rgba(255,255,255,0.15);
+            padding: 12px 24px;
+            border-radius: 15px;
+            text-align: center;
+            color: white;
+        }
+        .stat-item .num { font-size: 2em; font-weight: bold; }
+        .stat-item .label { font-size: 0.9em; opacity: 0.9; }
+
+        .search-box {
+            max-width: 400px;
+            margin: 20px auto;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            background: rgba(255,255,255,0.9);
+            outline: none;
+        }
+        .search-box::before {
+            content: '🔍';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+        }
+
+        .category-nav {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+        .cat-btn {
+            padding: 6px 16px;
+            border: 2px solid rgba(255,255,255,0.5);
+            background: transparent;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+        .cat-btn:hover, .cat-btn.active {
+            background: rgba(255,255,255,0.25);
+            border-color: white;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .game-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        .game-card .thumb {
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            position: relative;
+            overflow: hidden;
+        }
+        .game-card .info {
+            padding: 12px;
+        }
+        .game-card .info h3 {
+            font-size: 1em;
+            margin-bottom: 4px;
+        }
+        .game-card .info .age {
+            font-size: 0.75em;
+            color: #888;
+            background: #f0f0f0;
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        .game-card .info .desc {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 6px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Category colors */
+        .cat-classic .thumb { background: linear-gradient(135deg, #FF6B6B, #FF8E53); }
+        .cat-memory .thumb { background: linear-gradient(135deg, #4ECDC4, #44CF6C); }
+        .cat-math .thumb { background: linear-gradient(135deg, #A18CD1, #FBC2EB); }
+        .cat-action .thumb { background: linear-gradient(135deg, #FF9A9E, #FAD0C4); }
+        .cat-creative .thumb { background: linear-gradient(135deg, #A1C4FD, #C2E9FB); }
+        .cat-3d .thumb { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .cat-logic .thumb { background: linear-gradient(135deg, #F093FB, #F5576C); }
+        .cat-color .thumb { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .cat-nature .thumb { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+        .cat-whack .thumb { background: linear-gradient(135deg, #fa709a, #fee140); }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9em;
+        }
+        footer a { color: rgba(255,255,255,0.9); }
+
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8em; }
+            .games-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; padding: 10px; }
+            .game-card .thumb { height: 90px; font-size: 2.5em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="../index.html" class="back-link">← 返回主菜单</a>
+        <h1>🎮 100个趣味小游戏</h1>
+        <p>寓教于乐 · 快乐成长</p>
+        <div class="stats">
+            <div class="stat-item"><div class="num">100</div><div class="label">精选游戏</div></div>
+            <div class="stat-item"><div class="num">10</div><div class="label">游戏分类</div></div>
+            <div class="stat-item"><div class="num">3-12</div><div class="label">适合年龄</div></div>
+        </div>
+    </div>
+
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="搜索游戏..." oninput="filterGames()">
+    </div>
+
+    <div class="category-nav" id="categoryNav">
+        <button class="cat-btn active" onclick="filterCategory('all')">🎮 全部</button>
+        <button class="cat-btn" onclick="filterCategory('classic')">🕹️ 经典街机</button>
+        <button class="cat-btn" onclick="filterCategory('memory')">🧠 记忆益智</button>
+        <button class="cat-btn" onclick="filterCategory('math')">🔢 数学启蒙</button>
+        <button class="cat-btn" onclick="filterCategory('action')">⚡ 动作冒险</button>
+        <button class="cat-btn" onclick="filterCategory('creative')">🎨 创意艺术</button>
+        <button class="cat-btn" onclick="filterCategory('3d')">🌐 3D游戏</button>
+        <button class="cat-btn" onclick="filterCategory('logic')">🧩 逻辑策略</button>
+        <button class="cat-btn" onclick="filterCategory('color')">🌈 色彩形状</button>
+        <button class="cat-btn" onclick="filterCategory('nature')">🌿 自然科学</button>
+        <button class="cat-btn" onclick="filterCategory('whack')">🎯 打击反应</button>
+    </div>
+
+    <div class="games-grid" id="gamesGrid"></div>
+
+    <footer>
+        <p>萌趣编程启蒙乐园 &copy; 2026 · <a href="../index.html">返回主菜单</a></p>
+    </footer>
+
+    <script>
+        const GAMES = [
+            // Classic Arcade (01-10)
+            {id:1, file:'snake.html', name:'贪吃蛇', emoji:'🐍', age:'3-6岁', cat:'classic', desc:'控制小蛇吃食物，不断变长！'},
+            {id:2, file:'tetris.html', name:'俄罗斯方块', emoji:'🧱', age:'5-9岁', cat:'classic', desc:'旋转方块填满一行消除！'},
+            {id:3, file:'breakout.html', name:'打砖块', emoji:'🏓', age:'5-9岁', cat:'classic', desc:'用球拍弹球打碎所有砖块！'},
+            {id:4, file:'pong.html', name:'乒乓球', emoji:'🏓', age:'4-8岁', cat:'classic', desc:'和电脑来一场乒乓球对决！'},
+            {id:5, file:'space-invaders.html', name:'太空入侵者', emoji:'👾', age:'6-10岁', cat:'classic', desc:'消灭入侵的外星人！'},
+            {id:6, file:'flappy-bird.html', name:'像素鸟', emoji:'🐦', age:'5-10岁', cat:'classic', desc:'控制小鸟穿越管道障碍！'},
+            {id:7, file:'frogger.html', name:'青蛙过河', emoji:'🐸', age:'5-9岁', cat:'classic', desc:'帮助小青蛙安全过河！'},
+            {id:8, file:'asteroid.html', name:'小行星躲避', emoji:'☄️', age:'6-10岁', cat:'classic', desc:'驾驶飞船躲避小行星！'},
+            {id:9, file:'helicopter.html', name:'直升机闯关', emoji:'🚁', age:'6-10岁', cat:'classic', desc:'控制直升机穿越障碍！'},
+            {id:10, file:'brick-breaker.html', name:'砖块消除', emoji:'🧱', age:'5-9岁', cat:'classic', desc:'打砖块升级版，有道具系统！'},
+
+            // Memory & Puzzle (11-20)
+            {id:11, file:'memory-match.html', name:'记忆翻牌', emoji:'🃏', age:'3-8岁', cat:'memory', desc:'翻开卡牌找到相同的配对！'},
+            {id:12, file:'sliding-puzzle.html', name:'滑动拼图', emoji:'🔢', age:'5-10岁', cat:'memory', desc:'滑动数字块恢复正确顺序！'},
+            {id:13, file:'jigsaw.html', name:'拼图游戏', emoji:'🧩', age:'4-8岁', cat:'memory', desc:'把打散的拼图块拼回原图！'},
+            {id:14, file:'minesweeper.html', name:'扫雷', emoji:'💣', age:'7-12岁', cat:'memory', desc:'找出所有地雷，小心别踩到！'},
+            {id:15, file:'lights-out.html', name:'关灯游戏', emoji:'💡', age:'6-10岁', cat:'memory', desc:'点击关掉所有的灯！'},
+            {id:16, file:'tangram.html', name:'七巧板', emoji:'🔷', age:'5-10岁', cat:'memory', desc:'用七巧板拼出目标形状！'},
+            {id:17, file:'sudoku.html', name:'数独', emoji:'📊', age:'7-12岁', cat:'memory', desc:'4x4简单数独，锻炼逻辑！'},
+            {id:18, file:'crossword.html', name:'填字游戏', emoji:'📝', age:'8-12岁', cat:'memory', desc:'根据提示填写正确的字！'},
+            {id:19, file:'word-search.html', name:'找单词', emoji:'🔤', age:'6-10岁', cat:'memory', desc:'在字母网格中找出隐藏单词！'},
+            {id:20, file:'pattern-match.html', name:'图案匹配', emoji:'🎯', age:'4-8岁', cat:'memory', desc:'记住并重复出现的图案序列！'},
+
+            // Math Games (21-30)
+            {id:21, file:'math-quiz.html', name:'数学答题', emoji:'🧮', age:'5-10岁', cat:'math', desc:'快速回答数学题目得分！'},
+            {id:22, file:'number-pop.html', name:'数字泡泡', emoji:'🫧', age:'3-6岁', cat:'math', desc:'按顺序点击数字泡泡！'},
+            {id:23, file:'counting-stars.html', name:'数星星', emoji:'⭐', age:'3-6岁', cat:'math', desc:'数一数屏幕上有多少星星！'},
+            {id:24, file:'math-race.html', name:'数学赛车', emoji:'🏎️', age:'6-10岁', cat:'math', desc:'答对题目加速，答错减速！'},
+            {id:25, file:'fraction-pizza.html', name:'分数披萨', emoji:'🍕', age:'7-12岁', cat:'math', desc:'用披萨学习分数概念！'},
+            {id:26, file:'geometry-shapes.html', name:'几何形状', emoji:'📐', age:'5-9岁', cat:'math', desc:'认识各种几何图形！'},
+            {id:27, file:'number-line.html', name:'数轴跳跃', emoji:'🦘', age:'5-8岁', cat:'math', desc:'在数轴上跳跃学习加减法！'},
+            {id:28, file:'math-tower.html', name:'数学塔防', emoji:'🏰', age:'7-12岁', cat:'math', desc:'答对题目建造防御塔！'},
+            {id:29, file:'times-table.html', name:'乘法表', emoji:'✖️', age:'7-12岁', cat:'math', desc:'练习九九乘法表！'},
+            {id:30, file:'math-memory.html', name:'数学记忆', emoji:'🧠', age:'6-10岁', cat:'math', desc:'匹配数学算式和答案！'},
+
+            // Action & Platformer (31-40)
+            {id:31, file:'platformer.html', name:'平台跳跃', emoji:'🏃', age:'5-10岁', cat:'action', desc:'跳跃闯关收集金币！'},
+            {id:32, file:'ninja-run.html', name:'忍者跑酷', emoji:'🥷', age:'6-10岁', cat:'action', desc:'忍者自动奔跑，跳跃躲避！'},
+            {id:33, file:'space-shooter.html', name:'太空射击', emoji:'🚀', age:'6-12岁', cat:'action', desc:'驾驶飞船消灭外星敌人！'},
+            {id:34, file:'car-racing.html', name:'赛车游戏', emoji:'🚗', age:'5-10岁', cat:'action', desc:'在赛道上极速狂飙！'},
+            {id:35, file:'submarine.html', name:'潜艇冒险', emoji:'🤿', age:'6-10岁', cat:'action', desc:'驾驶潜艇探索深海！'},
+            {id:36, file:'balloon-pop.html', name:'气球射击', emoji:'🎈', age:'3-8岁', cat:'action', desc:'点击射破上升的气球！'},
+            {id:37, file:'archery.html', name:'射箭游戏', emoji:'🏹', age:'6-12岁', cat:'action', desc:'瞄准靶心射箭得分！'},
+            {id:38, file:'dodge-ball.html', name:'躲避球', emoji:'🏐', age:'5-10岁', cat:'action', desc:'躲避飞来的球！'},
+            {id:39, file:'jetpack.html', name:'喷气背包', emoji:'🎒', age:'6-10岁', cat:'action', desc:'使用喷气背包飞行闯关！'},
+            {id:40, file:'sky-jumper.html', name:'天空跳跃', emoji:'☁️', age:'5-10岁', cat:'action', desc:'在云朵间不断跳跃向上！'},
+
+            // Creative & Art (41-50)
+            {id:41, file:'drawing-pad.html', name:'绘画板', emoji:'🎨', age:'3-12岁', cat:'creative', desc:'自由绘画，选择颜色和画笔！'},
+            {id:42, file:'pixel-art.html', name:'像素画', emoji:'🖼️', age:'5-12岁', cat:'creative', desc:'在像素格子上创作艺术！'},
+            {id:43, file:'color-mix.html', name:'颜色混合', emoji:'🎨', age:'4-8岁', cat:'creative', desc:'混合颜色看看会变成什么！'},
+            {id:44, file:'mandala.html', name:'曼陀罗画', emoji:'🌸', age:'5-12岁', cat:'creative', desc:'对称绘画，创造美丽图案！'},
+            {id:45, file:'music-piano.html', name:'钢琴键盘', emoji:'🎹', age:'4-12岁', cat:'creative', desc:'弹奏钢琴键盘演奏音乐！'},
+            {id:46, file:'music-drums.html', name:'架子鼓', emoji:'🥁', age:'4-12岁', cat:'creative', desc:'敲打架子鼓打出节奏！'},
+            {id:47, file:'melody-maker.html', name:'旋律创作', emoji:'🎵', age:'6-12岁', cat:'creative', desc:'在网格上创作自己的旋律！'},
+            {id:48, file:'sand-painting.html', name:'沙画', emoji:'🏖️', age:'4-10岁', cat:'creative', desc:'用彩色沙子创作艺术画！'},
+            {id:49, file:'kaleidoscope.html', name:'万花筒', emoji:'🔮', age:'4-12岁', cat:'creative', desc:'移动鼠标创造万花筒图案！'},
+            {id:50, file:'spray-paint.html', name:'喷漆艺术', emoji:'🎨', age:'5-12岁', cat:'creative', desc:'用喷漆创作街头艺术！'},
+
+            // 3D Games (51-60)
+            {id:51, file:'3d-maze.html', name:'3D迷宫', emoji:'🏰', age:'7-12岁', cat:'3d', desc:'第一人称视角穿越3D迷宫！'},
+            {id:52, file:'3d-ball-roll.html', name:'3D滚球', emoji:'⚽', age:'6-10岁', cat:'3d', desc:'控制球在3D平台上滚动！'},
+            {id:53, file:'3d-building-blocks.html', name:'3D积木', emoji:'🧱', age:'4-10岁', cat:'3d', desc:'用3D积木自由搭建！'},
+            {id:54, file:'3d-solar-system.html', name:'3D太阳系', emoji:'🌍', age:'6-12岁', cat:'3d', desc:'探索3D太阳系行星！'},
+            {id:55, file:'3d-roller-coaster.html', name:'3D过山车', emoji:'🎢', age:'6-12岁', cat:'3d', desc:'第一人称体验3D过山车！'},
+            {id:56, file:'3d-fishing.html', name:'3D钓鱼', emoji:'🎣', age:'5-10岁', cat:'3d', desc:'在3D湖边钓鱼！'},
+            {id:57, file:'3d-pinball.html', name:'3D弹球', emoji:'🎰', age:'6-12岁', cat:'3d', desc:'3D弹球台弹球得分！'},
+            {id:58, file:'3d-bowling.html', name:'3D保龄球', emoji:'🎳', age:'5-10岁', cat:'3d', desc:'3D保龄球打全中！'},
+            {id:59, file:'3d-fruit-slice.html', name:'3D切水果', emoji:'🍉', age:'5-10岁', cat:'3d', desc:'3D水果飞起来切切切！'},
+            {id:60, file:'3d-terrain.html', name:'3D地形探索', emoji:'🏔️', age:'6-12岁', cat:'3d', desc:'飞越3D生成的山川地形！'},
+
+            // Logic & Strategy (61-70)
+            {id:61, file:'chess.html', name:'国际象棋', emoji:'♟️', age:'8-12岁', cat:'logic', desc:'和电脑下国际象棋！'},
+            {id:62, file:'checkers.html', name:'跳棋', emoji:'🔴', age:'6-10岁', cat:'logic', desc:'经典跳棋对战！'},
+            {id:63, file:'connect-four.html', name:'四子棋', emoji:'🟡', age:'5-10岁', cat:'logic', desc:'四子连线赢得胜利！'},
+            {id:64, file:'reversi.html', name:'黑白棋', emoji:'⚫', age:'7-12岁', cat:'logic', desc:'翻转对方的棋子！'},
+            {id:65, file:'maze.html', name:'迷宫', emoji:'🏰', age:'4-10岁', cat:'logic', desc:'在随机迷宫中找到出口！'},
+            {id:66, file:'tower-of-hanoi.html', name:'汉诺塔', emoji:'🗼', age:'6-12岁', cat:'logic', desc:'移动圆盘完成汉诺塔！'},
+            {id:67, file:'logic-gates.html', name:'逻辑门', emoji:'⚡', age:'8-12岁', cat:'logic', desc:'学习逻辑门电路知识！'},
+            {id:68, file:'pipe-puzzle.html', name:'管道拼接', emoji:'🔧', age:'6-10岁', cat:'logic', desc:'旋转管道连接水源！'},
+            {id:69, file:'circuit-board.html', name:'电路板', emoji:'💡', age:'7-12岁', cat:'logic', desc:'连接电路点亮灯泡！'},
+            {id:70, file:'rubiks-cube.html', name:'魔方', emoji:'🎲', age:'8-12岁', cat:'logic', desc:'转动魔方还原颜色！'},
+
+            // Color & Shape (71-80)
+            {id:71, file:'color-sort.html', name:'颜色分类', emoji:'🧪', age:'4-8岁', cat:'color', desc:'把彩色球按颜色分类！'},
+            {id:72, file:'shape-sorter.html', name:'形状分类', emoji:'🔷', age:'3-6岁', cat:'color', desc:'把形状放入对应的孔！'},
+            {id:73, file:'color-by-number.html', name:'数字填色', emoji:'🎨', age:'4-8岁', cat:'color', desc:'按数字提示涂色揭示图画！'},
+            {id:74, file:'pattern-builder.html', name:'图案构建', emoji:'🧱', age:'5-9岁', cat:'color', desc:'复制出现的图案序列！'},
+            {id:75, file:'rainbow-bridge.html', name:'彩虹桥', emoji:'🌈', age:'4-8岁', cat:'color', desc:'按顺序搭建彩虹桥！'},
+            {id:76, file:'color-matcher.html', name:'颜色匹配', emoji:'🎨', age:'4-8岁', cat:'color', desc:'找出颜色相同的配对！'},
+            {id:77, file:'shape-invasion.html', name:'形状入侵', emoji:'⭐', age:'5-10岁', cat:'color', desc:'输入形状名称消灭它们！'},
+            {id:78, file:'pixel-mosaic.html', name:'像素马赛克', emoji:'🖼️', age:'6-10岁', cat:'color', desc:'用颜色还原像素图案！'},
+            {id:79, file:'color-wave.html', name:'颜色波浪', emoji:'🌊', age:'3-8岁', cat:'color', desc:'点击创造彩色波浪！'},
+            {id:80, file:'shape-puzzle.html', name:'形状拼图', emoji:'🧩', age:'4-8岁', cat:'color', desc:'用形状填充轮廓！'},
+
+            // Nature & Science (81-90)
+            {id:81, file:'ant-colony.html', name:'蚂蚁王国', emoji:'🐜', age:'5-10岁', cat:'nature', desc:'观察蚂蚁搬运食物！'},
+            {id:82, file:'flower-garden.html', name:'花园种花', emoji:'🌻', age:'4-8岁', cat:'nature', desc:'种植和浇灌美丽的花朵！'},
+            {id:83, file:'weather-station.html', name:'天气站', emoji:'🌤️', age:'5-10岁', cat:'nature', desc:'模拟各种天气现象！'},
+            {id:84, file:'ocean-explorer.html', name:'海洋探索', emoji:'🐠', age:'5-10岁', cat:'nature', desc:'探索海洋的各个深度！'},
+            {id:85, file:'volcano.html', name:'火山爆发', emoji:'🌋', age:'5-10岁', cat:'nature', desc:'模拟火山喷发的壮观！'},
+            {id:86, file:'butterfly-cycle.html', name:'蝴蝶生命周期', emoji:'🦋', age:'4-8岁', cat:'nature', desc:'观察蝴蝶的成长过程！'},
+            {id:87, file:'star-gazing.html', name:'观星', emoji:'🌟', age:'5-10岁', cat:'nature', desc:'认识夜空中的星座！'},
+            {id:88, file:'crystal-garden.html', name:'水晶花园', emoji:'💎', age:'5-10岁', cat:'nature', desc:'培育美丽的水晶！'},
+            {id:89, file:'rain-simulator.html', name:'雨滴模拟', emoji:'🌧️', age:'3-8岁', cat:'nature', desc:'点击云朵制造雨滴！'},
+            {id:90, file:'ecosystem.html', name:'生态系统', emoji:'🌳', age:'6-12岁', cat:'nature', desc:'管理一个微型生态系统！'},
+
+            // Whack & Reaction (91-100)
+            {id:91, file:'whack-a-mole.html', name:'打地鼠', emoji:'🔨', age:'3-8岁', cat:'whack', desc:'敲打冒出的地鼠得分！'},
+            {id:92, file:'reaction-time.html', name:'反应测试', emoji:'⚡', age:'5-12岁', cat:'whack', desc:'测试你的反应速度有多快！'},
+            {id:93, file:'bubble-shooter.html', name:'泡泡龙', emoji:'🫧', age:'5-10岁', cat:'whack', desc:'射击泡泡消除同色泡泡！'},
+            {id:94, file:'fruit-ninja.html', name:'水果忍者', emoji:'🍉', age:'4-10岁', cat:'whack', desc:'切水果得高分！'},
+            {id:95, file:'catch-eggs.html', name:'接鸡蛋', emoji:'🥚', age:'3-8岁', cat:'whack', desc:'用篮子接住掉落的鸡蛋！'},
+            {id:96, file:'balloon-typhoon.html', name:'气球台风', emoji:'🎈', age:'4-10岁', cat:'whack', desc:'在时间内戳破所有气球！'},
+            {id:97, file:'coin-catcher.html', name:'接金币', emoji:'🪙', age:'4-10岁', cat:'whack', desc:'接住从天而降的金币！'},
+            {id:98, file:'snowball-fight.html', name:'打雪仗', emoji:'⛄', age:'4-10岁', cat:'whack', desc:'扔雪球击中目标！'},
+            {id:99, file:'laser-maze.html', name:'激光迷宫', emoji:'🔴', age:'7-12岁', cat:'whack', desc:'用镜子引导激光到达目标！'},
+            {id:100, file:'grand-finale.html', name:'终极庆典', emoji:'🎆', age:'3-12岁', cat:'whack', desc:'放烟花庆祝通关所有游戏！'},
+        ];
+
+        const catNames = {
+            all: '全部', classic: '经典街机', memory: '记忆益智', math: '数学启蒙',
+            action: '动作冒险', creative: '创意艺术', '3d': '3D游戏', logic: '逻辑策略',
+            color: '色彩形状', nature: '自然科学', whack: '打击反应'
+        };
+
+        let currentCat = 'all';
+
+        function renderGames(games) {
+            const grid = document.getElementById('gamesGrid');
+            grid.innerHTML = games.map(g => `
+                <a href="${g.file}" class="game-card cat-${g.cat}">
+                    <div class="thumb">${g.emoji}</div>
+                    <div class="info">
+                        <h3>${g.id}. ${g.name}</h3>
+                        <span class="age">${g.age}</span>
+                        <div class="desc">${g.desc}</div>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        function filterCategory(cat) {
+            currentCat = cat;
+            document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            applyFilters();
+        }
+
+        function filterGames() {
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            let filtered = GAMES;
+            if (currentCat !== 'all') {
+                filtered = filtered.filter(g => g.cat === currentCat);
+            }
+            if (search) {
+                filtered = filtered.filter(g =>
+                    g.name.includes(search) || g.desc.includes(search) || g.emoji.includes(search)
+                );
+            }
+            renderGames(filtered);
+        }
+
+        // Initial render
+        renderGames(GAMES);
+    </script>
+</body>
+</html>

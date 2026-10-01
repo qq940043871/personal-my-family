@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D弹球</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1a2e;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 20px;position:fixed;top:0;z-index:10;background:rgba(0,0,0,0.5)}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%}
+.info{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);padding:10px 20px;border-radius:15px;z-index:10;text-align:center}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div>🎰 3D弹球</div>
+<div style="font-size:1.2em">得分: <span id="score">0</span></div>
+</div>
+<canvas id="game"></canvas>
+<div class="info">Z/左键 = 左挡板 · M/右键 = 右挡板</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x1a1a2e);
+const camera=new THREE.PerspectiveCamera(50,window.innerWidth/window.innerHeight,0.1,100);
+camera.position.set(0,20,15);camera.lookAt(0,0,0);
+const renderer=new THREE.WebGLRenderer({canvas:document.getElementById('game'),antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+scene.add(new THREE.AmbientLight(0xffffff,0.5));
+const dirLight=new THREE.DirectionalLight(0xffffff,0.8);dirLight.position.set(5,20,10);scene.add(dirLight);
+// table
+const tableGeo=new THREE.BoxGeometry(8,0.3,12);
+const tableMat=new THREE.MeshStandardMaterial({color:0x2E7D32});
+const table=new THREE.Mesh(tableGeo,tableMat);scene.add(table);
+// bumpers
+const bumpers=[];
+[[2,0,-3],[-2,0,-3],[0,0,-1]].forEach(([x,y,z])=>{
+const bumperGeo=new THREE.CylinderGeometry(0.5,0.5,1,16);
+const bumperMat=new THREE.MeshStandardMaterial({color:0xFFD93D});
+const bumper=new THREE.Mesh(bumperGeo,bumperMat);
+bumper.position.set(x,y+0.5,z);scene.add(bumper);bumpers.push(bumper);
+});
+// flippers
+const flipperGeo=new THREE.BoxGeometry(1.5,0.2,0.4);
+const flipperMat=new THREE.MeshStandardMaterial({color:0xFF6B6B});
+const leftFlipper=new THREE.Mesh(flipperGeo,flipperMat);leftFlipper.position.set(-1.5,0.3,5);scene.add(leftFlipper);
+const rightFlipper=new THREE.Mesh(flipperGeo,flipperMat.clone());rightFlipper.position.set(1.5,0.3,5);scene.add(rightFlipper);
+// ball
+const ballGeo=new THREE.SphereGeometry(0.2,16,16);
+const ballMat=new THREE.MeshStandardMaterial({color:0xffffff});
+const ball=new THREE.Mesh(ballGeo,ballMat);ball.position.set(0,0.5,4);scene.add(ball);
+let ballVx=0,ballVy=0,ballVz=-0.1,score=0;
+let leftUp=false,rightUp=false;
+document.addEventListener('keydown',e=>{
+if(e.key==='z'||e.key==='Z')leftUp=true;
+if(e.key==='m'||e.key==='M')rightUp=true;
+});
+document.addEventListener('keyup',e=>{
+if(e.key==='z'||e.key==='Z')leftUp=false;
+if(e.key==='m'||e.key==='M')rightUp=false;
+});
+function update(){
+// ball physics
+ballVy-=0.001;ball.position.x+=ballVx;ball.position.z+=ballVz;ball.position.y=0.5;
+ballVx*=0.995;ballVz*=0.995;
+// wall bounce
+if(ball.position.x>3.5||ball.position.x<-3.5)ballVx*=-1;
+if(ball.position.z<-5.5)ballVz=Math.abs(ballVz);
+// flipper
+leftFlipper.rotation.y=leftUp?0.5:-0.2;
+rightFlipper.rotation.y=rightUp?-0.5:0.2;
+// flipper hit
+if(ball.position.z>4.5&&ball.position.z<5.5){
+if(ball.position.x<-0.5&&leftUp){ballVz=-0.3;ballVx-=0.1;score+=10;document.getElementById('score').textContent=score}
+if(ball.position.x>0.5&&rightUp){ballVz=-0.3;ballVx+=0.1;score+=10;document.getElementById('score').textContent=score}
+}
+// bumper collision
+bumpers.forEach(b=>{
+const dx=ball.position.x-b.position.x,dz=ball.position.z-b.position.z;
+if(Math.sqrt(dx*dx+dz*dz)<0.7){
+ballVx=dx*0.2;ballVz=dz*0.2;score+=50;
+document.getElementById('score').textContent=score;
+b.material.color.set(0xFF6B6B);setTimeout(()=>b.material.color.set(0xFFD93D),200);
+}
+});
+// ball lost
+if(ball.position.z>6){ball.position.set(0,0.5,4);ballVx=0;ballVy=0;ballVz=-0.1}
+ball.rotation.x+=ballVz;ball.rotation.z-=ballVx;
+}
+function animate(){requestAnimationFrame(animate);update();renderer.render(scene,camera)}
+window.addEventListener('resize',()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight)});
+animate();
+</script>
+</body>
+</html>

@@ -1,0 +1,405 @@
+<view class="page">
+
+  <!-- ===== 两 Tab（图鉴已并入领养中心） ===== -->
+  <view class="tab-row">
+    <view class="tab-item {{tab === 'adopt' ? 'active' : ''}}" data-tab="adopt" bindtap="switchTab">
+      <text class="tab-icon">🏠</text>
+      <text class="tab-text">领养中心</text>
+    </view>
+    <view class="tab-item {{tab === 'mine' ? 'active' : ''}}" data-tab="mine" bindtap="switchTab">
+      <text class="tab-icon">💝</text>
+      <text class="tab-text">我的宠物</text>
+    </view>
+  </view>
+
+  <!-- ========================================== -->
+  <!-- Tab 1: 领养中心（含收集进度，原「宠物图鉴」） -->
+  <!-- ========================================== -->
+  <block wx:if="{{tab === 'adopt'}}">
+    <view class="toolbar">
+      <view class="me-chip" wx:if="{{me}}">
+        <view class="me-chip-avatar" style="background: {{me.themeColor}}1F; border-color: {{me.themeColor}}">
+          <text class="me-chip-emoji">{{me.emoji}}</text>
+        </view>
+        <text class="me-chip-name">{{me.name}}的领养中心</text>
+      </view>
+      <view
+        wx:if="{{me}}"
+        class="score-chip"
+        style="background: {{me.themeColor}}15; border-color: {{me.themeColor}}33"
+      >
+        <text class="score-val" style="color: {{me.themeColor}}">{{me.score}}</text>
+        <text class="score-label">{{me.scoreLabel}}</text>
+        <view class="score-divider"></view>
+        <text class="score-hint">可领养 {{adoptableCount}} 只</text>
+      </view>
+    </view>
+
+    <!-- 收集进度 -->
+    <view class="collect-card">
+      <view class="collect-header">
+        <text class="collect-title">🐾 我的收集进度</text>
+        <text class="collect-num">{{totalCollected}} / {{catalogTotal}}</text>
+      </view>
+      <view class="collect-track">
+        <view class="collect-fill" style="width: {{collectPercent}}%"></view>
+      </view>
+      <view class="collect-footer">
+        <text class="collect-hint">完成度 {{collectPercent}}%</text>
+        <text class="collect-remain" wx:if="{{remainCount > 0}}">还差 {{remainCount}} 只</text>
+        <text class="collect-remain done" wx:else>🎉 已集齐全部图鉴</text>
+      </view>
+      <view wx:if="{{isToddlerView}}" class="collect-toddler">
+        <text class="collect-toddler-text">🍼 小宝专属：不看积分，按成长进度解锁（当前 {{growPercent}}%）——普通宠物直接领，稀有 30%、史诗 50%、传说 70%、神话 85%</text>
+      </view>
+    </view>
+
+    <!-- 筛选：横向胶囊一律换行排布，不依赖 scroll-view -->
+    <view class="filter-row">
+      <view
+        wx:for="{{filters}}"
+        wx:key="key"
+        class="filter-chip {{filter === item.key ? 'active' : ''}}"
+        data-filter="{{item.key}}"
+        bindtap="switchFilter"
+      >
+        <text class="filter-text">{{item.label}}</text>
+      </view>
+    </view>
+
+    <view wx:for="{{groups}}" wx:key="rarity" class="rarity-section">
+      <view class="rarity-header">
+        <view class="rarity-pill" style="background: {{item.color}}14">
+          <view class="rarity-dot" style="background: {{item.color}}"></view>
+          <text class="rarity-pill-text" style="color: {{item.color}}">{{item.label}}</text>
+        </view>
+        <view class="rarity-line" style="background: linear-gradient(90deg, {{item.color}}45, rgba(0,0,0,0))"></view>
+        <text class="rarity-count">已收集 {{item.collected}}/{{item.total}}</text>
+      </view>
+
+      <view class="pet-grid">
+        <view
+          wx:for="{{item.pets}}"
+          wx:for-item="pet"
+          wx:key="id"
+          class="pet-card {{pet.owned ? 'owned' : (pet.canAdopt ? '' : 'locked')}}"
+          data-id="{{pet.id}}"
+          bindtap="openPetDetail"
+        >
+          <view class="pet-card-glow" style="background: linear-gradient(180deg, {{item.color}}24, rgba(255,255,255,0) 90%)"></view>
+          <view class="pet-corner" style="background: {{item.color}}"></view>
+
+          <view class="pet-flag {{pet.owned ? 'own' : (pet.canAdopt ? 'ready' : 'lock')}}">
+            <text class="pet-flag-text">{{pet.owned ? '✓ 已拥有' : (pet.canAdopt ? '可领养' : (pet.isDefault ? '专属' : '🔒'))}}</text>
+          </view>
+
+          <view class="pet-icon" style="background: {{item.bg}}; border-color: {{item.borderColor}}">
+            <text class="pet-emoji {{pet.owned || pet.canAdopt ? '' : 'gray'}}">{{pet.icon}}</text>
+          </view>
+
+          <text class="pet-name">{{pet.displayName}}</text>
+          <text class="pet-species">{{pet.species}}</text>
+
+          <view class="pet-meta">
+            <view class="meta-chip power">
+              <text class="meta-text">⚔ {{pet.totalPower}}</text>
+            </view>
+            <view class="meta-chip req {{pet.owned || pet.canAdopt ? 'met' : ''}}">
+              <text wx:if="{{pet.owned}}" class="meta-text">{{pet.active ? '出战中' : '已入队'}}</text>
+              <text wx:elif="{{pet.isDefault}}" class="meta-text">他人专属</text>
+              <text wx:elif="{{isToddlerView}}" class="meta-text">{{pet.canAdopt || pet.owned ? '✓' : '🔒'}} {{pet.unlockText}}</text>
+              <text wx:elif="{{pet.requiredPoints > 0}}" class="meta-text">{{pet.canAdopt ? '✓' : '🔒'}} {{pet.requiredPoints}}分</text>
+              <text wx:else class="meta-text free">免费领</text>
+            </view>
+          </view>
+
+          <!-- 已拥有的宠物可直接在卡片上管理 -->
+          <view wx:if="{{pet.owned}}" class="pet-acts">
+            <view
+              wx:if="{{!pet.active}}"
+              class="pet-act pet-act-fight"
+              data-member-id="{{me.id}}"
+              data-pet-id="{{pet.id}}"
+              catchtap="switchPet"
+            >
+              <text class="pet-act-text">设为出战</text>
+            </view>
+            <view
+              wx:else
+              class="pet-act pet-act-on"
+              data-pet-id="{{pet.id}}"
+            >
+              <text class="pet-act-text">出战中</text>
+            </view>
+            <view
+              class="pet-act"
+              data-member-id="{{me.id}}"
+              data-pet-id="{{pet.id}}"
+              catchtap="renamePet"
+            >
+              <text class="pet-act-icon">✏️</text>
+            </view>
+            <view
+              class="pet-act pet-act-danger"
+              data-member-id="{{me.id}}"
+              data-pet-id="{{pet.id}}"
+              catchtap="releasePet"
+            >
+              <text class="pet-act-icon">🗑️</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{groupEmpty}}" class="empty">
+      <text class="empty-icon">🐾</text>
+      <text class="empty-text">{{filter === 'owned' ? '还没有拥有任何宠物，先去领养一只吧' : (filter === 'adopt' ? '暂时没有可领养的宠物，先去签到攒积分吧' : '暂时没有宠物可展示')}}</text>
+    </view>
+  </block>
+
+  <!-- ========================================== -->
+  <!-- Tab 2: 我的宠物 -->
+  <!-- ========================================== -->
+  <block wx:if="{{tab === 'mine'}}">
+    <view class="battle-entry" bindtap="goBattle">
+      <text class="battle-icon">⚔️</text>
+      <text class="battle-title">宠物比武</text>
+      <text class="battle-sub">让宠物们一较高下</text>
+      <text class="battle-arrow">›</text>
+    </view>
+
+    <view wx:if="{{my}}" class="pet-detail-card">
+      <view class="member-head">
+        <text class="member-head-icon">{{my.emoji}}</text>
+        <text class="member-head-name">{{my.name}}</text>
+        <text class="member-head-stats">{{my.score}} {{my.scoreLabel}} · {{my.totalCheckins}} 签到</text>
+      </view>
+
+      <view class="my-pets-scroll" wx:if="{{my.pets.length}}">
+        <text class="switch-hint">👆 点击宠物可更换出战</text>
+        <view class="pets-scroll-inner">
+          <view class="pets-collection">
+            <view
+              wx:for="{{my.pets}}"
+              wx:for-item="pet"
+              wx:key="id"
+              class="collection-pet {{pet.active ? 'active' : ''}}"
+              style="{{pet.active ? 'border-color:' + my.themeColor + ';background:' + my.themeColor + '10' : ''}}"
+              data-member-id="{{my.id}}"
+              data-pet-id="{{pet.id}}"
+              bindtap="switchPet"
+            >
+              <text class="collection-icon">{{pet.icon}}</text>
+              <text class="collection-name">{{pet.name}}</text>
+              <view class="collection-rarity" style="background: {{pet.rarityColor}}">
+                <text class="collection-rarity-text">{{pet.rarityLabel}}</text>
+              </view>
+              <view class="collection-actions">
+                <view
+                  class="collection-act"
+                  data-member-id="{{my.id}}"
+                  data-pet-id="{{pet.id}}"
+                  catchtap="renamePet"
+                >
+                  <text class="collection-act-icon">✏️</text>
+                </view>
+                <view
+                  class="collection-act collection-act-danger"
+                  data-member-id="{{my.id}}"
+                  data-pet-id="{{pet.id}}"
+                  catchtap="releasePet"
+                >
+                  <text class="collection-act-icon">🗑️</text>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="no-pet">
+        <text class="no-pet-text">还没有宠物，去「领养中心」领一只吧 🐣</text>
+      </view>
+
+      <view class="detail-body" wx:if="{{my.activePet}}">
+        <view class="active-pet-display">
+          <text class="pet-big-icon">{{my.activePet.icon}}</text>
+          <text class="pet-detail-name">{{my.activePet.name}}</text>
+          <text class="pet-detail-stage" style="color: {{my.themeColor}}">{{my.stageName}}</text>
+        </view>
+
+        <view class="grow-attrs">
+          <view class="grow-row">
+            <text class="grow-title">成长</text>
+            <view class="progress-bar">
+              <view class="progress-fill" style="width: {{my.growPercent}}%"></view>
+            </view>
+            <text class="grow-percent">{{my.growPercent}}%</text>
+          </view>
+          <text class="grow-value">{{my.grow}} / {{my.totalGrow}}</text>
+
+          <view class="attr-grid">
+            <view wx:for="{{my.attrList}}" wx:for-item="attr" wx:key="key" class="attr-item">
+              <text class="attr-label">{{attr.label}}</text>
+              <view class="attr-bar">
+                <view class="attr-fill" style="width: {{attr.value}}%"></view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- ===== 宠物详情弹窗 ===== -->
+  <view wx:if="{{detailPet}}" class="pdm-mask" bindtap="closePetDetail">
+    <view class="pdm-panel" catchtap="noop">
+      <view class="pdm-head" style="background: linear-gradient(180deg, {{detailPet.rarityColor}}26, rgba(255,255,255,0) 85%)">
+        <view class="pdm-close" bindtap="closePetDetail">
+          <text class="pdm-close-icon">✕</text>
+        </view>
+        <view class="pdm-icon-ring" style="border-color: {{detailPet.rarityColor}}55">
+          <view class="pdm-icon-bg" style="background: {{detailPet.rarityColor}}1A">
+            <text class="pdm-icon {{detailOwned || detailUnlocked ? '' : 'locked'}}">{{detailPet.icon}}</text>
+          </view>
+          <view wx:if="{{!detailOwned && !detailUnlocked}}" class="pdm-lock-badge">
+            <text class="pdm-lock-badge-icon">🔒</text>
+          </view>
+        </view>
+        <view class="pdm-rarity-tag" style="background: {{detailPet.rarityColor}}">
+          <text class="pdm-rarity-text">{{detailPet.rarityLabel}}</text>
+        </view>
+        <text class="pdm-name">{{detailPet.name}}</text>
+        <text class="pdm-species">{{detailPet.species}}</text>
+      </view>
+
+      <scroll-view scroll-y class="pdm-body">
+        <text class="pdm-desc-title">📖 图鉴描述</text>
+        <text class="pdm-desc">{{detailPet.desc}}</text>
+
+        <view wx:if="{{detailPet.skills.length}}" class="pdm-skills">
+          <text class="pdm-skills-title">✨ 专属技能</text>
+          <view
+            wx:for="{{detailPet.skills}}"
+            wx:key="name"
+            class="pdm-skill-item"
+            style="background: {{detailPet.rarityColor}}0D; border-color: {{detailPet.rarityColor}}26"
+          >
+            <view class="pdm-skill-icon">
+              <text class="pdm-skill-icon-text">{{item.icon}}</text>
+            </view>
+            <view class="pdm-skill-info">
+              <text class="pdm-skill-name">{{item.name}}</text>
+              <text class="pdm-skill-desc">{{item.desc}}</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="pdm-stats">
+          <view class="pdm-stat">
+            <text class="pdm-stat-val">{{detailPet.basePower}}</text>
+            <text class="pdm-stat-label">基础战力</text>
+          </view>
+          <view class="pdm-stat-divider" style="background: {{detailPet.rarityColor}}33"></view>
+          <view class="pdm-stat">
+            <text class="pdm-stat-val">+{{detailPet.rarityBonus}}</text>
+            <text class="pdm-stat-label">稀有加成</text>
+          </view>
+          <view class="pdm-stat-divider" style="background: {{detailPet.rarityColor}}33"></view>
+          <view class="pdm-stat">
+            <text class="pdm-stat-val" style="color: {{detailPet.rarityColor}}">{{detailPet.totalPower}}</text>
+            <text class="pdm-stat-label">初始总战力</text>
+          </view>
+        </view>
+
+        <view class="pdm-condition {{detailOwned || detailUnlocked ? 'ok' : ''}}">
+          <text wx:if="{{detailOwned}}" class="pdm-condition-text">✓ 已经拥有{{detailActive ? '，正在出战' : ''}}</text>
+          <text wx:elif="{{detailToddler}}" class="pdm-condition-text">
+            {{detailUnlocked ? '✓ 成长已达标：' : '🔒 需要'}} {{detailUnlockText}}
+          </text>
+          <text wx:elif="{{detailPet.requiredPoints > 0}}" class="pdm-condition-text">
+            {{detailUnlocked ? '✓ 积分已达标的' : '🔒 需要'}} {{detailPet.requiredPoints}} {{detailScoreLabel}}
+          </text>
+          <text wx:else class="pdm-condition-text">🎁 免费领养</text>
+          <text wx:if="{{!detailOwned && detailToddler}}" class="pdm-condition-sub">
+            当前成长：{{growPercent}}%（幼儿不看积分）
+          </text>
+          <text wx:elif="{{!detailOwned && detailPet.requiredPoints > 0}}" class="pdm-condition-sub">
+            当前：{{detailMemberScore}} {{detailScoreLabel}}
+          </text>
+        </view>
+      </scroll-view>
+
+      <!-- 未拥有：领养；已拥有：出战 / 改名 / 放归 -->
+      <view class="pdm-footer" wx:if="{{!detailOwned}}">
+        <view class="pdm-btn pdm-btn-plain" bindtap="closePetDetail">
+          <text class="pdm-btn-plain-text">再想想</text>
+        </view>
+        <view class="pdm-btn pdm-btn-primary {{detailCanAdopt ? '' : 'disabled'}}" bindtap="adoptFromDetail">
+          <text class="pdm-btn-primary-text">{{detailCanAdopt ? '领养 TA' : (detailToddler ? '成长不足' : (detailPet.requiredPoints > 0 ? '积分不足' : '不可领养'))}}</text>
+        </view>
+      </view>
+      <view class="pdm-footer pdm-footer-three" wx:else>
+        <view class="pdm-btn pdm-btn-plain" bindtap="renameFromDetail">
+          <text class="pdm-btn-plain-text">✏️ 改名</text>
+        </view>
+        <view class="pdm-btn pdm-btn-plain pdm-btn-danger" bindtap="releaseFromDetail">
+          <text class="pdm-btn-danger-text">🗑 放归</text>
+        </view>
+        <view class="pdm-btn pdm-btn-primary {{detailActive ? 'disabled' : ''}}" bindtap="setActiveFromDetail">
+          <text class="pdm-btn-primary-text">{{detailActive ? '出战中' : '设为出战'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 领养成功弹窗 ===== -->
+  <view wx:if="{{adoptShow}}" class="modal-overlay" bindtap="closeAdopt">
+    <view class="modal-card" catchtap="noop">
+      <view class="modal-head" style="background: linear-gradient(180deg, {{adoptRarityColor}}26, rgba(255,255,255,0) 85%)">
+        <text class="modal-icon">🎊</text>
+        <text class="modal-title">领养成功！</text>
+
+        <view class="pet-icon-ring" style="border-color: {{adoptRarityColor}}55">
+          <view class="pet-icon-bg" style="background: {{adoptRarityColor}}1A">
+            <text class="pet-big-icon">{{adoptPet.icon}}</text>
+          </view>
+        </view>
+
+        <view class="rarity-tag" style="background: {{adoptRarityColor}}">
+          <text class="rarity-tag-text">{{adoptRarityLabel}}</text>
+        </view>
+
+        <text class="pet-name">{{adoptPet.name}}</text>
+        <text class="pet-species">{{adoptPet.species}}</text>
+      </view>
+
+      <view class="modal-body">
+        <text class="pet-desc">{{adoptPet.desc}}</text>
+
+        <view class="pet-stats">
+          <view class="stat-item">
+            <text class="stat-val">{{adoptPet.basePower}}</text>
+            <text class="stat-label">基础战力</text>
+          </view>
+          <view class="stat-divider" style="background: {{adoptRarityColor}}33"></view>
+          <view class="stat-item">
+            <text class="stat-val">+{{adoptRarityBonus}}</text>
+            <text class="stat-label">稀有加成</text>
+          </view>
+          <view class="stat-divider" style="background: {{adoptRarityColor}}33"></view>
+          <view class="stat-item">
+            <text class="stat-val" style="color: {{adoptRarityColor}}">{{adoptTotalPower}}</text>
+            <text class="stat-label">初始总战力</text>
+          </view>
+        </view>
+
+        <text class="member-tip" wx:if="{{adoptMember}}">🧡 {{adoptMember.emoji}} {{adoptMember.name}}获得了新伙伴！</text>
+
+        <view class="btn-ok" bindtap="closeAdopt">
+          <text class="btn-ok-text">太好了！</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

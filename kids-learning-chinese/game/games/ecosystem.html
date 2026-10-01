@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>生态系统</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#8BC34A;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#333;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px;padding:10px 20px;background:rgba(255,255,255,0.3)}
+.back{color:#333;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.5);border-radius:15px;font-size:0.9em}
+.info{display:flex;gap:10px;flex-wrap:wrap}.info-item{background:rgba(255,255,255,0.4);padding:5px 10px;border-radius:10px;font-size:0.85em}
+canvas{margin-top:10px;border-radius:10px}
+.controls{display:flex;gap:10px;margin:10px 0;flex-wrap:wrap;justify-content:center}
+.ctrl{padding:8px 15px;background:rgba(255,255,255,0.4);border:none;border-radius:10px;cursor:pointer;font-size:0.9em}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">🌿 <span id="plants">5</span></div><div class="info-item">🐰 <span id="herbs">3</span></div><div class="info-item">🐺 <span id="carns">1</span></div></div>
+</div>
+<canvas id="game" width="600" height="400"></canvas>
+<div class="controls">
+<button class="ctrl" onclick="addCreature('plant')">🌿 +植物</button>
+<button class="ctrl" onclick="addCreature('herb')">🐰 +食草</button>
+<button class="ctrl" onclick="addCreature('carn')">🐺 +食肉</button>
+</div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+const W=600,H=400;
+let creatures=[];
+function init(){
+creatures=[];
+for(let i=0;i<8;i++)addCreature('plant');
+for(let i=0;i<3;i++)addCreature('herb');
+addCreature('carn');
+}
+function addCreature(type){
+const data={
+plant:{emoji:'🌿',speed:0,type:'plant',energy:50,color:'#4CAF50'},
+herb:{emoji:'🐰',speed:1.5,type:'herb',energy:100,color:'#FFD93D'},
+carn:{emoji:'🐺',speed:2,type:'carn',energy:150,color:'#F44336'}
+};
+const d=data[type];
+creatures.push({x:Math.random()*W,y:Math.random()*H,...d,vx:(Math.random()-0.5)*d.speed,vy:(Math.random()-0.5)*d.speed,maxEnergy:d.energy});
+}
+function draw(){
+X.fillStyle='#8BC34A';X.fillRect(0,0,W,H);
+// grass texture
+X.fillStyle='rgba(139,195,74,0.5)';for(let i=0;i<30;i++){X.fillRect(Math.random()*W,Math.random()*H,3,3)}
+creatures.forEach(c=>{
+X.font='24px serif';X.textAlign='center';X.textBaseline='middle';
+X.fillText(c.emoji,c.x,c.y);
+// energy bar
+X.fillStyle='rgba(0,0,0,0.3)';X.fillRect(c.x-12,c.y-18,24,3);
+X.fillStyle=c.type==='plant'?'#4CAF50':c.type==='herb'?'#FFD93D':'#F44336';
+X.fillRect(c.x-12,c.y-18,24*(c.energy/c.maxEnergy),3);
+});
+// update counts
+document.getElementById('plants').textContent=creatures.filter(c=>c.type==='plant').length;
+document.getElementById('herbs').textContent=creatures.filter(c=>c.type==='herb').length;
+document.getElementById('carns').textContent=creatures.filter(c=>c.type==='carn').length;
+}
+function update(){
+creatures.forEach(c=>{
+if(c.type==='plant'){c.energy=Math.min(c.maxEnergy,c.energy+0.1);return}
+c.x+=c.vx;c.y+=c.vy;c.vx+=(Math.random()-0.5)*0.3;c.vy+=(Math.random()-0.5)*0.3;
+c.vx=Math.max(-c.speed,Math.min(c.speed,c.vx));c.vy=Math.max(-c.speed,Math.min(c.speed,c.vy));
+if(c.x<20||c.x>W-20)c.vx*=-1;if(c.y<20||c.y>H-20)c.vy*=-1;
+c.x=Math.max(20,Math.min(W-20,c.x));c.y=Math.max(20,Math.min(H-20,c.y));
+c.energy-=0.05;
+// eat
+creatures.forEach(other=>{
+if(other===c||other.dead)return;
+const dist=Math.sqrt((c.x-other.x)**2+(c.y-other.y)**2);
+if(dist<20){
+if(c.type==='herb'&&other.type==='plant'){other.dead=true;c.energy=Math.min(c.maxEnergy,c.energy+30)}
+if(c.type==='carn'&&other.type==='herb'){other.dead=true;c.energy=Math.min(c.maxEnergy,c.energy+50)}
+}
+});
+if(c.energy<=0)c.dead=true;
+});
+creatures=creatures.filter(c=>!c.dead);
+// reproduce
+creatures.forEach(c=>{
+if(c.energy>c.maxEnergy*0.8&&Math.random()<0.002){
+c.energy*=0.6;
+const baby={...c,energy:c.maxEnergy*0.5,x:c.x+Math.random()*20-10,y:c.y+Math.random()*20-10};
+creatures.push(baby);
+}
+});
+// auto spawn plants
+if(creatures.filter(c=>c.type==='plant').length<3)addCreature('plant');
+}
+function loop(){update();draw();requestAnimationFrame(loop)}
+init();loop();
+</script>
+</body>
+</html>

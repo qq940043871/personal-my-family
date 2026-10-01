@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>关灯游戏</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#1a1a2e,#2d1b4e);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:400px;padding:10px 20px}
+.info{display:flex;gap:15px}.info-item{background:rgba(255,255,255,0.1);padding:5px 15px;border-radius:15px;font-size:0.9em}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:20px;margin-top:20px}
+.light{width:65px;height:65px;border-radius:12px;cursor:pointer;transition:all 0.2s}
+.light.on{background:#FFD93D;box-shadow:0 0 20px rgba(255,217,61,0.5)}
+.light.off{background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.1)}
+.light:hover{transform:scale(1.05)}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#FFD93D,#FF9800);padding:40px;border-radius:20px;text-align:center;max-width:400px}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">步数: <span id="moves">0</span></div></div>
+</div>
+<div class="grid" id="grid"></div>
+
+<div class="overlay" id="start"><div class="box"><h1>💡 关灯游戏</h1><p>点击灯泡切换状态<br>同时切换上下左右相邻的灯<br>目标：关掉所有灯！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>🎉 恭喜！</h1><p>用了 <span id="final">0</span> 步关掉所有灯！</p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+let grid,moves;
+function startGame(){
+document.getElementById('start').classList.add('hidden');
+document.getElementById('over').classList.add('hidden');
+moves=0;document.getElementById('moves').textContent=0;
+grid=Array.from({length:5},()=>Array(5).fill(true));
+// random clicks to ensure solvable
+for(let i=0;i<8+Math.floor(Math.random()*5);i++){
+toggle(Math.floor(Math.random()*5),Math.floor(Math.random()*5),false);
+}
+render();
+}
+function render(){
+const div=document.getElementById('grid');div.innerHTML='';
+for(let r=0;r<5;r++)for(let c=0;c<5;c++){
+const el=document.createElement('div');
+el.className='light '+(grid[r][c]?'on':'off');
+el.addEventListener('click',()=>{toggle(r,c,true);render();checkWin()});
+div.appendChild(el);
+}
+}
+function toggle(r,c,countMoves){
+if(countMoves){moves++;document.getElementById('moves').textContent=moves}
+grid[r][c]=!grid[r][c];
+if(r>0)grid[r-1][c]=!grid[r-1][c];
+if(r<4)grid[r+1][c]=!grid[r+1][c];
+if(c>0)grid[r][c-1]=!grid[r][c-1];
+if(c<4)grid[r][c+1]=!grid[r][c+1];
+}
+function checkWin(){
+if(grid.every(row=>row.every(v=>!v))){
+setTimeout(()=>{document.getElementById('final').textContent=moves;document.getElementById('over').classList.remove('hidden');playSound(700,0.3)},300);
+}
+}
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

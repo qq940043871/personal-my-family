@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>萌趣编程启蒙乐园 - 键盘小特工</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/keyboard-game.css">
+</head>
+<body>
+    <!-- Forest Background -->
+    <div class="forest-bg" id="forest-bg"></div>
+    <div class="fg-layer particles" id="fg-particles"></div>
+
+    <!-- Top Stats Bar -->
+    <div id="top-bar">
+        <div class="stat">
+            <span class="icon star-icon"></span>
+            得分
+            <span class="value" id="score">0</span>
+        </div>
+        <div class="stat">
+            <span class="icon leaf-icon"></span>
+            关卡
+            <span class="value" id="level">1</span>
+        </div>
+        <div class="stat">
+            <span class="icon clock-icon"></span>
+            时间
+            <span class="value" id="time">60</span>
+        </div>
+    </div>
+
+    <!-- Game Area -->
+    <div class="game-container" id="game-container">
+        <!-- Back to Menu -->
+        <button class="back-btn" onclick="window.location.href='index.html'">← 返回菜单</button>
+
+        <!-- Finish Zone -->
+        <div class="finish-zone"></div>
+
+        <!-- HUD -->
+        <div class="game-hud">
+            <div class="hud-item"><span class="hud-icon apple-icon"></span> 已收集 <span class="hud-val" id="collected">0</span>/10</div>
+        </div>
+
+        <!-- Start Screen -->
+        <div class="overlay-screen" id="start-screen">
+            <div class="screen-box">
+                <h1>键盘小特工</h1>
+                <p>使用方向键控制角色收集水果<br>避开障碍物，到达终点！</p>
+                <button class="btn" onclick="KeyboardGame.startGame()">开始冒险</button>
+            </div>
+        </div>
+
+        <!-- Level Complete -->
+        <div class="overlay-screen hidden" id="level-complete">
+            <div class="screen-box">
+                <h1>通关成功！</h1>
+                <p>成功通过第 <span id="complete-level">1</span> 关！</p>
+                <button class="btn" onclick="KeyboardGame.nextLevel()">下一关</button>
+                <button class="btn btn-home btn-sm" onclick="window.location.href='index.html'" style="margin-top:12px">返回菜单</button>
+            </div>
+        </div>
+
+        <!-- Game Over -->
+        <div class="overlay-screen hidden" id="game-over">
+            <div class="screen-box">
+                <h1>时间到！</h1>
+                <p>没关系，再试一次吧！</p>
+                <button class="btn btn-sec" onclick="KeyboardGame.restartGame()">重新开始</button>
+                <button class="btn btn-home btn-sm" onclick="window.location.href='index.html'" style="margin-top:12px">返回菜单</button>
+            </div>
+        </div>
+
+        <!-- All Complete -->
+        <div class="overlay-screen hidden" id="complete-screen">
+            <div class="screen-box">
+                <h1>全部通关！</h1>
+                <p>你已经完成了所有关卡！<br>真是太厉害了！</p>
+                <button class="btn" onclick="window.location.href='index.html'">返回菜单</button>
+            </div>
+        </div>
+
+        <!-- Player -->
+        <div id="player"></div>
+
+        <!-- Keyboard Hint -->
+        <div class="keyboard-hint">
+            <div class="key-hint" id="kh-up">↑</div>
+            <div class="key-hint" id="kh-down">↓</div>
+            <div class="key-hint" id="kh-left">←</div>
+            <div class="key-hint" id="kh-right">→</div>
+            <div class="key-hint space" id="kh-space">SPACE</div>
+        </div>
+
+        <!-- Countdown -->
+        <div id="countdown">60</div>
+
+        <!-- Tip -->
+        <div id="tip-bar">方向键移动 · 空格键跳跃</div>
+    </div>
+
+    <script src="js/audio.js"></script>
+    <script src="js/keyboard-game.js"></script>
+    <script>
+        window.onload = function() { KeyboardGame.init(); };
+    </script>
+</body>
+</html>

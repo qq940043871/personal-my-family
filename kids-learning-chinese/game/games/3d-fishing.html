@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D钓鱼</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#87CEEB;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#333;display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 20px;position:fixed;top:0;z-index:10;background:rgba(255,255,255,0.3)}
+.back{color:#333;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.5);border-radius:15px;font-size:0.9em}
+.info{display:flex;gap:10px}.info-item{background:rgba(255,255,255,0.4);padding:5px 12px;border-radius:10px;font-size:0.9em}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%}
+.controls{position:fixed;bottom:20px;display:flex;gap:10px;z-index:10}
+.ctrl{padding:10px 20px;background:rgba(255,255,255,0.4);border:none;border-radius:10px;cursor:pointer;font-size:1em}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">🐟 <span id="count">0</span></div><div class="info-item">得分: <span id="score">0</span></div></div>
+</div>
+<canvas id="game"></canvas>
+<div class="controls">
+<button class="ctrl" onclick="castLine()">🎣 抛竿</button>
+<button class="ctrl" onclick="reelIn()">🔄 收线</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x87CEEB);scene.fog=new THREE.FogExp2(0x87CEEB,0.005);
+const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,0.1,200);
+camera.position.set(0,5,10);camera.lookAt(0,0,0);
+const renderer=new THREE.WebGLRenderer({canvas:document.getElementById('game'),antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+scene.add(new THREE.AmbientLight(0xffffff,0.6));
+const sunLight=new THREE.DirectionalLight(0xffffff,0.8);sunLight.position.set(20,30,10);scene.add(sunLight);
+// water
+const waterGeo=new THREE.PlaneGeometry(100,100);
+const waterMat=new THREE.MeshStandardMaterial({color:0x1565C0,transparent:true,opacity:0.7});
+const water=new THREE.Mesh(waterGeo,waterMat);water.rotation.x=-Math.PI/2;water.position.y=-0.5;scene.add(water);
+// ground
+const groundGeo=new THREE.PlaneGeometry(100,20);
+const groundMat=new THREE.MeshStandardMaterial({color:0x4CAF50});
+const ground=new THREE.Mesh(groundGeo,groundMat);ground.rotation.x=-Math.PI/2;ground.position.set(0,-0.1,40);scene.add(ground);
+// fishing rod
+const rodGeo=new THREE.CylinderGeometry(0.05,0.03,6,8);
+const rodMat=new THREE.MeshStandardMaterial({color:0x8D6E63});
+const rod=new THREE.Mesh(rodGeo,rodMat);rod.position.set(0,3,8);rod.rotation.x=-0.3;scene.add(rod);
+// line
+const lineMat=new THREE.LineBasicMaterial({color:0xffffff});
+let line,linePoints=[];
+// fish
+let fishes=[];
+function spawnFish(){
+const colors=[0xFF6B6B,0xFFD93D,0x6BCB77,0x4D96FF,0xC084FC];
+const fishGeo=new THREE.SphereGeometry(0.5,8,8);
+const fishMat=new THREE.MeshStandardMaterial({color:colors[Math.floor(Math.random()*5)]});
+const fish=new THREE.Mesh(fishGeo,fishMat);
+fish.position.set(Math.random()*40-20,-1-Math.random()*3,Math.random()*30-15);
+fish.userData={speed:0.5+Math.random(),dir:Math.random()>0.5?1:-1};
+scene.add(fish);fishes.push(fish);
+}
+for(let i=0;i<10;i++)spawnFish();
+let casting=false,reeling=false,hookY=0,score=0,fishCount=0;
+function castLine(){
+if(casting)return;casting=true;hookY=0;
+linePoints=[new THREE.Vector3(0,5,8),new THREE.Vector3(0,hookY,0)];
+if(line)scene.remove(line);
+const lineGeo=new THREE.BufferGeometry().setFromPoints(linePoints);
+line=new THREE.Line(lineGeo,lineMat);scene.add(line);
+}
+function reelIn(){
+if(!casting)return;casting=false;reeling=true;
+// check if fish nearby
+fishes.forEach((f,i)=>{
+if(Math.abs(f.position.y-hookY)<1&&Math.abs(f.position.x)<3){
+scene.remove(f);fishes.splice(i,1);score+=10;fishCount++;
+document.getElementById('score').textContent=score;document.getElementById('count').textContent=fishCount;
+setTimeout(spawnFish,3000);
+}
+});
+if(line){scene.remove(line);line=null}
+}
+function animate(){
+requestAnimationFrame(animate);
+// animate fish
+fishes.forEach(f=>{
+f.position.x+=f.userData.speed*f.userData.dir*0.05;
+if(Math.abs(f.position.x)>20)f.userData.dir*=-1;
+f.rotation.y=f.userData.dir>0?0:Math.PI;
+});
+// animate water
+water.material.opacity=0.6+Math.sin(Date.now()*0.001)*0.1;
+// casting animation
+if(casting&&hookY>-3){
+hookY-=0.05;
+if(line){
+line.geometry.setFromPoints([new THREE.Vector3(0,5,8),new THREE.Vector3(0,hookY,0)]);
+}
+}
+renderer.render(scene,camera);
+}
+window.addEventListener('resize',()=>{camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight)});
+animate();
+</script>
+</body>
+</html>

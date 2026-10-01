@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>颜色波浪</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 20px;position:fixed;top:0;z-index:10;background:rgba(0,0,0,0.3)}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%;cursor:pointer}
+.info{position:fixed;bottom:20px;color:rgba(255,255,255,0.5);font-size:0.85em}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div>🌊 颜色波浪</div>
+<div></div>
+</div>
+<canvas id="game"></canvas>
+<div class="info">点击创造彩色波浪</div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+let W,H,waves=[];
+function resize(){W=C.width=window.innerWidth;H=C.height=window.innerHeight}
+window.addEventListener('resize',resize);resize();
+C.addEventListener('click',e=>{
+const hue=Math.random()*360;
+waves.push({x:e.clientX,y:e.clientY,r:0,maxR:200+Math.random()*200,hue,speed:2+Math.random()*3});
+});
+C.addEventListener('touchstart',e=>{
+e.preventDefault();
+const hue=Math.random()*360;
+waves.push({x:e.touches[0].clientX,y:e.touches[0].clientY,r:0,maxR:200+Math.random()*200,hue,speed:2+Math.random()*3);
+},{passive:false});
+function draw(){
+X.fillStyle='rgba(0,0,0,0.05)';X.fillRect(0,0,W,H);
+waves.forEach((w,i)=>{
+w.r+=w.speed;
+const alpha=Math.max(0,1-w.r/w.maxR);
+X.strokeStyle=`hsla(${w.hue},80%,60%,${alpha})`;
+X.lineWidth=3;
+X.beginPath();X.arc(w.x,w.y,w.r,0,Math.PI*2);X.stroke();
+if(w.r>w.maxR)waves.splice(i,1);
+});
+// ambient waves
+const t=Date.now()*0.001;
+X.strokeStyle='rgba(100,181,246,0.1)';X.lineWidth=1;
+for(let i=0;i<5;i++){
+X.beginPath();
+for(let x=0;x<W;x+=5){
+const y=H/2+Math.sin(x*0.01+t+i)*50+Math.cos(x*0.02+t*1.5+i)*30;
+x===0?X.moveTo(x,y):X.lineTo(x,y);
+}
+X.stroke();
+}
+}
+function loop(){draw();requestAnimationFrame(loop)}
+loop();
+</script>
+</body>
+</html>

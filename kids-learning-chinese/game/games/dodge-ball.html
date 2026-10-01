@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>躲避球</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1a2e;display:flex;flex-direction:column;align-items:center;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:500px;padding:10px 20px}
+.info{display:flex;gap:15px}.info-item{background:rgba(255,255,255,0.1);padding:5px 15px;border-radius:15px;font-size:0.9em}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{border:2px solid rgba(255,255,255,0.2);border-radius:10px;margin-top:10px}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#FF6B6B,#FFD93D);padding:40px;border-radius:20px;text-align:center;max-width:400px}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">时间: <span id="time">0</span>s</div></div>
+</div>
+<canvas id="game" width="500" height="500"></canvas>
+
+<div class="overlay" id="start"><div class="box"><h1>🏐 躲避球</h1><p>方向键移动小人<br>躲避所有飞来的球！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>游戏结束</h1><p>存活: <span id="final">0</span> 秒</p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+const W=500,H=500;
+let player,balls,survival,running,timer,spawnRate;
+const keys={};
+function init(){
+player={x:W/2,y:H/2,r:15};balls=[];survival=0;running=true;spawnRate=60;
+document.getElementById('time').textContent=0;
+clearInterval(timer);timer=setInterval(()=>{if(running){survival++;document.getElementById('time').textContent=survival}},1000);
+}
+function spawnBall(){
+const side=Math.floor(Math.random()*4);
+let x,y,vx,vy;
+const speed=2+survival/10+Math.random()*2;
+if(side===0){x=Math.random()*W;y=-20;vx=(Math.random()-0.5)*4;vy=speed}
+else if(side===1){x=W+20;y=Math.random()*H;vx=-speed;vy=(Math.random()-0.5)*4}
+else if(side===2){x=Math.random()*W;y=H+20;vx=(Math.random()-0.5)*4;vy=-speed}
+else{x=-20;y=Math.random()*H;vx=speed;vy=(Math.random()-0.5)*4}
+const colors=['#FF6B6B','#FFD93D','#4D96FF','#C084FC','#FF9800','#6BCB77'];
+balls.push({x,y,vx,vy,r:10+Math.random()*10,color:colors[Math.floor(Math.random()*6)]});
+}
+function drawPlayer(){
+X.fillStyle='#4D96FF';X.shadowColor='#4D96FF';X.shadowBlur=10;
+X.beginPath();X.arc(player.x,player.y,player.r,0,Math.PI*2);X.fill();
+X.fillStyle='#fff';X.fillRect(player.x-5,player.y-5,4,4);X.fillRect(player.x+2,player.y-5,4,4);
+X.shadowBlur=0;
+}
+function drawBalls(){
+balls.forEach(b=>{
+X.fillStyle=b.color;X.shadowColor=b.color;X.shadowBlur=5;
+X.beginPath();X.arc(b.x,b.y,b.r,0,Math.PI*2);X.fill();
+X.fillStyle='rgba(255,255,255,0.3)';X.beginPath();X.arc(b.x-b.r*0.3,b.y-b.r*0.3,b.r*0.3,0,Math.PI*2);X.fill();
+X.shadowBlur=0;
+});
+}
+function update(){
+if(!running)return;
+if(keys.ArrowLeft)player.x=Math.max(player.r,player.x-5);
+if(keys.ArrowRight)player.x=Math.min(W-player.r,player.x+5);
+if(keys.ArrowUp)player.y=Math.max(player.r,player.y-5);
+if(keys.ArrowDown)player.y=Math.min(H-player.r,player.y+5);
+spawnRate=Math.max(20,60-survival/2);
+if(Math.random()<1/spawnRate)spawnBall();
+balls.forEach(b=>{
+b.x+=b.vx;b.y+=b.vy;
+const dx=player.x-b.x,dy=player.y-b.y;
+if(Math.sqrt(dx*dx+dy*dy)<player.r+b.r){
+running=false;clearInterval(timer);
+document.getElementById('final').textContent=survival;
+document.getElementById('over').classList.remove('hidden');playSound(200,0.3);
+}
+});
+balls=balls.filter(b=>b.x>-50&&b.x<W+50&&b.y>-50&&b.y<H+50);
+}
+function draw(){
+X.fillStyle='#1a1a2e';X.fillRect(0,0,W,H);
+// grid
+X.strokeStyle='rgba(255,255,255,0.03)';
+for(let i=0;i<W;i+=50){X.beginPath();X.moveTo(i,0);X.lineTo(i,H);X.stroke()}
+for(let i=0;i<H;i+=50){X.beginPath();X.moveTo(0,i);X.lineTo(W,i);X.stroke()}
+drawBalls();drawPlayer();
+}
+function loop(){update();draw();requestAnimationFrame(loop)}
+function startGame(){document.getElementById('start').classList.add('hidden');document.getElementById('over').classList.add('hidden');init();loop()}
+document.addEventListener('keydown',e=>{keys[e.key]=true;e.preventDefault()});
+document.addEventListener('keyup',e=>keys[e.key]=false);
+// touch
+let touchStart=null;
+C.addEventListener('touchstart',e=>{touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY}});
+C.addEventListener('touchmove',e=>{
+e.preventDefault();
+if(!touchStart)return;
+const dx=e.touches[0].clientX-touchStart.x,dy=e.touches[0].clientY-touchStart.y;
+player.x=Math.max(player.r,Math.min(W-player.r,player.x+dx*0.3));
+player.y=Math.max(player.r,Math.min(H-player.r,player.y+dy*0.3));
+touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY};
+},{passive:false});
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+{
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^u-(.*)": "@/components/u-$1/u-$1.vue"
+    }
+  },
+  "pages": [
+    {
+      "path": "pages/index/index",
+      "style": {
+        "navigationBarTitleText": "全家签到"
+      }
+    },
+    {
+      "path": "pages/welcome/welcome",
+      "style": {
+        "navigationBarTitleText": "你是谁呀",
+        "navigationStyle": "custom",
+        "app-plus": {
+          "titleNView": false
+        }
+      }
+    },
+    {
+      "path": "pages/landscape/landscape",
+      "style": {
+        "navigationBarTitleText": "全家签到",
+        "navigationStyle": "custom",
+        "app-plus": {
+          "titleNView": false
+        }
+      }
+    },
+    {
+      "path": "pages/detail/detail",
+      "style": {
+        "navigationBarTitleText": "成员详情"
+      }
+    },
+    {
+      "path": "pages/checkin/checkin",
+      "style": {
+        "navigationBarTitleText": "今日签到"
+      }
+    },
+    {
+      "path": "pages/pets/pets",
+      "style": {
+        "navigationBarTitleText": "宠物乐园"
+      }
+    },
+    {
+      "path": "pages/family/family",
+      "style": {
+        "navigationBarTitleText": "全家与结算"
+      }
+    },
+    {
+      "path": "pages/mine/mine",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    },
+    {
+      "path": "pages/battle/battle",
+      "style": {
+        "navigationBarTitleText": "宠物比武"
+      }
+    },
+    {
+      "path": "pages/model3d/model3d",
+      "style": {
+        "navigationBarTitleText": "3D模型预览"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "全家签到",
+    "navigationBarBackgroundColor": "#FFF6F0",
+    "backgroundColor": "#FFF6F0",
+    "rpxCalcMaxDeviceWidth": 960,
+    "rpxCalcBaseDeviceWidth": 960,
+    "rpxCalcIncludeWidth": 750
+  },
+  "tabBar": {
+    "color": "#8A8178",
+    "selectedColor": "#FF8A65",
+    "borderStyle": "white",
+    "backgroundColor": "#FFFFFF",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "static/tab/home.png",
+        "selectedIconPath": "static/tab/home-active.png"
+      },
+      {
+        "pagePath": "pages/checkin/checkin",
+        "text": "签到",
+        "iconPath": "static/tab/checkin.png",
+        "selectedIconPath": "static/tab/checkin-active.png"
+      },
+      {
+        "pagePath": "pages/pets/pets",
+        "text": "宠物",
+        "iconPath": "static/tab/pet.png",
+        "selectedIconPath": "static/tab/pet-active.png"
+      },
+      {
+        "pagePath": "pages/family/family",
+        "text": "家庭",
+        "iconPath": "static/tab/family.png",
+        "selectedIconPath": "static/tab/family-active.png"
+      },
+      {
+        "pagePath": "pages/mine/mine",
+        "text": "我的",
+        "iconPath": "static/tab/mine.png",
+        "selectedIconPath": "static/tab/mine-active.png"
+      }
+    ]
+  }
+}

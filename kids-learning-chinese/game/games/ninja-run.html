@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>忍者跑酷</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a0a2e;display:flex;flex-direction:column;align-items:center;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px;padding:10px 20px}
+.info{display:flex;gap:15px}.info-item{background:rgba(255,255,255,0.1);padding:5px 15px;border-radius:15px;font-size:0.9em}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{border:2px solid rgba(255,255,255,0.2);border-radius:10px;margin-top:10px}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#333,#111);padding:40px;border-radius:20px;text-align:center;max-width:400px;border:2px solid #FF6B6B}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#FF6B6B;color:#fff;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">距离: <span id="score">0</span>m</div><div class="info-item">⭐ <span id="stars">0</span></div></div>
+</div>
+<canvas id="game" width="600" height="300"></canvas>
+
+<div class="overlay" id="start"><div class="box"><h1>🥷 忍者跑酷</h1><p>点击/空格 跳跃<br>双击 二段跳<br>躲避障碍，收集星星！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>游戏结束</h1><p>距离: <span id="final">0</span>m · ⭐ <span id="finalStars">0</span></p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.2);color:#fff;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+const W=600,H=300,GND=H-40;
+let ninja,obstacles,stars,score,starCount,running,speed,jumps,frame,particles;
+function init(){
+ninja={x:80,y:GND-40,w:30,h:40,vy:0,jumping:false};
+obstacles=[];stars=[];score=0;starCount=0;running=true;speed=5;jumps=0;frame=0;particles=[];
+document.getElementById('score').textContent=0;
+document.getElementById('stars').textContent=0;
+}
+function drawBg(){
+const grad=X.createLinearGradient(0,0,0,H);
+grad.addColorStop(0,'#1a0a2e');grad.addColorStop(1,'#2d1b4e');
+X.fillStyle=grad;X.fillRect(0,0,W,H);
+// moon
+X.fillStyle='rgba(255,255,200,0.1)';X.beginPath();X.arc(500,60,40,0,Math.PI*2);X.fill();
+X.fillStyle='rgba(255,255,200,0.3)';X.beginPath();X.arc(500,60,30,0,Math.PI*2);X.fill();
+// ground
+X.fillStyle='#3E2723';X.fillRect(0,GND,W,H-GND);
+X.fillStyle='#5D4037';X.fillRect(0,GND,W,3);
+// buildings bg
+X.fillStyle='rgba(50,30,60,0.5)';
+for(let i=0;i<8;i++){X.fillRect(i*80+frame*0.3%80,80+Math.sin(i)*30,60,GND-80-Math.sin(i)*30)}
+}
+function drawNinja(){
+X.save();X.translate(ninja.x+ninja.w/2,ninja.y+ninja.h/2);
+// body
+X.fillStyle='#333';X.fillRect(-12,-18,24,36);
+// head
+X.fillStyle='#FFD93D';X.beginPath();X.arc(0,-22,10,0,Math.PI*2);X.fill();
+// eyes
+X.fillStyle='#333';X.fillRect(-5,-24,3,3);X.fillRect(2,-24,3,3);
+// headband
+X.fillStyle='#FF6B6B';X.fillRect(-12,-28,24,4);
+// scarf trail
+X.fillStyle='#FF6B6B';
+X.beginPath();X.moveTo(-12,-20);X.lineTo(-25-Math.sin(frame*0.2)*5,-15);X.lineTo(-12,-16);X.fill();
+// legs
+X.fillStyle='#333';
+X.fillRect(-10,18,8,8);X.fillRect(2,18,8,8);
+X.restore();
+}
+function drawObstacles(){
+obstacles.forEach(o=>{
+if(o.type==='spike'){
+X.fillStyle='#FF6B6B';
+X.beginPath();X.moveTo(o.x,o.y);X.lineTo(o.x+o.w/2,o.y-o.h);X.lineTo(o.x+o.w,o.y);X.fill();
+}else{
+X.fillStyle='#5D4037';X.fillRect(o.x,o.y-o.h,o.w,o.h);
+X.fillStyle='#795548';X.fillRect(o.x+2,o.y-o.h+2,o.w-4,o.h-4);
+}
+});
+}
+function drawStars(){
+stars.forEach(s=>{
+X.fillStyle='#FFD93D';X.shadowColor='#FFD93D';X.shadowBlur=8;
+X.font='20px serif';X.textAlign='center';X.textBaseline='middle';
+X.fillText('⭐',s.x,s.y);
+X.shadowBlur=0;
+});
+}
+function drawParticles(){
+particles.forEach(p=>{
+X.globalAlpha=p.life;
+X.fillStyle=p.color;
+X.fillRect(p.x,p.y,3,3);
+});
+X.globalAlpha=1;
+}
+function jump(){
+if(jumps<2){ninja.vy=-10;jumps++;ninja.jumping=true;playSound(500,0.05);
+particles.push(...Array.from({length:5},()=>({x:ninja.x+ninja.w/2,y:ninja.y+ninja.h,vx:(Math.random()-0.5)*3,vy:Math.random()*2,color:'#FFD93D',life:1})))
+}
+}
+function update(){
+if(!running)return;
+frame++;
+speed=5+score/200;
+ninja.vy+=0.5;ninja.y+=ninja.vy;
+if(ninja.y>=GND-ninja.h){ninja.y=GND-ninja.h;ninja.vy=0;jumps=0;ninja.jumping=false}
+score++;document.getElementById('score').textContent=Math.floor(score/10);
+// obstacles
+if(frame%Math.max(40,80-Math.floor(score/50))===0){
+const type=Math.random()<0.4?'spike':'block';
+obstacles.push({x:W+50,y:GND,w:type==='spike'?30:25,h:type==='spike'?25:30+Math.random()*20,type});
+}
+if(frame%60===0)stars.push({x:W+50,y:GND-60-Math.random()*80,r:10});
+obstacles.forEach(o=>{
+o.x-=speed;
+if(ninja.x+ninja.w>o.x+5&&ninja.x<o.x+o.w-5&&ninja.y+ninja.h>o.y-o.h&&ninja.y<o.y){
+running=false;document.getElementById('final').textContent=Math.floor(score/10);document.getElementById('finalStars').textContent=starCount;document.getElementById('over').classList.remove('hidden');playSound(200,0.3);
+}
+});
+stars.forEach((s,i)=>{
+s.x-=speed;
+if(Math.abs(ninja.x+ninja.w/2-s.x)<20&&Math.abs(ninja.y+ninja.h/2-s.y)<25){
+starCount++;document.getElementById('stars').textContent=starCount;
+stars.splice(i,1);playSound(800,0.1);
+}
+});
+obstacles=obstacles.filter(o=>o.x>-50);
+stars=stars.filter(s=>s.x>-20);
+particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life-=0.03});
+particles=particles.filter(p=>p.life>0);
+}
+function draw(){drawBg();drawObstacles();drawStars();drawParticles();drawNinja()}
+function loop(){update();draw();requestAnimationFrame(loop)}
+function startGame(){document.getElementById('start').classList.add('hidden');document.getElementById('over').classList.add('hidden');init();loop()}
+document.addEventListener('keydown',e=>{if(e.key===' '||e.key==='ArrowUp'){jump();e.preventDefault()}});
+C.addEventListener('click',jump);
+C.addEventListener('touchstart',e=>{e.preventDefault();jump()},{passive:false});
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

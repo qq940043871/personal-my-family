@@ -1,0 +1,148 @@
+<view class="page">
+
+  <!-- ===== 头部 ===== -->
+  <view class="header">
+    <view class="header-left">
+      <text class="header-title">{{me.name}}的签到</text>
+      <text class="header-sub">{{dateText}} · {{me.role}}视角</text>
+    </view>
+    <view class="switch-btn" bindtap="switchRole">
+      <text class="switch-icon">🔄</text>
+      <text class="switch-text">切换身份</text>
+    </view>
+  </view>
+
+  <!-- ===== 我的英雄卡 ===== -->
+  <view class="hero-card" bindtap="openMyDetail">
+    <view class="hc-top">
+      <view class="hc-avatar" style="border-color: {{me.themeColor}}">
+        <image wx:if="{{me.avatarUrl}}" class="hc-avatar-img" src="{{me.avatarUrl}}" mode="aspectFill" binderror="onAvatarError" />
+        <text wx:else class="hc-avatar-emoji">{{me.emoji}}</text>
+      </view>
+      <view class="hc-info">
+        <text class="hc-name">{{me.name}}</text>
+        <text class="hc-meta">{{me.age}}岁 · {{me.role}} · 🔥连签 {{streak}} 天</text>
+      </view>
+      <text class="hc-arrow">›</text>
+    </view>
+
+    <view class="hc-stats">
+      <view class="hc-stat">
+        <text class="hc-stat-val" style="color: {{me.themeColor}}">{{growPercent}}%</text>
+        <text class="hc-stat-label">成长值</text>
+      </view>
+      <view class="hc-stat">
+        <text class="hc-stat-val">{{scoreValue}}</text>
+        <text class="hc-stat-label">{{scoreLabel}}</text>
+      </view>
+      <view class="hc-stat">
+        <text class="hc-stat-val">{{doneRate}}%</text>
+        <text class="hc-stat-label">今日完成</text>
+      </view>
+      <view class="hc-stat">
+        <text class="hc-stat-val">{{myTotalCount}}</text>
+        <text class="hc-stat-label">任务数</text>
+      </view>
+    </view>
+
+    <view class="hc-bottom">
+      <view class="hc-pet">
+        <text class="hc-pet-icon">{{petIcon}}</text>
+        <view class="hc-pet-info">
+          <text class="hc-pet-name">{{petName}}</text>
+          <text class="hc-pet-species">{{stage.stage}} · {{petSpecies}}</text>
+        </view>
+      </view>
+      <view class="hc-progress-track">
+        <view class="hc-progress-fill" style="width: {{growPercent}}%; background: {{me.themeColor}}"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 我的今日任务 ===== -->
+  <view class="tasks-head">
+    <text class="tasks-title">今日待签</text>
+    <text class="tasks-tip">📷 拍照即签到</text>
+    <text class="tasks-count">{{myDoneCount}}/{{myTotalCount}} 完成</text>
+  </view>
+  <view class="tasks-grid">
+    <view
+      wx:for="{{myTasks}}"
+      wx:key="id"
+      class="task-cell {{item.done ? 'done' : ''}}"
+      data-task-id="{{item.id}}"
+      data-photo="{{item.photo}}"
+      data-done="{{item.done}}"
+      bindtap="checkTask"
+    >
+      <view class="task-check">{{item.done ? '✓' : '📷'}}</view>
+      <view class="task-cell-body">
+        <text class="task-cell-name">{{item.icon}} {{item.name}}</text>
+        <text class="task-cell-meta">{{item.category}} · +{{item.points}}</text>
+      </view>
+      <text wx:if="{{item.hasPhoto}}" class="task-cell-photo">🖼</text>
+    </view>
+    <view wx:if="{{!myTasks.length}}" class="tasks-empty">
+      <text class="tasks-empty-icon">🎉</text>
+      <text class="tasks-empty-text">还没有任务，去「我的」里添加身份吧</text>
+    </view>
+  </view>
+
+  <!-- 领养提醒 -->
+  <view class="adopt-reminder" wx:if="{{newAdoptCount > 0}}" bindtap="goPets">
+    <text class="adopt-reminder-icon">🐾</text>
+    <text class="adopt-reminder-text">有 {{newAdoptCount}} 只新宠物可以领养啦！</text>
+    <text class="adopt-reminder-arrow">›</text>
+  </view>
+
+  <!-- ===== 家庭速览条 ===== -->
+  <view class="fam-strip" bindtap="goFamily">
+    <text class="fam-strip-label">全家</text>
+    <view class="fam-strip-avatars">
+      <view
+        wx:for="{{familyStrip}}"
+        wx:key="id"
+        class="fs-avatar {{item.isMe ? 'fs-me' : ''}}"
+        style="border-color: {{item.themeColor}}"
+      >
+        <image wx:if="{{item.avatarUrl}}" class="fs-avatar-img" src="{{item.avatarUrl}}" mode="aspectFill" />
+        <text wx:else class="fs-avatar-emoji">{{item.emoji}}</text>
+      </view>
+    </view>
+    <text class="fam-strip-sub">{{memberCount}} 位成员 · 点看全家与结算</text>
+    <text class="fam-strip-arrow">›</text>
+  </view>
+
+  <!-- ===== 底部挑战 ===== -->
+  <view class="bottom-row">
+    <view class="challenge-banner">
+      <view class="challenge-info">
+        <text class="challenge-title">🏆 {{challenge.title}}</text>
+        <text class="challenge-sub">{{challenge.goal}}</text>
+      </view>
+      <view class="challenge-progress">
+        <view class="challenge-track">
+          <view class="challenge-fill" style="width: {{challengePercent}}%"></view>
+        </view>
+        <text class="challenge-num">{{challenge.current}}/{{challenge.target}}{{challenge.unit}}</text>
+      </view>
+      <text class="challenge-check" wx:if="{{challengeDone}}">✓</text>
+    </view>
+    <view class="fab-btn" bindtap="goCheckin">
+      <text class="fab-icon">✓</text>
+      <text class="fab-text">签到</text>
+    </view>
+  </view>
+
+  <!-- 签到弹窗 -->
+  <checkin-modal
+    show="{{modalShow}}"
+    member="{{modalMember}}"
+    task="{{modalTask}}"
+    evolved="{{modalEvolved}}"
+    stage="{{modalStage}}"
+    photo="{{modalPhoto}}"
+    verse="{{modalVerse}}"
+    bind:close="closeModal"
+  />
+</view>

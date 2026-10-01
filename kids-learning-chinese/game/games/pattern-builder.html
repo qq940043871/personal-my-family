@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>图案构建</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:500px;padding:10px 20px}
+.info{display:flex;gap:15px}.info-item{background:rgba(255,255,255,0.15);padding:5px 15px;border-radius:15px;font-size:0.9em}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.2);border-radius:15px;font-size:0.9em}
+.display{display:flex;gap:8px;margin:20px 0;min-height:60px;align-items:center}
+.seq-item{width:50px;height:50px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.8em}
+.input{display:flex;gap:10px;margin:15px 0;flex-wrap:wrap;justify-content:center}
+.color-btn{width:50px;height:50px;border-radius:10px;cursor:pointer;border:3px solid transparent;transition:all 0.2s}
+.color-btn:hover{transform:scale(1.1);border-color:#fff}
+.status{font-size:1.2em;margin:15px 0;min-height:30px}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:10}
+.box{background:linear-gradient(135deg,#FFD93D,#FF9800);padding:40px;border-radius:20px;text-align:center;max-width:400px}
+.box h1{font-size:2em;margin-bottom:10px}.box p{margin-bottom:20px}
+.btn{padding:12px 30px;border:none;border-radius:25px;font-size:1.1em;cursor:pointer;background:#fff;color:#333;font-weight:bold;margin:5px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div class="info"><div class="info-item">等级: <span id="level">1</span></div><div class="info-item">得分: <span id="score">0</span></div></div>
+</div>
+<div class="display" id="display"></div>
+<div class="status" id="status">记住图案！</div>
+<div class="input" id="input"></div>
+
+<div class="overlay" id="start"><div class="box"><h1>🧱 图案构建</h1><p>记住出现的颜色序列<br>然后按顺序重现！</p><button class="btn" onclick="startGame()">开始游戏</button></div></div>
+<div class="overlay hidden" id="over"><div class="box"><h1>游戏结束</h1><p>得分: <span id="final">0</span></p><button class="btn" onclick="startGame()">再来一次</button><a href="index.html" class="btn" style="background:rgba(255,255,255,0.3);color:#333;display:inline-block;text-decoration:none">返回菜单</a></div></div>
+
+<script>
+const COLORS=['#FF6B6B','#FFD93D','#6BCB77','#4D96FF','#C084FC','#FF9800'];
+let sequence,playerSeq,level,score,canInput;
+function startGame(){
+document.getElementById('start').classList.add('hidden');
+document.getElementById('over').classList.add('hidden');
+sequence=[];level=1;score=0;canInput=false;
+document.getElementById('level').textContent=1;document.getElementById('score').textContent=0;
+nextRound();
+}
+function nextRound(){
+canInput=false;playerSeq=[];
+sequence.push(Math.floor(Math.random()*Math.min(4+level,6)));
+document.getElementById('status').textContent='看好了！';
+showSequence(0);
+}
+function showSequence(i){
+if(i>=sequence.length){
+document.getElementById('status').textContent='你的回合！';
+canInput=true;renderInput();return;
+}
+renderDisplay(i);
+setTimeout(()=>{clearDisplay();setTimeout(()=>showSequence(i+1),300)},500);
+}
+function renderDisplay(highlight){
+const div=document.getElementById('display');div.innerHTML='';
+sequence.forEach((c,i)=>{
+const el=document.createElement('div');el.className='seq-item';
+el.style.background=COLORS[c];
+if(i===highlight){el.style.transform='scale(1.3)';el.style.boxShadow='0 0 15px '+COLORS[c]}
+div.appendChild(el);
+});
+}
+function clearDisplay(){document.getElementById('display').innerHTML=''}
+function renderInput(){
+const div=document.getElementById('input');div.innerHTML='';
+for(let i=0;i<Math.min(4+level,6);i++){
+const btn=document.createElement('div');btn.className='color-btn';
+btn.style.background=COLORS[i];
+btn.addEventListener('click',()=>inputColor(i));
+div.appendChild(btn);
+}
+}
+function inputColor(c){
+if(!canInput)return;
+playerSeq.push(c);
+const display=document.getElementById('display');
+const el=document.createElement('div');el.className='seq-item';el.style.background=COLORS[c];
+display.appendChild(el);playSound(500,0.05);
+if(playerSeq.length===sequence.length){
+canInput=false;
+const correct=playerSeq.every((v,i)=>v===sequence[i]);
+if(correct){
+score+=level*10;document.getElementById('score').textContent=score;
+document.getElementById('status').textContent='✅ 正确！';
+setTimeout(()=>{level++;document.getElementById('level').textContent=level;nextRound()},1000);
+playSound(700,0.2);
+}else{
+document.getElementById('status').textContent='❌ 错误！';
+document.getElementById('final').textContent=score;
+setTimeout(()=>{document.getElementById('over').classList.remove('hidden');playSound(200,0.3)},500);
+}
+}
+}
+function playSound(f,d){try{const a=new(AudioContext||webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=f;g.gain.value=0.1;o.start();g.gain.exponentialRampToValueAtTime(0.001,a.currentTime+d);o.stop(a.currentTime+d)}catch(e){}}
+</script>
+</body>
+</html>

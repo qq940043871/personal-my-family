@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>绘画板</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f0f0f0;font-family:'Microsoft YaHei',sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 20px;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+.back{color:#333;text-decoration:none;padding:5px 15px;background:#eee;border-radius:15px;font-size:0.9em}
+.tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;padding:10px;background:#fff;margin:10px 0;border-radius:15px;box-shadow:0 2px 5px rgba(0,0,0,0.1)}
+.color-btn{width:35px;height:35px;border-radius:50%;border:3px solid transparent;cursor:pointer;transition:transform 0.2s}
+.color-btn:hover,.color-btn.active{transform:scale(1.2);border-color:#333}
+.size-btn{padding:5px 15px;background:#eee;border:2px solid #ddd;border-radius:10px;cursor:pointer;font-size:0.9em}
+.size-btn:hover,.size-btn.active{background:#4D96FF;color:#fff;border-color:#4D96FF}
+.action-btn{padding:5px 15px;background:#FF6B6B;color:#fff;border:none;border-radius:10px;cursor:pointer;font-size:0.9em}
+.action-btn.save{background:#6BCB77}
+canvas{background:#fff;border-radius:10px;box-shadow:0 4px 15px rgba(0,0,0,0.1);cursor:crosshair;border:2px solid #ddd}
+.stamps{display:flex;gap:5px;padding:5px}
+.stamp{font-size:1.5em;cursor:pointer;padding:5px;border-radius:8px;background:#f9f9f9;border:2px solid transparent}
+.stamp:hover,.stamp.active{border-color:#4D96FF;background:#e3f2fd}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<h2>🎨 绘画板</h2>
+<div></div>
+</div>
+<div class="tools">
+<div class="color-btn active" style="background:#333" data-color="#333" onclick="setColor(this)"></div>
+<div class="color-btn" style="background:#FF6B6B" data-color="#FF6B6B" onclick="setColor(this)"></div>
+<div class="color-btn" style="background:#FFD93D" data-color="#FFD93D" onclick="setColor(this)"></div>
+<div class="color-btn" style="background:#6BCB77" data-color="#6BCB77" onclick="setColor(this)"></div>
+<div class="color-btn" style="background:#4D96FF" data-color="#4D96FF" onclick="setColor(this)"></div>
+<div class="color-btn" style="background:#C084FC" data-color="#C084FC" onclick="setColor(this)"></div>
+<div class="color-btn" style="background:#FF9800" data-color="#FF9800" onclick="setColor(this)"></div>
+<div class="color-btn" style="background:#fff;border:2px solid #ddd" data-color="#ffffff" onclick="setColor(this)"></div>
+<div style="border-left:2px solid #ddd;height:30px;margin:0 5px"></div>
+<button class="size-btn active" onclick="setSize(this,3)">细</button>
+<button class="size-btn" onclick="setSize(this,8)">中</button>
+<button class="size-btn" onclick="setSize(this,15)">粗</button>
+<div style="border-left:2px solid #ddd;height:30px;margin:0 5px"></div>
+<button class="size-btn" onclick="setEraser()" id="eraserBtn">🧹 橡皮</button>
+<button class="action-btn" onclick="clearCanvas()">🗑️ 清除</button>
+<button class="action-btn save" onclick="saveCanvas()">💾 保存</button>
+</div>
+<div class="stamps">
+<span class="stamp" onclick="setStamp('⭐')">⭐</span>
+<span class="stamp" onclick="setStamp('❤️')">❤️</span>
+<span class="stamp" onclick="setStamp('🌸')">🌸</span>
+<span class="stamp" onclick="setStamp('🦋')">🦋</span>
+<span class="stamp" onclick="setStamp('🌈')">🌈</span>
+<span class="stamp" onclick="setStamp('🐱')">🐱</span>
+<span class="stamp" onclick="setStamp('🐶')">🐶</span>
+<span class="stamp" onclick="setStamp('✨')">✨</span>
+<span class="stamp" onclick="setStamp(null)" style="font-size:1em">✏️ 画笔</span>
+</div>
+<canvas id="canvas" width="600" height="450"></canvas>
+
+<script>
+const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');
+let drawing=false,color='#333',size=3,isEraser=false,stamp=null,lastX,lastY;
+function resizeCanvas(){
+const w=Math.min(window.innerWidth-40,600);
+canvas.style.width=w+'px';
+}
+resizeCanvas();window.addEventListener('resize',resizeCanvas);
+function setColor(el){
+document.querySelectorAll('.color-btn').forEach(b=>b.classList.remove('active'));
+el.classList.add('active');color=el.dataset.color;isEraser=false;stamp=null;
+document.getElementById('eraserBtn').classList.remove('active');
+document.querySelectorAll('.stamp').forEach(s=>s.classList.remove('active'));
+}
+function setSize(el,s){
+document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('active'));
+el.classList.add('active');size=s;isEraser=false;stamp=null;
+document.getElementById('eraserBtn').classList.remove('active');
+}
+function setEraser(){
+isEraser=true;stamp=null;
+document.getElementById('eraserBtn').classList.add('active');
+document.querySelectorAll('.stamp').forEach(s=>s.classList.remove('active'));
+}
+function setStamp(s){
+stamp=s;
+document.querySelectorAll('.stamp').forEach(el=>el.classList.remove('active'));
+if(s)event.target.classList.add('active');
+}
+function getPos(e){
+const r=canvas.getBoundingClientRect();
+const scaleX=canvas.width/r.width,scaleY=canvas.height/r.height;
+if(e.touches)return{x:(e.touches[0].clientX-r.left)*scaleX,y:(e.touches[0].clientY-r.top)*scaleY};
+return{x:(e.clientX-r.left)*scaleX,y:(e.clientY-r.top)*scaleY};
+}
+function startDraw(e){
+e.preventDefault();drawing=true;
+const p=getPos(e);lastX=p.x;lastY=p.y;
+if(stamp){ctx.font='30px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(stamp,p.x,p.y);return}
+}
+function draw(e){
+e.preventDefault();if(!drawing||stamp)return;
+const p=getPos(e);
+ctx.beginPath();ctx.moveTo(lastX,lastY);ctx.lineTo(p.x,p.y);
+ctx.strokeStyle=isEraser?'#fff':color;
+ctx.lineWidth=isEraser?size*3:size;
+ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();
+lastX=p.x;lastY=p.y;
+}
+function endDraw(){drawing=false}
+function clearCanvas(){ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height)}
+function saveCanvas(){
+const link=document.createElement('a');
+link.download='我的画作.png';
+link.href=canvas.toDataURL();
+link.click();
+}
+canvas.addEventListener('mousedown',startDraw);
+canvas.addEventListener('mousemove',draw);
+canvas.addEventListener('mouseup',endDraw);
+canvas.addEventListener('mouseleave',endDraw);
+canvas.addEventListener('touchstart',startDraw,{passive:false});
+canvas.addEventListener('touchmove',draw,{passive:false});
+canvas.addEventListener('touchend',endDraw);
+clearCanvas();
+</script>
+</body>
+</html>

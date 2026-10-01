@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>万花筒</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 20px;position:fixed;top:0;z-index:10;background:rgba(0,0,0,0.3)}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%;cursor:crosshair}
+.controls{position:fixed;bottom:20px;display:flex;gap:10px;z-index:10}
+.ctrl{padding:8px 20px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;border-radius:10px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<div>🔮 万花筒</div>
+<div></div>
+</div>
+<canvas id="game"></canvas>
+<div class="controls">
+<button class="ctrl" onclick="symmetry=4">4瓣</button>
+<button class="ctrl" onclick="symmetry=6">6瓣</button>
+<button class="ctrl" onclick="symmetry=8">8瓣</button>
+<button class="ctrl" onclick="clearCanvas()">清除</button>
+</div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+let W,H,mx=W/2,my=H/2,symmetry=6,hue=0,trails=[];
+function resize(){W=C.width=window.innerWidth;H=C.height=window.innerHeight;X.fillStyle='#000';X.fillRect(0,0,W,H)}
+window.addEventListener('resize',resize);resize();
+function draw(){
+// fade
+X.fillStyle='rgba(0,0,0,0.02)';X.fillRect(0,0,W,h);
+const cx=W/2,cy=H/2;
+hue=(hue+0.5)%360;
+const r=Math.sqrt((mx-cx)**2+(my-cy)**2);
+const angle=Math.atan2(my-cy,mx-cx);
+for(let i=0;i<symmetry;i++){
+const a=angle+i*(Math.PI*2/symmetry);
+const x=cx+Math.cos(a)*r;
+const y=cy+Math.sin(a)*r;
+const x2=cx+Math.cos(a+Math.PI*2/symmetry)*r;
+const y2=cy+Math.sin(a+Math.PI*2/symmetry)*r;
+X.strokeStyle=`hsl(${hue+i*30},80%,60%)`;X.lineWidth=3;X.lineCap='round';
+X.beginPath();X.moveTo(x,y);X.lineTo(x2,y2);X.stroke();
+X.beginPath();X.arc(x,y,4,0,Math.PI*2);X.fill();
+}
+// trails
+trails.forEach(t=>{
+X.globalAlpha=t.life;
+X.fillStyle=t.color;
+X.beginPath();X.arc(t.x,t.y,t.r,0,Math.PI*2);X.fill();
+});
+X.globalAlpha=1;
+}
+function clearCanvas(){X.fillStyle='#000';X.fillRect(0,0,W,H);trails=[]}
+C.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;
+const cx=W/2,cy=H/2;
+for(let i=0;i<symmetry;i++){
+const a=Math.atan2(my-cy,mx-cx)+i*(Math.PI*2/symmetry);
+const r=Math.sqrt((mx-cx)**2+(my-cy)**2);
+trails.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r,r:2+Math.random()*3,life:1,color:`hsl(${hue+i*30},80%,60%)`});
+}
+trails=trails.filter(t=>{t.life-=0.01;t.r*=0.99;return t.life>0});
+});
+C.addEventListener('touchmove',e=>{e.preventDefault();mx=e.touches[0].clientX;my=e.touches[0].clientY},{passive:false});
+function loop(){draw();requestAnimationFrame(loop)}
+loop();
+</script>
+</body>
+</html>

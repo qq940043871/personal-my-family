@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>天气站</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(180deg,#87CEEB,#B3E5FC);min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#333;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px;padding:10px 20px;background:rgba(255,255,255,0.3)}
+.back{color:#333;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.5);border-radius:15px;font-size:0.9em}
+.sky{width:100%;max-width:600px;height:300px;border-radius:15px;margin:15px 0;position:relative;overflow:hidden;transition:background 1s}
+.controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;padding:10px}
+.ctrl{padding:10px 20px;background:#fff;border:2px solid #ddd;border-radius:12px;cursor:pointer;font-size:0.9em}
+.ctrl:hover{border-color:#4D96FF}
+.temp{font-size:3em;margin:10px 0}
+.weather-icon{font-size:4em;position:absolute;top:50px;left:50%;transform:translateX(-50%)}
+.info{background:#fff;padding:15px 25px;border-radius:15px;box-shadow:0 2px 10px rgba(0,0,0,0.1);margin:10px 0;text-align:center;max-width:400px}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<h2>🌤️ 天气站</h2>
+<div></div>
+</div>
+<div class="sky" id="sky">
+<div class="weather-icon" id="weatherIcon">☀️</div>
+</div>
+<div class="temp" id="temp">25°C</div>
+<div class="controls">
+<button class="ctrl" onclick="setWeather('sunny')">☀️ 晴天</button>
+<button class="ctrl" onclick="setWeather('cloudy')">☁️ 多云</button>
+<button class="ctrl" onclick="setWeather('rain')">🌧️ 下雨</button>
+<button class="ctrl" onclick="setWeather('snow')">🌨️ 下雪</button>
+<button class="ctrl" onclick="setWeather('storm')">⛈️ 雷暴</button>
+</div>
+<div class="info" id="info">选择天气类型查看效果！</div>
+
+<script>
+let weather='sunny',particles=[];
+const weatherData={
+sunny:{icon:'☀️',temp:25,bg:'linear-gradient(180deg,#87CEEB,#FFD93D)',info:'阳光明媚，适合户外活动！记得涂防晒霜哦~'},
+cloudy:{icon:'☁️',temp:18,bg:'linear-gradient(180deg,#90A4AE,#B0BEC5)',info:'多云天气，云朵像棉花糖一样飘在天上~'},
+rain:{icon:'🌧️',temp:12,bg:'linear-gradient(180deg,#546E7A,#78909C)',info:'下雨了！雨滴从云朵里落下来，植物们喝饱了水~'},
+snow:{icon:'🌨️',temp:-2,bg:'linear-gradient(180deg,#B0BEC5,#ECEFF1)',info:'下雪啦！雪花像小精灵一样飘落，大地披上了白纱~'},
+storm:{icon:'⛈️',temp:8,bg:'linear-gradient(180deg,#37474F,#455A64)',info:'雷暴天气！闪电划过天空，要注意安全哦~'}
+};
+function setWeather(w){
+weather=w;particles=[];
+const data=weatherData[w];
+document.getElementById('weatherIcon').textContent=data.icon;
+document.getElementById('temp').textContent=data.temp+'°C';
+document.getElementById('sky').style.background=data.bg;
+document.getElementById('info').textContent=data.info;
+if(w==='rain'){for(let i=0;i<100;i++)particles.push({x:Math.random()*600,y:Math.random()*300,vy:5+Math.random()*5,type:'rain'})}
+if(w==='snow'){for(let i=0;i<50;i++)particles.push({x:Math.random()*600,y:Math.random()*300,vy:1+Math.random()*2,vx:Math.random()-0.5,type:'snow',r:2+Math.random()*3})}
+if(w==='storm'){for(let i=0;i<80;i++)particles.push({x:Math.random()*600,y:Math.random()*300,vy:8+Math.random()*5,type:'rain'});lightning()}
+}
+function lightning(){
+if(weather!=='storm')return;
+const sky=document.getElementById('sky');
+sky.style.background='rgba(255,255,255,0.8)';
+setTimeout(()=>{sky.style.background=weatherData.storm.bg},100);
+setTimeout(()=>lightning(),2000+Math.random()*5000);
+}
+function draw(){
+const sky=document.getElementById('sky');
+// remove old particles
+sky.querySelectorAll('.particle').forEach(p=>p.remove());
+particles.forEach(p=>{
+if(weather==='rain'||weather==='storm'){
+p.y+=p.vy;if(p.y>300)p.y=0;
+const el=document.createElement('div');el.className='particle';
+el.style.cssText=`position:absolute;left:${p.x}px;top:${p.y}px;width:2px;height:8px;background:rgba(100,181,246,0.6);border-radius:1px`;
+sky.appendChild(el);
+}else if(weather==='snow'){
+p.y+=p.vy;p.x+=p.vx;if(p.y>300){p.y=0;p.x=Math.random()*600}
+const el=document.createElement('div');el.className='particle';
+el.style.cssText=`position:absolute;left:${p.x}px;top:${p.y}px;width:${p.r*2}px;height:${p.r*2}px;background:rgba(255,255,255,0.8);border-radius:50%`;
+sky.appendChild(el);
+}
+});
+requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

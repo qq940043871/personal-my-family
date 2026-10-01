@@ -1,0 +1,219 @@
+/* === 全家签到 Uni-App 全局样式 === */
+
+page {
+  background-color: #FFF6F0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 28rpx;
+  color: #1A1A1A;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 通用滚动区域 */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* 安全区适配 */
+.safe-bottom {
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ===== H5 移动端与大屏兼容 ===== */
+.uni-tabbar {
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.uni-page-body {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ===== 全局交互增强动画 ===== */
+.card-pressable {
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.2s ease;
+}
+.card-pressable:active {
+  transform: scale(0.97);
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.06);
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 8rpx 20rpx rgba(255,138,101,0.35); }
+  50% { transform: scale(1.04); box-shadow: 0 12rpx 28rpx rgba(255,138,101,0.5); }
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+@keyframes badgeShine {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.3); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20rpx); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes checkPop {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.progress-animated {
+  transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ===== 小米平板5 横屏专版 ===== */
+
+/* 页面容器：居中于 960px（与 rpx 基准一致），防止百分比布局错乱 */
+html {
+  display: flex;
+  justify-content: center;
+}
+
+body {
+  max-width: 960px;
+  width: 100%;
+  min-height: 100vh;
+}
+
+uni-app, #app {
+  max-width: 960px;
+  width: 100%;
+}
+
+/* scroll-view 元素默认 content-box：设置 padding 后会撑出父容器，
+   导致右侧内容被裁出屏幕（右栏金额/图鉴页右缘均由此引起） */
+uni-scroll-view {
+  box-sizing: border-box;
+}
+
+/* 宽屏（平板横屏视口 ≥900px）：解除 body/#app 的 max-width 960 限制，三栏布局铺满整个视口 */
+/* app-plus 基座的限制挂在 body 上，H5 挂在 #app 上，两处都解除 */
+@media screen and (min-width: 900px) {
+  uni-app,
+  #app,
+  body {
+    max-width: 100% !important;
+  }
+}
+
+/* 页面内容容器 */
+.page {
+  max-width: 960px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* 顶部导航栏居中 */
+uni-page-head,
+.uni-page-head {
+  max-width: 960px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+/* 横屏主容器：铺满整个可视区域 */
+.land-main {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ===== 三栏全局动画 ===== */
+@keyframes colFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.col-enter {
+  animation: colFadeIn 0.3s ease;
+}
+
+/* 内容切换过渡 */
+.panel-transition {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* 热区确保 ≥ 60dp（60px） */
+.touch-target {
+  min-width: 60px;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 横屏大屏下：横向滚动区域由各页面 scoped CSS 自行控制 */
+/* 不在全局强制 flex-wrap，避免与 scroll-view 的 scroll-x 冲突 */
+
+/* 弹窗居中 */
+.modal-overlay {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 弹窗宽度由各组件自身控制，不再全局覆盖 */
+
+.filter-tag,
+.member-tag,
+.tab-item,
+.period-tab {
+  padding: 16rpx 30rpx;
+  min-height: 42px;
+}
+
+/* ===== sw600dp-land 等效断点 ===== */
+/* 相当于 Android layout-sw600dp-land：宽度 >= 600dp 且横屏 */
+@media screen and (min-width: 600px) and (orientation: landscape) {
+  .tablet-land-only {
+    display: block !important;
+  }
+  .phone-only {
+    display: none !important;
+  }
+}
+
+/* ===== 底部 TabBar：居中悬浮卡片（横屏平板风格） ===== */
+
+/* 内层固定栏：圆角悬浮卡片 */
+.uni-tabbar-bottom .uni-tabbar {
+  position: fixed !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%) !important;
+  max-width: 960px !important;
+  width: 100% !important;
+  border-radius: 24rpx 24rpx 0 0 !important;
+  box-shadow: 0 -8rpx 32rpx rgba(0, 0, 0, 0.08) !important;
+  overflow: hidden;
+}
+
+/* TabBar 图标放大（750rpx=960px → 40rpx≈51px） */
+.uni-tabbar__icon {
+  width: 40rpx !important;
+  height: 40rpx !important;
+  margin-top: 8rpx !important;
+}
+
+.uni-tabbar__icon img {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* TabBar 文字标签放大（20rpx≈26px） */
+.uni-tabbar__label {
+  font-size: 20rpx !important;
+  margin-top: 10rpx !important;
+  line-height: 1.2 !important;
+}

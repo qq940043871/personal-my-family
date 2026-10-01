@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>雨滴模拟</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1a2e;min-height:100vh;font-family:'Microsoft YaHei',sans-serif;color:#fff;display:flex;flex-direction:column;align-items:center}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px;padding:10px 20px}
+.back{color:#fff;text-decoration:none;padding:5px 15px;background:rgba(255,255,255,0.15);border-radius:15px;font-size:0.9em}
+canvas{margin-top:10px;cursor:pointer}
+.info{color:rgba(255,255,255,0.5);font-size:0.85em;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="top-bar">
+<a href="index.html" class="back">← 返回</a>
+<h2>🌧️ 雨滴模拟</h2>
+<div></div>
+</div>
+<canvas id="game" width="600" height="500"></canvas>
+<div class="info">点击云朵下雨 · 点击地面积水</div>
+
+<script>
+const C=document.getElementById('game'),X=C.getContext('2d');
+const W=600,H=500;
+let raindrops,puddles,clouds,raining,rainbow;
+function init(){
+raindrops=[];puddles=[];raining=false;rainbow=0;
+clouds=[
+{x:150,y:60,w:120,h:50},{x:350,y:40,w:140,h:55},{x:500,y:70,w:100,h:45}
+];
+}
+function drawSky(){
+const t=Date.now()*0.001;
+const grad=X.createLinearGradient(0,0,0,H);
+if(raining){grad.addColorStop(0,'#37474F');grad.addColorStop(1,'#455A64')}
+else{grad.addColorStop(0,'#5C6BC0');grad.addColorStop(1,'#7986CB')}
+X.fillStyle=grad;X.fillRect(0,0,W,H);
+// sun/moon
+if(!raining){
+X.fillStyle='#FFD93D';X.shadowColor='#FFD93D';X.shadowBlur=20;
+X.beginPath();X.arc(500,80,30,0,Math.PI*2);X.fill();X.shadowBlur=0;
+}
+}
+function drawClouds(){
+clouds.forEach(c=>{
+X.fillStyle=raining?'#78909C':'#ECEFF1';
+X.beginPath();
+X.arc(c.x,c.y,c.h*0.6,0,Math.PI*2);
+X.arc(c.x+c.w*0.3,c.y-c.h*0.2,c.h*0.5,0,Math.PI*2);
+X.arc(c.x+c.w*0.6,c.y,c.h*0.55,0,Math.PI*2);
+X.arc(c.x+c.w*0.3,c.y+c.h*0.1,c.h*0.45,0,Math.PI*2);
+X.fill();
+});
+}
+function drawRain(){
+raindrops.forEach(r=>{
+X.strokeStyle='rgba(100,181,246,0.6)';X.lineWidth=1.5;
+X.beginPath();X.moveTo(r.x,r.y);X.lineTo(r.x-1,r.y+r.len);X.stroke();
+});
+}
+function drawPuddles(){
+puddles.forEach(p=>{
+X.fillStyle=`rgba(100,181,246,${p.alpha})`;
+X.beginPath();X.ellipse(p.x,p.y,p.r,p.r*0.3,0,0,Math.PI*2);X.fill();
+// ripple
+if(p.ripple>0){
+X.strokeStyle=`rgba(100,181,246,${p.alpha*0.5})`;X.lineWidth=1;
+X.beginPath();X.ellipse(p.x,p.y,p.r+p.ripple,p.r*0.3+p.ripple*0.3,0,0,Math.PI*2);X.stroke();
+}
+});
+}
+function drawRainbow(){
+if(rainbow<=0)return;
+X.globalAlpha=rainbow;
+const colors=['#F44336','#FF9800','#FFD93D','#6BCB77','#4D96FF','#9C27B0'];
+colors.forEach((c,i)=>{
+X.strokeStyle=c;X.lineWidth=6;
+X.beginPath();X.arc(W/2,H,200+i*10,-Math.PI,-Math.PI/2);X.stroke();
+});
+X.globalAlpha=1;
+}
+function drawGround(){
+X.fillStyle='#4CAF50';X.fillRect(0,H-30,W,30);
+X.fillStyle='#388E3C';X.fillRect(0,H-30,W,5);
+}
+function update(){
+if(raining&&Math.random()<0.5){
+raindrops.push({x:Math.random()*W,y:-10,vy:8+Math.random()*4,len:10+Math.random()*15});
+}
+raindrops.forEach(r=>{r.y+=r.vy});
+raindrops=raindrops.filter(r=>r.y<H);
+// puddles
+raindrops.forEach(r=>{
+if(r.y>H-30&&Math.random()<0.02){
+puddles.push({x:r.x+Math.random()*20-10,y:H-28,r:3+Math.random()*5,alpha:0.3+Math.random()*0.3,ripple:0});
+}
+});
+puddles.forEach(p=>{p.r=Math.min(20,p.r+0.01);p.ripple=Math.max(0,p.ripple-0.1)});
+if(rainbow>0)rainbow-=0.002;
+}
+function draw(){drawSky();drawClouds();drawRain();drawPuddles();drawGround();drawRainbow()}
+function loop(){update();draw();requestAnimationFrame(loop)}
+C.addEventListener('click',e=>{
+const r=C.getBoundingClientRect();
+const mx=(e.clientX-r.left)*(W/r.width),my=(e.clientY-r.top)*(H/r.height);
+// check cloud click
+if(clouds.some(c=>mx>c.x-c.w*0.3&&mx<c.x+c.w*0.8&&my>c.y-c.h&&my<c.y+c.h)){
+raining=!raining;
+if(!raining){rainbow=1}
+}else{
+// add puddle
+if(my>H-50){puddles.push({x:mx,y:H-28,r:5,alpha:0.4,ripple:10})}
+}
+});
+init();loop();
+</script>
+</body>
+</html>
